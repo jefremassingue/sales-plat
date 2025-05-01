@@ -1,13 +1,15 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DeleteAlert } from '@/components/delete-alert';
+import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, Edit, Trash, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Category {
     id: number;
@@ -32,9 +34,28 @@ interface Props {
 
 export default function Show({ category }: Props) {
     const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
+    const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+    const { toast } = useToast();
+    const { flash } = usePage().props as any;
 
-    // Verifica corretamente se existem subcategorias
-    const hasChildren = Array.isArray(category.children) && category.children.length > 0;
+    // Mostrar mensagens flash vindas do backend
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Operação bem sucedida",
+                description: flash.success,
+                variant: "success",
+            });
+        }
+
+        if (flash?.error) {
+            toast({
+                title: "Erro",
+                description: flash.error,
+                variant: "destructive",
+            });
+        }
+    }, [flash]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -50,12 +71,6 @@ export default function Show({ category }: Props) {
             href: `/admin/categories/${category.id}`,
         },
     ];
-
-    const handleDelete = () => {
-        if (confirm('Tem certeza que deseja eliminar esta categoria?')) {
-            router.delete(`/admin/categories/${category.id}`);
-        }
-    };
 
     const toggleExpand = (categoryId: number) => {
         if (expandedCategories.includes(categoryId)) {
@@ -131,7 +146,10 @@ export default function Show({ category }: Props) {
                                 Editar
                             </Link>
                         </Button>
-                        <Button variant="destructive" onClick={handleDelete}>
+                        <Button
+                            variant="destructive"
+                            onClick={() => setDeleteAlertOpen(true)}
+                        >
                             <Trash className="h-4 w-4 mr-2" />
                             Eliminar
                         </Button>
@@ -187,8 +205,22 @@ export default function Show({ category }: Props) {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {hasChildren ? (
-                                renderCategoryTree(category.children)
+                            {category.children && category.children.length > 0 ? (
+                                <ul>
+                                    {category.children.map(child => (
+                                        <li key={child.id} className="py-2 flex items-center justify-between">
+                                            <div className="flex items-center">
+                                                <span>{child.name}</span>
+                                                <Badge variant={child.active ? "success" : "secondary"} className="ml-2">
+                                                    {child.active ? 'Activo' : 'Inactivo'}
+                                                </Badge>
+                                            </div>
+                                            <Link href={`/admin/categories/${child.id}`}>
+                                                Ver detalhes
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
                             ) : (
                                 <p className="text-gray-500 dark:text-gray-400">Esta categoria não possui subcategorias.</p>
                             )}
@@ -196,6 +228,15 @@ export default function Show({ category }: Props) {
                     </Card>
                 </div>
             </div>
+
+            {/* Alerta de confirmação de exclusão */}
+            <DeleteAlert
+                isOpen={deleteAlertOpen}
+                onClose={() => setDeleteAlertOpen(false)}
+                title="Eliminar Categoria"
+                description="Tem certeza que deseja eliminar esta categoria? Esta acção não pode ser desfeita."
+                deleteUrl={`/admin/categories/${category.id}`}
+            />
         </AppLayout>
     );
 }

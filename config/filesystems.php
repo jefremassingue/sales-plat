@@ -30,21 +30,23 @@ return [
 
     'disks' => [
 
+        'private' => [
+            'driver' => 'local',
+            'root' => storage_path('app'),
+            'throw' => false,
+        ],
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
-            'serve' => true,
+            'root' => public_path(),
+            'url' => env('APP_URL') . '/storage',
             'throw' => false,
-            'report' => false,
         ],
-
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
-            'report' => false,
         ],
 
         's3' => [
@@ -60,7 +62,21 @@ return [
             'report' => false,
         ],
 
+        'sftp' => [
+            'driver' => 'sftp',
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'port' => 22, //env('FTP_PORT'),
+            'root' => env('FTP_DATA_DIRECTORY')
+        ],
+
     ],
+
+    'default_video_storage' =>  env('DEFAULT_VIDEO_STORAGE', 'private'),
+    'default_pocessed_video_storage' =>  env('DEFAULT_POCESSED_VIDEO_STORAGE', 'private'),
+    'default_public_files_storage' =>  env('DEFAULT_PUBLIC_FILES_STORAGE', 'local'),
+    'default_private_files_storage' =>  env('DEFAULT_PRIVATE_FILES_STORAGE', 'private'),
 
     /*
     |--------------------------------------------------------------------------

@@ -2,11 +2,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DeleteAlert } from '@/components/delete-alert';
+import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, ChevronDown, ChevronRight, Edit, Eye, MoreHorizontal, Plus, Trash } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Category {
     id: number;
@@ -40,6 +42,29 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Tree({ categories }: Props) {
     const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
+    const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
+    const { toast } = useToast();
+    const { flash } = usePage().props as any;
+
+    // Mostrar mensagens flash vindas do backend
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Operação bem sucedida",
+                description: flash.success,
+                variant: "success",
+            });
+        }
+
+        if (flash?.error) {
+            toast({
+                title: "Erro",
+                description: flash.error,
+                variant: "destructive",
+            });
+        }
+    }, [flash]);
 
     const toggleExpand = (categoryId: number) => {
         setExpandedCategories(prev =>
@@ -53,10 +78,9 @@ export default function Tree({ categories }: Props) {
         return expandedCategories.includes(categoryId);
     };
 
-    const handleDelete = (id: number) => {
-        if (confirm('Tem certeza que deseja eliminar esta categoria?')) {
-            router.delete(`/admin/categories/${id}`);
-        }
+    const handleDeleteClick = (id: number) => {
+        setCategoryToDelete(id);
+        setDeleteAlertOpen(true);
     };
 
     const expandAll = () => {
@@ -147,7 +171,7 @@ export default function Tree({ categories }: Props) {
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => handleDelete(category.id)}
+                                    onClick={() => handleDeleteClick(category.id)}
                                     className="text-destructive focus:text-destructive"
                                 >
                                     <Trash className="mr-2 h-4 w-4" />
@@ -211,6 +235,20 @@ export default function Tree({ categories }: Props) {
                     </Card>
                 </div>
             </div>
+
+            {/* Alerta de confirmação de exclusão */}
+            {categoryToDelete && (
+                <DeleteAlert
+                    isOpen={deleteAlertOpen}
+                    onClose={() => {
+                        setDeleteAlertOpen(false);
+                        setCategoryToDelete(null);
+                    }}
+                    title="Eliminar Categoria"
+                    description="Tem certeza que deseja eliminar esta categoria? Esta acção não pode ser desfeita."
+                    deleteUrl={`/admin/categories/${categoryToDelete}`}
+                />
+            )}
         </AppLayout>
     );
 }

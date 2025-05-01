@@ -5,11 +5,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DeleteAlert } from '@/components/delete-alert';
+import { useToast } from '@/components/ui/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronDown, ChevronRight, GridIcon, ListIcon, MoreHorizontal, Plus, Trash, Edit, Eye, ListTree } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Category {
     id: number;
@@ -56,6 +59,30 @@ export default function Index({ categories, allCategories }: Props) {
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
     const [viewTab, setViewTab] = useState<string>("table");
     const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
+    const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
+    const [bulkDeleteAlertOpen, setBulkDeleteAlertOpen] = useState(false);
+    const { toast } = useToast();
+    const { flash } = usePage().props as any;
+
+    // Mostrar mensagens flash vindas do backend
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Operação bem sucedida",
+                description: flash.success,
+                variant: "success",
+            });
+        }
+
+        if (flash?.error) {
+            toast({
+                title: "Erro",
+                description: flash.error,
+                variant: "destructive",
+            });
+        }
+    }, [flash]);
 
     const handleSelectAll = () => {
         if (selectedCategories.length === allCategories.length) {
@@ -73,19 +100,24 @@ export default function Index({ categories, allCategories }: Props) {
         }
     };
 
-    const handleDelete = (id: number) => {
-        if (confirm('Tem certeza que deseja eliminar esta categoria?')) {
-            router.delete(`/admin/categories/${id}`);
-        }
+    const handleDeleteClick = (id: number) => {
+        setCategoryToDelete(id);
+        setDeleteAlertOpen(true);
+    };
+
+    const handleBulkDeleteClick = () => {
+        if (selectedCategories.length === 0) return;
+        setBulkDeleteAlertOpen(true);
     };
 
     const handleBulkDelete = () => {
-        if (selectedCategories.length === 0) return;
-
-        if (confirm(`Tem certeza que deseja eliminar ${selectedCategories.length} categorias?`)) {
-            // Implementar a lógica de exclusão em massa
-            alert('Funcionalidade a ser implementada');
-        }
+        // Implementar a lógica de exclusão em massa aqui
+        toast({
+            title: "Não implementado",
+            description: "A exclusão em massa ainda não foi implementada.",
+            variant: "default",
+        });
+        setBulkDeleteAlertOpen(false);
     };
 
     const toggleExpand = (categoryId: number) => {
@@ -166,7 +198,7 @@ export default function Index({ categories, allCategories }: Props) {
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    onClick={() => handleDelete(category.id)}
+                                    onClick={() => handleDeleteClick(category.id)}
                                     className="text-destructive focus:text-destructive"
                                 >
                                     <Trash className="mr-2 h-4 w-4" />
@@ -233,6 +265,15 @@ export default function Index({ categories, allCategories }: Props) {
                             Adicionar
                         </Link>
                     </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteClick(category.id)}
+                        className="text-destructive hover:text-destructive"
+                    >
+                        <Trash className="h-4 w-4 mr-1" />
+                        Eliminar
+                    </Button>
                 </CardFooter>
             </Card>
         );
@@ -269,7 +310,7 @@ export default function Index({ categories, allCategories }: Props) {
 
                                 <div className="flex items-center gap-2">
                                     {selectedCategories.length > 0 && (
-                                        <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                                        <Button variant="destructive" size="sm" onClick={handleBulkDeleteClick}>
                                             <Trash className="mr-2 h-4 w-4" />
                                             Eliminar Selecionados
                                         </Button>
@@ -337,6 +378,41 @@ export default function Index({ categories, allCategories }: Props) {
                     </Card>
                 </div>
             </div>
+
+            {/* Alerta de confirmação de exclusão */}
+            {categoryToDelete && (
+                <DeleteAlert
+                    isOpen={deleteAlertOpen}
+                    onClose={() => {
+                        setDeleteAlertOpen(false);
+                        setCategoryToDelete(null);
+                    }}
+                    title="Eliminar Categoria"
+                    description="Tem certeza que deseja eliminar esta categoria? Esta acção não pode ser desfeita."
+                    deleteUrl={`/admin/categories/${categoryToDelete}`}
+                />
+            )}
+
+            {/* Alerta de confirmação para exclusão em massa */}
+            <AlertDialog open={bulkDeleteAlertOpen} onOpenChange={setBulkDeleteAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Eliminar Categorias Selecionadas</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tem certeza que deseja eliminar {selectedCategories.length} categorias? Esta acção não pode ser desfeita.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleBulkDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

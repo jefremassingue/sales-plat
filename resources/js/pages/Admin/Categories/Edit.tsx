@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -55,6 +56,9 @@ export default function Edit({ category, categories }: Props) {
         },
     ];
 
+    const { toast } = useToast();
+    const { flash, errors } = usePage().props as any;
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -77,14 +81,65 @@ export default function Edit({ category, categories }: Props) {
         });
     }, [category, form]);
 
+    // Mostrar mensagens flash vindas do backend
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: "Operação bem sucedida",
+                description: flash.success,
+                variant: "success",
+            });
+        }
+
+        if (flash?.error) {
+            toast({
+                title: "Erro",
+                description: flash.error,
+                variant: "destructive",
+            });
+        }
+    }, [flash, toast]);
+
+    // Mapear erros do Laravel para os erros do formulário
+    useEffect(() => {
+        if (errors) {
+            Object.keys(errors).forEach(key => {
+                form.setError(key as any, {
+                    type: 'manual',
+                    message: errors[key],
+                });
+            });
+        }
+    }, [errors, form]);
+
     function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             router.put(`/admin/categories/${category.id}`, {
                 ...values,
                 parent_id: values.parent_id && values.parent_id !== 'root' ? parseInt(values.parent_id) : null,
+            }, {
+                onSuccess: () => {
+                    toast({
+                        title: "Categoria atualizada",
+                        description: "A categoria foi atualizada com sucesso.",
+                        variant: "success",
+                    });
+                },
+                onError: (errors) => {
+                    toast({
+                        title: "Erro ao atualizar",
+                        description: "Verifique os erros no formulário.",
+                        variant: "destructive",
+                    });
+                }
             });
         } catch (error) {
-            console.error('Erro ao actualizar categoria:', error);
+            toast({
+                title: "Erro",
+                description: "Ocorreu um erro ao atualizar a categoria.",
+                variant: "destructive",
+            });
+            console.error('Erro ao atualizar categoria:', error);
         }
     }
 
@@ -92,7 +147,7 @@ export default function Edit({ category, categories }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Editar ${category.name}`} />
 
-            <div className="container py-6">
+            <div className="container py-6 px-4">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" asChild>
                         <Link href="/admin/categories">
@@ -119,7 +174,7 @@ export default function Edit({ category, categories }: Props) {
                                                 <Input
                                                     placeholder="Nome da categoria"
                                                     {...field}
-                                                    className="text-lg py-6"
+                                                    className="text-lg h-12"
                                                 />
                                             </FormControl>
                                             <FormDescription>
@@ -158,7 +213,7 @@ export default function Edit({ category, categories }: Props) {
                                                 <FormLabel>Categoria Pai</FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value || 'root'}>
                                                     <FormControl>
-                                                        <SelectTrigger>
+                                                        <SelectTrigger className='h-12'>
                                                             <SelectValue placeholder="Selecione uma categoria pai (opcional)" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -193,7 +248,7 @@ export default function Edit({ category, categories }: Props) {
                                                     <Input
                                                         type="number"
                                                         {...field}
-                                                        className="text-lg py-6"
+                                                        className="text-lg h-12"
                                                     />
                                                 </FormControl>
                                                 <FormDescription>

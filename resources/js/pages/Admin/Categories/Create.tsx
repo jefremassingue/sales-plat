@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -27,25 +29,11 @@ interface Props {
     categories: Category[];
 }
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-    {
-        title: 'Categorias',
-        href: '/admin/categories',
-    },
-    {
-        title: 'Nova Categoria',
-        href: '/admin/categories/create',
-    },
-];
-
 const formSchema = z.object({
     name: z.string().min(2, {
         message: 'O nome deve ter pelo menos 2 caracteres.',
     }),
+    slug: z.string().optional().nullable(),
     description: z.string().optional().nullable(),
     parent_id: z.string().optional().nullable(),
     active: z.boolean().default(true),
@@ -53,10 +41,29 @@ const formSchema = z.object({
 });
 
 export default function Create({ categories }: Props) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+        },
+        {
+            title: 'Categorias',
+            href: '/admin/categories',
+        },
+        {
+            title: 'Nova Categoria',
+            href: '/admin/categories/create',
+        },
+    ];
+
+    const { toast } = useToast();
+    const { flash, errors } = usePage().props as any;
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: '',
+            slug: '',
             description: '',
             parent_id: 'root',
             active: true,
@@ -64,13 +71,78 @@ export default function Create({ categories }: Props) {
         },
     });
 
+    // Checar se há um parent_id na URL
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const parentId = urlParams.get('parent_id');
+
+        if (parentId) {
+            form.setValue('parent_id', parentId);
+        }
+    }, [form]);
+
+    // Mostrar mensagens flash vindas do backend
+    useEffect(() => {
+        if (flash?.success) {
+            toast({
+                title: 'Operação bem sucedida',
+                description: flash.success,
+                variant: 'success',
+            });
+        }
+
+        if (flash?.error) {
+            toast({
+                title: 'Erro',
+                description: flash.error,
+                variant: 'destructive',
+            });
+        }
+    }, [flash, toast]);
+
+    // Mapear erros do Laravel para os erros do formulário
+    useEffect(() => {
+        if (errors) {
+            Object.keys(errors).forEach((key) => {
+                form.setError(key as any, {
+                    type: 'manual',
+                    message: errors[key],
+                });
+            });
+        }
+    }, [errors, form]);
+
     function onSubmit(values: z.infer<typeof formSchema>) {
         try {
-            router.post('/admin/categories', {
-                ...values,
-                parent_id: values.parent_id && values.parent_id !== 'root' ? parseInt(values.parent_id) : null,
-            });
+            router.post(
+                '/admin/categories',
+                {
+                    ...values,
+                    parent_id: values.parent_id && values.parent_id !== 'root' ? parseInt(values.parent_id) : null,
+                },
+                {
+                    onSuccess: () => {
+                        toast({
+                            title: 'Categoria criada',
+                            description: 'A categoria foi criada com sucesso.',
+                            variant: 'success',
+                        });
+                    },
+                    onError: () => {
+                        toast({
+                            title: 'Erro ao criar',
+                            description: 'Verifique os erros no formulário.',
+                            variant: 'destructive',
+                        });
+                    },
+                },
+            );
         } catch (error) {
+            toast({
+                title: 'Erro',
+                description: 'Ocorreu um erro ao criar a categoria.',
+                variant: 'destructive',
+            });
             console.error('Erro ao criar categoria:', error);
         }
     }
@@ -96,26 +168,45 @@ export default function Create({ categories }: Props) {
                     <CardContent>
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Nome</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Nome da categoria"
-                                                    {...field}
-                                                    className="text-lg py-6"
-                                                />
-                                            </FormControl>
-                                            <FormDescription>
-                                                O slug será gerado automaticamente a partir do nome.
-                                            </FormDescription>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="col-span-2">
+                                        <FormField
+                                            control={form.control}
+                                            name="name"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Nome</FormLabel>
+                                                    <FormControl>
+                                                        <Input placeholder="Nome da categoria" {...field} className="h-12 text-lg" />
+                                                    </FormControl>
+                                                    <FormDescription>O slug será gerado automaticamente a partir do nome.</FormDescription>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+                                    <FormField
+                                        control={form.control}
+                                        name="slug"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Slug (Opcional)</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="slug-da-categoria"
+                                                        {...field}
+                                                        value={field.value || ''}
+                                                        className="h-12 text-lg"
+                                                    />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    URL amigável da categoria. Se não for fornecido, será gerado automaticamente.
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
 
                                 <FormField
                                     control={form.control}
@@ -140,12 +231,13 @@ export default function Create({ categories }: Props) {
                                     <FormField
                                         control={form.control}
                                         name="parent_id"
+
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Categoria Pai</FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value || 'root'}>
                                                     <FormControl>
-                                                        <SelectTrigger>
+                                                        <SelectTrigger className='h-12'>
                                                             <SelectValue placeholder="Selecione uma categoria pai (opcional)" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -158,6 +250,7 @@ export default function Create({ categories }: Props) {
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
+                                                <FormDescription>Define se for uma nova subcategoria.</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -170,15 +263,9 @@ export default function Create({ categories }: Props) {
                                             <FormItem>
                                                 <FormLabel>Ordem</FormLabel>
                                                 <FormControl>
-                                                    <Input
-                                                        type="number"
-                                                        {...field}
-                                                        className="text-lg py-6"
-                                                    />
+                                                    <Input type="number" {...field} className="h-12 text-lg" />
                                                 </FormControl>
-                                                <FormDescription>
-                                                    Define a ordem de exibição das categorias.
-                                                </FormDescription>
+                                                <FormDescription>Define a ordem de exibição das categorias.</FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -192,15 +279,10 @@ export default function Create({ categories }: Props) {
                                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                                             <div className="space-y-0.5">
                                                 <FormLabel className="text-base">Estado Activo</FormLabel>
-                                                <FormDescription>
-                                                    Determina se a categoria está activa ou não.
-                                                </FormDescription>
+                                                <FormDescription>Determina se a categoria está activa ou não.</FormDescription>
                                             </div>
                                             <FormControl>
-                                                <Switch
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                />
+                                                <Switch checked={field.value} onCheckedChange={field.onChange} />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -210,7 +292,7 @@ export default function Create({ categories }: Props) {
                                     <Button type="button" variant="outline" asChild>
                                         <Link href="/admin/categories">Cancelar</Link>
                                     </Button>
-                                    <Button type="submit">Guardar Categoria</Button>
+                                    <Button type="submit">Criar Categoria</Button>
                                 </div>
                             </form>
                         </Form>

@@ -14,11 +14,9 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     // Rotas para administração de categorias
-    Route::prefix('admin')->name('admin.')->group(function () {
-        Route::get('categories/tree', [CategoryController::class, 'tree'])->name('categories.tree');
-        Route::resource('categories', CategoryController::class);
-    });
+
 });
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+require __DIR__.'/admin.php';
