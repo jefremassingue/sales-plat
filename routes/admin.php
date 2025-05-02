@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserRoleController;
+use App\Http\Controllers\Admin\WarehouseController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -19,6 +20,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Rotas para gestão de clientes
     Route::resource('customers', CustomerController::class);
+
+    // Rotas para gestão de armazéns
+    Route::resource('warehouses', WarehouseController::class);
 
     // Rotas para API de utilizadores (para o formulário de cliente)
     Route::prefix('api')->group(function () {

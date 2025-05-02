@@ -149,28 +149,19 @@ const mainNavItems = [
                     'admin.permissions.show'
                 ]
             },
-            {
-                title: 'Clientes',
-                href: '/admin/customers',
-                icon: User,
-                activeRoutes: [
-                    'admin.customers.index',
-                    'admin.customers.create',
-                    'admin.customers.edit',
-                    'admin.customers.show'
-                ]
-            },
-            {
-                title: 'Funcionários',
-                href: '/admin/employees',
-                icon: UserCircle,
-                activeRoutes: [
-                    'admin.employees.index',
-                    'admin.employees.create',
-                    'admin.employees.edit',
-                    'admin.employees.show'
-                ]
-            },
+            // {
+            //     title: 'Funcionários',
+            //     href: '/admin/employees',
+            //     icon: UserCircle,
+            //     activeRoutes: [
+            //         'admin.employees.index',
+            //         'admin.employees.create',
+            //         'admin.employees.edit',
+            //         'admin.employees.show'
+            //     ]
+            // },
+
+
             {
                 title: 'Armazéns',
                 href: '/admin/warehouses',
@@ -204,17 +195,28 @@ const mainNavItems = [
                     'admin.carriers.show'
                 ]
             },
+            // {
+            //     title: 'Parceiros',
+            //     href: '/admin/partners',
+            //     icon: Store,
+            //     activeRoutes: [
+            //         'admin.partners.index',
+            //         'admin.partners.create',
+            //         'admin.partners.edit',
+            //         'admin.partners.show'
+            //     ]
+            // },
             {
-                title: 'Parceiros',
-                href: '/admin/partners',
-                icon: Store,
+                title: 'Clientes',
+                href: '/admin/customers',
+                icon: User,
                 activeRoutes: [
-                    'admin.partners.index',
-                    'admin.partners.create',
-                    'admin.partners.edit',
-                    'admin.partners.show'
+                    'admin.customers.index',
+                    'admin.customers.create',
+                    'admin.customers.edit',
+                    'admin.customers.show'
                 ]
-            }
+            },
         ]
     },
     {

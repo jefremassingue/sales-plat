@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Jefre\SpatiePermissionGenerate\SpatiePermissionGenerate;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class UserSeeder extends Seeder
 {
@@ -18,6 +21,14 @@ class UserSeeder extends Seeder
         // Admin users
         $role = Role::create(['name' => 'Admin']);
 
+        Permission::all()->each(function ($permission) {
+            // Substituir apenas o último hífen por um ponto
+            $lastHyphenPos = strrpos($permission->name, '-');
+            if ($lastHyphenPos !== false) {
+            $permission->name = substr_replace($permission->name, '.', $lastHyphenPos, 1);
+            }
+            $permission->save();
+        });
         $permissions = Permission::pluck('id', 'id')->all();
 
         $role->syncPermissions($permissions);
@@ -49,8 +60,8 @@ class UserSeeder extends Seeder
 
         // $permissions = Permission::where('name', 'like', 'console-%')->pluck('id', 'id')->all();
 
-        $role1->syncPermissions($permissions);
-        $role->syncPermissions($permissions);
+        // $role1->syncPermissions($permissions);
+        // $role->syncPermissions($permissions);
 
         $user =  User::create([
             'name' => 'Publisher',
@@ -59,11 +70,5 @@ class UserSeeder extends Seeder
         ]);
         $user->assignRole($role->name);
 
-    }
-        // Criação de usuários padrão
-        \App\Models\User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@matonyservicos.com',
-        ]);
     }
 }

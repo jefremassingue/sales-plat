@@ -451,42 +451,51 @@ export default function Index({ customers, filters = {} }: Props) {
                                             {customers.data.length > 0 ? (
                                                 customers.data.map((customer) => (
                                                     <TableRow key={customer.id}>
-                                                        <TableCell>
+                                                        <TableCell className="w-[50px]">
                                                             <Checkbox
                                                                 checked={selectedCustomers.includes(customer.id)}
                                                                 onCheckedChange={() => handleSelect(customer.id)}
                                                             />
                                                         </TableCell>
-                                                        <TableCell className="font-medium">
-                                                            <div className="flex items-center space-x-2">
-                                                                {customer.client_type === 'company' ? (
-                                                                    <Building size={16} className="shrink-0" />
-                                                                ) : (
-                                                                    <Contact size={16} className="shrink-0" />
+                                                        <TableCell>
+                                                            <div className="font-medium">
+                                                                {customer.name}
+                                                                {customer.company_name && (
+                                                                    <span className="text-muted-foreground block text-xs">
+                                                                        {customer.company_name}
+                                                                    </span>
                                                                 )}
-                                                                <span>{customer.name}</span>
                                                             </div>
-                                                            {customer.company_name && (
-                                                                <div className="text-muted-foreground text-sm">{customer.company_name}</div>
-                                                            )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {customer.client_type === 'company' ? 'Empresa' : 'Particular'}
-                                                            {customer.tax_id && (
-                                                                <div className="text-muted-foreground text-xs">NUIT: {customer.tax_id}</div>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {customer.email && <div className="max-w-[150px] truncate">{customer.email}</div>}
-                                                            {customer.phone && <div>{customer.phone}</div>}
-                                                            {customer.mobile && <div>{customer.mobile}</div>}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {customer.city && (
-                                                                <div className="max-w-[150px] truncate">
-                                                                    {customer.city}
-                                                                    {customer.province ? `, ${customer.province}` : ''}
+                                                            {customer.client_type === 'company' ? (
+                                                                <div className="flex items-center">
+                                                                    <Building className="mr-1 h-4 w-4" />
+                                                                    <span>Empresa</span>
                                                                 </div>
+                                                            ) : (
+                                                                <div className="flex items-center">
+                                                                    <Contact className="mr-1 h-4 w-4" />
+                                                                    <span>Particular</span>
+                                                                </div>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {customer.email && <div className="text-xs">{customer.email}</div>}
+                                                            {customer.phone && <div className="text-xs">Tel: {customer.phone}</div>}
+                                                            {customer.mobile && <div className="text-xs">Mob: {customer.mobile}</div>}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            {customer.address ? (
+                                                                <div className="text-xs">
+                                                                    <div>{customer.address}</div>
+                                                                    <div>
+                                                                        {customer.city}
+                                                                        {customer.province ? `, ${customer.province}` : ''}
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-muted-foreground text-xs">Sem morada</span>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
@@ -496,46 +505,35 @@ export default function Index({ customers, filters = {} }: Props) {
                                                         </TableCell>
                                                         <TableCell>
                                                             {customer.user ? (
-                                                                <div className="text-sm">
-                                                                    <div>{customer.user.name}</div>
-                                                                    <div className="text-muted-foreground max-w-[150px] truncate text-xs">
-                                                                        {customer.user.email}
-                                                                    </div>
+                                                                <div className="text-xs">
+                                                                    <div className="font-medium">{customer.user.name}</div>
+                                                                    <div className="text-muted-foreground">{customer.user.email}</div>
                                                                 </div>
                                                             ) : (
-                                                                <span className="text-muted-foreground text-xs">Sem acesso</span>
+                                                                <span className="text-muted-foreground text-xs">Não associado</span>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" size="icon">
-                                                                        <MoreHorizontal className="h-4 w-4" />
-                                                                        <span className="sr-only">Abrir Menu</span>
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end">
-                                                                    <DropdownMenuItem asChild>
-                                                                        <Link href={`/admin/customers/${customer.id}`}>
-                                                                            <Eye className="mr-2 h-4 w-4" />
-                                                                            <span>Ver Detalhes</span>
-                                                                        </Link>
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem asChild>
-                                                                        <Link href={`/admin/customers/${customer.id}/edit`}>
-                                                                            <Edit className="mr-2 h-4 w-4" />
-                                                                            <span>Editar</span>
-                                                                        </Link>
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        onClick={() => handleDeleteClick(customer.id)}
-                                                                        className="text-destructive focus:text-destructive"
-                                                                    >
-                                                                        <Trash className="mr-2 h-4 w-4" />
-                                                                        <span>Eliminar</span>
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
+                                                            <div className="flex items-center gap-2">
+                                                                <Button variant="ghost" size="icon" asChild>
+                                                                    <Link href={`/admin/customers/${customer.id}`}>
+                                                                        <Eye className="h-4 w-4" />
+                                                                    </Link>
+                                                                </Button>
+                                                                <Button variant="ghost" size="icon" asChild>
+                                                                    <Link href={`/admin/customers/${customer.id}/edit`}>
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Link>
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => handleDeleteClick(customer.id)}
+                                                                    className="text-destructive hover:text-destructive"
+                                                                >
+                                                                    <Trash className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
                                                         </TableCell>
                                                     </TableRow>
                                                 ))
