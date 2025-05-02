@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DeleteAlert } from '@/components/delete-alert';
@@ -11,7 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronDown, ChevronRight, GridIcon, ListIcon, MoreHorizontal, Plus, Trash, Edit, Eye, ListTree } from 'lucide-react';
+import { ChevronDown, ChevronRight, GridIcon, ListIcon, MoreHorizontal, Plus, Trash, Edit, Eye, ListTree, Filter } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface Category {
@@ -42,6 +44,10 @@ interface Props {
         };
     };
     allCategories: Category[];
+    filters?: {
+        search?: string | null;
+        active?: string | null;
+    };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -55,13 +61,17 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Index({ categories, allCategories }: Props) {
+export default function Index({ categories, allCategories, filters = {} }: Props) {
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
     const [viewTab, setViewTab] = useState<string>("table");
     const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
     const [bulkDeleteAlertOpen, setBulkDeleteAlertOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(filters.search || '');
+    const [activeFilter, setActiveFilter] = useState(filters.active || '');
+    const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+
     const { toast } = useToast();
     const { flash } = usePage().props as any;
 
@@ -130,6 +140,48 @@ export default function Index({ categories, allCategories }: Props) {
 
     const isExpanded = (categoryId: number) => {
         return expandedCategories.includes(categoryId);
+    };
+
+    // Função de debounce para pesquisa
+    const debouncedSearch = (value: string) => {
+        // Limpa o timeout anterior se existir
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        // Define o valor da pesquisa imediatamente para atualizar a UI
+        setSearchQuery(value);
+
+        // Cria um novo timeout para enviar a pesquisa após 500ms
+        const timeout = setTimeout(() => {
+            applyFilters(value, activeFilter);
+        }, 500);
+
+        setSearchTimeout(timeout);
+    };
+
+    // Limpar o timeout quando o componente for desmontado
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+        };
+    }, [searchTimeout]);
+
+    // Aplicar filtros
+    const applyFilters = (search = searchQuery, active = activeFilter) => {
+        router.get(
+            '/admin/categories',
+            {
+                search: search || null,
+                active: active || null,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     // Função para renderizar a tabela de categorias (incluindo subcategorias aninhadas)
@@ -329,7 +381,41 @@ export default function Index({ categories, allCategories }: Props) {
                                     </Tabs>
                                 </div>
                             </div>
+
+                            {/* Área de filtros */}
+                            <div className="mt-4 grid gap-4 md:grid-cols-3">
+                                <div className="md:col-span-2">
+                                    <Input
+                                        placeholder="Pesquisar por nome, slug ou descrição"
+                                        value={searchQuery}
+                                        onChange={(e) => debouncedSearch(e.target.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+                                <div>
+                                    <Select value={activeFilter} onValueChange={(value) => {
+                                        setActiveFilter(value);
+                                        applyFilters(searchQuery, value);
+                                    }}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Filtrar por estado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {/* <SelectItem value="">Todos os estados</SelectItem> */}
+                                            <SelectItem value="true">Activos</SelectItem>
+                                            <SelectItem value="false">Inactivos</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex justify-end md:col-span-3">
+                                    <Button onClick={() => applyFilters()} className="w-full md:w-auto">
+                                        <Filter className="mr-2 h-4 w-4" />
+                                        Aplicar Filtros
+                                    </Button>
+                                </div>
+                            </div>
                         </CardHeader>
+
                         <CardContent>
                             <Tabs value={viewTab} className="w-full">
                                 <TabsContent value="table" className="mt-0">

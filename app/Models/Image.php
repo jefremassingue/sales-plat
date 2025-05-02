@@ -11,6 +11,8 @@ class Image extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     public $fillable = [
         'typeable_id',
         'typeable_type',
@@ -21,9 +23,17 @@ class Image extends Model
         'size',
         'extension',
         'parent_id',
-        'version'
+        'version',
+        'is_main',
     ];
 
+    protected $hidden = ['typeable_type', 'storage', 'typeable_id', 'path'];
+    public $appends = ['url'];
+
+    public function getUrlAttribute()
+    {
+        return url('storage/' . $this->path);
+    }
     public function typeable()
     {
         return $this->morphTo('typeable');
@@ -42,35 +52,37 @@ class Image extends Model
     {
         parent::boot();
 
-        static::creating(function ($image) {
+        static::created(function ($image) {
             $image->resize();
         });
 
-        static::updating(function ($image) {
-            $image->resize();
-        });
+        // static::updating(function ($image) {
+        //     $image->resize();
+        // });
     }
 
     public function resize()
     {
-        $dimensions = [
-            ['width' => 320, 'height' => 320, 'height2' => 240, 'prefix' => 'sm'],
-            ['width' => 640, 'height' => 640, 'height2' => 480, 'prefix' => 'md'],
-            ['width' => 960, 'height' => 960, 'height2' => 720, 'prefix' => 'lg'],
-            ['width' => 1280, 'height' => 1280,  'height2' => 960, 'prefix' => 'xl'],
-            // ['width' => 1920, 'height' => 1920,  'height2' => 1440, 'prefix' => 'xxl'],
-        ];
-
-        foreach ($dimensions as $dimension) {
-            $data = [
-                'path' => $this->path,
-                'file' => $this->name,
-                'width' => $dimension['width'],
-                'height' => $dimension['height'],
-                'prefix' => $dimension['prefix'],
+        if ($this->version == 'original') {
+            $dimensions = [
+                ['width' => 320, 'height' => 320, 'height2' => 240, 'prefix' => 'sm'],
+                ['width' => 640, 'height' => 640, 'height2' => 480, 'prefix' => 'md'],
+                ['width' => 960, 'height' => 960, 'height2' => 720, 'prefix' => 'lg'],
+                ['width' => 1280, 'height' => 1280,  'height2' => 960, 'prefix' => 'xl'],
+                // ['width' => 1920, 'height' => 1920,  'height2' => 1440, 'prefix' => 'xxl'],
             ];
 
-            ResizeImageJob::dispatch($this->id, $data);
+            foreach ($dimensions as $dimension) {
+                $data = [
+                    'storage' => $this->storage,
+                    'path' => $this->path,
+                    'file' => $this->name,
+                    'width' => $dimension['width'],
+                    'height' => $dimension['height'],
+                    'prefix' => $dimension['prefix'],
+                ];
+                ResizeImageJob::dispatch($this->id, $data)->delay(now()->addSeconds(15));
+            }
         }
     }
 }

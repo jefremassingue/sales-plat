@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('original_name')->nullable();
             $table->string('size')->nullable();
             $table->string('extension')->nullable();
+            $table->boolean('is_main')->default(false);
 
             $table->foreignId('parent_id')->nullable();
             $table->string('version')->default('original');

@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Imagick\Driver;
@@ -50,7 +51,7 @@ class ResizeImageJob implements ShouldQueue
     {
         try {
             $manager = new ImageManager(new Driver());
-            $image = $manager->read(Storage::disk(config('filesystems.default_public_files_storage'))->get($this->data['path'] . '/' . $this->data['file']));
+            $image = $manager->read(Storage::disk($this->data['storage'])->get($this->data['path']));
 
             $originalWidth = $image->width();
             $originalHeight = $image->height();
@@ -63,23 +64,23 @@ class ResizeImageJob implements ShouldQueue
                 );
 
                 $new_path =
-                    $this->data['path'] .
-                    '/' .
-                    $this->data['prefix'] .
-                    '-' .
-                    $this->data['file'];
+                   str_replace($this->data['file'],  $this->data['prefix'] .
+                   '-' .
+                   $this->data['file'], $this->data['path']
+                    )
+                   ;
                 ;
 
-                Storage::disk(config('filesystems.default_public_files_storage'))->put($new_path, $image->toJpeg()->__toString());
+                Storage::disk($this->data['storage'])->put($new_path, $image->toJpeg()->__toString());
 
                 $image = new Image();
 
                 $image->parent_id = $this->imageId;
-                $image->storage = config('filesystems.default_public_files_storage');
-                $image->path = $this->data['path'];
+                $image->storage = $this->data['storage'];
+                $image->path = $new_path;
                 $image->name = $this->data['prefix'] . '-' . $this->data['file'];
                 $image->original_name = $this->data['file'];
-                $image->size = Storage::disk(config('filesystems.default_public_files_storage'))->size($new_path);
+                $image->size = Storage::disk($this->data['storage'])->size($new_path);
                 $image->extension = pathinfo($this->data['file'], PATHINFO_EXTENSION);
                 $image->version = $this->data['prefix'];
                 $image->typeable_id = $this->imageId;

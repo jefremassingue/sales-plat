@@ -4,32 +4,247 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, ListTree } from 'lucide-react';
+import {
+    BookOpen, Folder, LayoutGrid, ListTree, Tag, ShoppingCart,
+    Users, Package, BarChart, Settings, ClipboardList,
+    Building, Truck, User, UserCircle, Store, FileText,
+    ShoppingBag, FileCheck, CreditCard, Warehouse,
+    UserCog, Receipt, Calculator
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
-const mainNavItems: NavItem[] = [
+const mainNavItems = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
+        items: [
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+                activeRoutes: ['dashboard']
+            }
+        ]
     },
     {
-        title: 'Categorias',
-        href: '/admin/categories',
-        icon: ListTree,
+        group: 'Produtos',
+        items: [
+            {
+                title: 'Categorias',
+                href: '/admin/categories',
+                icon: ListTree,
+                activeRoutes: [
+                    'admin.categories.index',
+                    'admin.categories.create',
+                    'admin.categories.edit',
+                    'admin.categories.show'
+                ]
+            },
+            {
+                title: 'Produtos',
+                href: '/admin/products',
+                icon: Tag,
+                activeRoutes: [
+                    'admin.products.index',
+                    'admin.products.create',
+                    'admin.products.edit',
+                    'admin.products.show'
+                ]
+            },
+            {
+                title: 'Inventário',
+                href: '/admin/inventory',
+                icon: Package,
+                activeRoutes: [
+                    'admin.inventory.index',
+                    'admin.inventory.create',
+                    'admin.inventory.edit',
+                    'admin.inventory.show'
+                ]
+            },
+        ]
     },
+    {
+        group: 'Vendas',
+        items: [
+            {
+                title: "Encomendas (Online)",
+                href: '/admin/orders',
+                icon: ShoppingBag,
+                activeRoutes: [
+                    'admin.orders.index',
+                    'admin.orders.create',
+                    'admin.orders.edit',
+                    'admin.orders.show'
+                ]
+            },
+            {
+                title: 'Cotações',
+                href: '/admin/quotations',
+                icon: Calculator,
+                activeRoutes: [
+                    'admin.quotations.index',
+                    'admin.quotations.create',
+                    'admin.quotations.edit',
+                    'admin.quotations.show'
+                ]
+            },
+            {
+                title: 'Vendas',
+                href: '/admin/sales',
+                icon: ShoppingCart,
+                activeRoutes: [
+                    'admin.sales.index',
+                    'admin.sales.create',
+                    'admin.sales.edit',
+                    'admin.sales.show'
+                ]
+            },
+
+            {
+                title: 'Devoluções',
+                href: '/admin/returns',
+                icon: FileCheck,
+                activeRoutes: [
+                    'admin.returns.index',
+                    'admin.returns.create',
+                    'admin.returns.edit',
+                    'admin.returns.show'
+                ]
+            },
+
+        ]
+    },
+    {
+        group: 'Entidades',
+        items: [
+            {
+                title: 'Utilizadores',
+                href: '/admin/users',
+                icon: UserCog,
+                activeRoutes: [
+                    'admin.users.index',
+                    'admin.users.create',
+                    'admin.users.edit',
+                    'admin.users.show'
+                ]
+            },
+            {
+                title: 'Grupos',
+                href: '/admin/groups',
+                icon: Users,
+                activeRoutes: [
+                    'admin.groups.index',
+                    'admin.groups.create',
+                    'admin.groups.edit',
+                    'admin.groups.show'
+                ]
+            },
+            {
+                title: 'Clientes',
+                href: '/admin/customers',
+                icon: User,
+                activeRoutes: [
+                    'admin.customers.index',
+                    'admin.customers.create',
+                    'admin.customers.edit',
+                    'admin.customers.show'
+                ]
+            },
+            {
+                title: 'Funcionários',
+                href: '/admin/employees',
+                icon: UserCircle,
+                activeRoutes: [
+                    'admin.employees.index',
+                    'admin.employees.create',
+                    'admin.employees.edit',
+                    'admin.employees.show'
+                ]
+            },
+            {
+                title: 'Armazéns',
+                href: '/admin/warehouses',
+                icon: Warehouse,
+                activeRoutes: [
+                    'admin.warehouses.index',
+                    'admin.warehouses.create',
+                    'admin.warehouses.edit',
+                    'admin.warehouses.show'
+                ]
+            },
+            {
+                title: 'Fornecedores',
+                href: '/admin/suppliers',
+                icon: Building,
+                activeRoutes: [
+                    'admin.suppliers.index',
+                    'admin.suppliers.create',
+                    'admin.suppliers.edit',
+                    'admin.suppliers.show'
+                ]
+            },
+            {
+                title: 'Transportadoras',
+                href: '/admin/carriers',
+                icon: Truck,
+                activeRoutes: [
+                    'admin.carriers.index',
+                    'admin.carriers.create',
+                    'admin.carriers.edit',
+                    'admin.carriers.show'
+                ]
+            },
+            {
+                title: 'Parceiros',
+                href: '/admin/partners',
+                icon: Store,
+                activeRoutes: [
+                    'admin.partners.index',
+                    'admin.partners.create',
+                    'admin.partners.edit',
+                    'admin.partners.show'
+                ]
+            }
+        ]
+    },
+    {
+        group: 'Gestão',
+        items: [
+            // {
+            //     title: 'Configurações',
+            //     href: '/admin/settings',
+            //     icon: Settings,
+            //     activeRoutes: [
+            //         'admin.settings.index',
+            //         'admin.settings.create',
+            //         'admin.settings.edit',
+            //         'admin.settings.show'
+            //     ]
+            // },
+            {
+                title: 'Relatórios',
+                href: '/admin/reports',
+                icon: BarChart,
+                activeRoutes: [
+                    'admin.reports.index',
+                    'admin.reports.create',
+                    'admin.reports.edit',
+                    'admin.reports.show'
+                ]
+            },
+        ]
+    }
 ];
 
 const footerNavItems: NavItem[] = [
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/react-starter-kit',
+    //     icon: Folder,
+    // },
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
+        title: 'PDV',
         href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        icon: ShoppingCart
     },
 ];
 

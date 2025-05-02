@@ -70,15 +70,15 @@ const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HT
         {...props}
         ref={ref}
         className={`flex h-8 w-8 items-center justify-center rounded transition-colors duration-200 ${
-            active ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100'
-        } focus:ring-1 focus:ring-zinc-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${className || ''} `}
+            active ? 'bg-gray-300 text-gray-800 dark:bg-zinc-600 dark:text-white' : 'bg-white text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600 dark:hover:text-white'
+        } focus:ring-1 focus:ring-gray-400 dark:focus:ring-zinc-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${className || ''} `}
     />
 ));
 
-const Divider = () => <div className="mx-1 h-5 w-px bg-zinc-700" />;
+const Divider = () => <div className="mx-1 h-5 w-px bg-gray-300 dark:bg-zinc-600" />;
 
 const Toolbar = ({ children }: { children: React.ReactNode }) => {
-    return <div className="flex items-center gap-1 rounded-t border-b border-zinc-700 bg-zinc-800 p-2">{children}</div>;
+    return <div className="flex items-center gap-1 rounded-t border-b border-gray-300 bg-white p-2 dark:border-zinc-600 dark:bg-zinc-800">{children}</div>;
 };
 
 // Componente de formatação
@@ -320,49 +320,49 @@ const Element = ({ attributes, children, element }: any) => {
     switch (element.type) {
         case 'block-quote':
             return (
-                <blockquote {...attributes} className="my-2 border-l-4 border-zinc-500 py-1 pl-4 text-zinc-300 italic" style={style}>
+                <blockquote {...attributes} className="my-2 border-l-4 border-gray-400 py-1 pl-4 text-gray-700 italic dark:border-zinc-400 dark:text-white" style={style}>
                     {children}
                 </blockquote>
             );
         case 'bulleted-list':
             return (
-                <ul {...attributes} className="my-2 list-disc pl-10 text-zinc-200" style={style}>
+                <ul {...attributes} className="my-2 list-disc pl-10 text-gray-800 dark:text-white" style={style}>
                     {children}
                 </ul>
             );
         case 'heading-one':
             return (
-                <h1 {...attributes} className="my-4 text-3xl font-bold text-zinc-100" style={style}>
+                <h1 {...attributes} className="my-4 text-3xl font-bold text-gray-900 dark:text-white" style={style}>
                     {children}
                 </h1>
             );
         case 'heading-two':
             return (
-                <h2 {...attributes} className="my-3 text-2xl font-bold text-zinc-100" style={style}>
+                <h2 {...attributes} className="my-3 text-2xl font-bold text-gray-900 dark:text-white" style={style}>
                     {children}
                 </h2>
             );
         case 'list-item':
             return (
-                <li {...attributes} className="my-1 text-zinc-200" style={style}>
+                <li {...attributes} className="my-1 text-gray-800 dark:text-white" style={style}>
                     {children}
                 </li>
             );
         case 'numbered-list':
             return (
-                <ol {...attributes} className="my-2 list-decimal pl-10 text-zinc-200" style={style}>
+                <ol {...attributes} className="my-2 list-decimal pl-10 text-gray-800 dark:text-white" style={style}>
                     {children}
                 </ol>
             );
         case 'link':
             return (
-                <a {...attributes} href={element.url} className="text-blue-400 underline hover:text-blue-300" style={style}>
+                <a {...attributes} href={element.url} className="text-blue-600 underline hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200" style={style}>
                     {children}
                 </a>
             );
         default:
             return (
-                <p {...attributes} className="my-2 text-zinc-200" style={style}>
+                <p {...attributes} className="my-2 text-gray-800 dark:text-white" style={style}>
                     {children}
                 </p>
             );
@@ -384,7 +384,7 @@ const Leaf = ({ attributes, children, leaf }: any) => {
     }
 
     if (leaf.code) {
-        children = <code className="rounded bg-zinc-700 px-1 font-mono">{children}</code>;
+        children = <code className="rounded bg-gray-200 px-1 font-mono dark:bg-zinc-600">{children}</code>;
     }
 
     return <span {...attributes}>{children}</span>;
@@ -553,7 +553,7 @@ const CharacterCount = ({ editor }: { editor: Editor }) => {
     }, [editor]);
 
     return (
-        <div className="px-2 text-xs text-zinc-500">
+        <div className="px-2 text-xs text-gray-600 dark:text-zinc-300">
             {charCount} {charCount === 1 ? 'caractere' : 'caracteres'}
         </div>
     );
@@ -636,7 +636,7 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
 
         return (
             <div
-                className={`overflow-hidden rounded-md border border-zinc-700 bg-zinc-900 shadow-md focus-within:ring-1 focus-within:ring-zinc-500 ${className} `}
+                className={`overflow-hidden rounded-md border border-gray-300 bg-white shadow-md focus-within:ring-1 focus-within:ring-gray-400 dark:border-zinc-600 dark:bg-zinc-800 dark:focus-within:ring-zinc-400 ${className} `}
             >
                 <Slate editor={editor} onValueChange={handleChange} initialValue={safeValue} onChange={handleChange}>
                     {!disabled && (
@@ -674,7 +674,7 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
                     )}
 
                     <div
-                        className="scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-800 overflow-y-auto bg-zinc-900 p-3"
+                        className="scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 overflow-y-auto bg-white p-3 dark:scrollbar-thumb-zinc-600 dark:scrollbar-track-zinc-700 dark:bg-zinc-800"
                         style={{ height: height ? `${height - 60}px` : '340px' }}
                     >
                         <Editable
@@ -683,13 +683,13 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
                             onKeyDown={handleHotkeys}
                             renderElement={(props) => <Element {...props} />}
                             renderLeaf={(props) => <Leaf {...props} />}
-                            className="min-h-full text-zinc-100 outline-none"
+                            className="min-h-full text-gray-900 outline-none dark:text-white"
                             spellCheck={false}
                         />
                     </div>
 
                     {!disabled && (
-                        <div className="flex h-8 items-center justify-end border-t border-zinc-700 bg-zinc-800 px-2">
+                        <div className="flex h-8 items-center justify-end border-t border-gray-300 bg-gray-100 px-2 dark:border-zinc-600 dark:bg-zinc-800">
                             <CharacterCount editor={editor} />
                         </div>
                     )}
@@ -702,8 +702,8 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
         // Modo de contingência: usar textarea simples quando o editor falha
         try {
             return (
-                <div className="rounded-md border border-zinc-700 bg-zinc-900 p-4">
-                    <p className="mb-2 text-red-400">Ocorreu um erro ao carregar o editor. A utilizar modo básico.</p>
+                <div className="rounded-md border border-gray-300 bg-white p-4 dark:border-zinc-600 dark:bg-zinc-800">
+                    <p className="mb-2 text-red-600 dark:text-red-300">Ocorreu um erro ao carregar o editor. A utilizar modo básico.</p>
                     <textarea
                         value={typeof value === 'string' ? value : ''}
                         onChange={(e) => {
@@ -715,14 +715,14 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
                         }}
                         placeholder={placeholder}
                         disabled={disabled}
-                        className="w-full resize-none rounded border border-zinc-700 bg-zinc-800 p-2 text-zinc-200 focus:ring-1 focus:ring-zinc-500 focus:outline-none"
+                        className="w-full resize-none rounded border border-gray-300 bg-white p-2 text-gray-800 focus:ring-1 focus:ring-gray-400 focus:outline-none dark:border-zinc-600 dark:bg-zinc-700 dark:text-white"
                         style={{ height: `${height}px` }}
                     />
                 </div>
             );
         } catch (fallbackError) {
             console.error('Erro crítico no editor, nem o fallback funcionou:', fallbackError);
-            return <div className="rounded bg-red-900 p-4 text-white">Erro crítico no editor. Por favor, recarregue a página.</div>;
+            return <div className="rounded bg-red-900 p-4 text-white dark:bg-red-800">Erro crítico no editor. Por favor, recarregue a página.</div>;
         }
     }
 };

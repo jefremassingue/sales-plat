@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,23 +16,74 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            // Carregar apenas categorias de nível superior (sem parent_id) com seus filhos imediatos
-            $rootCategories = Category::with(['children' => function ($query) {
+            // Query base para categorias de nível superior
+            $query = Category::query()
+                ->with(['children' => function ($query) use ($request) {
                     $query->orderBy('order');
+
+                    // Se houver filtro de busca ou estado, aplicar também nas subcategorias
+                    if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+                        $search = trim($request->search);
+                        $query->where(function ($q) use ($search) {
+                            $q->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('slug', 'like', '%' . $search . '%')
+                                ->orWhere('description', 'like', '%' . $search . '%');
+                        });
+                    }
+
+                    if ($request->has('active') && $request->active !== null) {
+                        $query->where('active', $request->active === 'true');
+                    }
                 }])
-                ->whereNull('parent_id')
-                ->orderBy('order')
-                ->paginate(10);
+                ->whereNull('parent_id');
+
+            // Filtro de busca para categorias principais
+            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+                $search = trim($request->search);
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('slug', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            }
+
+            // Filtro de estado (ativo/inativo)
+            if ($request->has('active') && $request->active !== null) {
+                $query->where('active', $request->active === 'true');
+            }
+
+            // Ordenação
+            $query->orderBy('order');
+
+            // Paginação e retorno
+            $rootCategories = $query->paginate(10)->withQueryString();
 
             // Carregar todas as categorias para o filtro e outras operações
-            $allCategories = Category::orderBy('order')->get();
+            $allCategoriesQuery = Category::query();
+
+            // Aplicar os mesmos filtros na consulta de todas as categorias
+            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+                $search = trim($request->search);
+                $allCategoriesQuery->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('slug', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            }
+
+            if ($request->has('active') && $request->active !== null) {
+                $allCategoriesQuery->where('active', $request->active === 'true');
+            }
+
+            $allCategories = $allCategoriesQuery->orderBy('order')->get();
 
             return Inertia::render('Admin/Categories/Index', [
                 'categories' => $rootCategories,
                 'allCategories' => $allCategories,
+                'filters' => $request->only(['search', 'active']),
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ocorreu um erro ao carregar as categorias: ' . $e->getMessage());
@@ -41,16 +93,32 @@ class CategoryController extends Controller
     /**
      * Exibe uma visualização em árvore das categorias.
      */
-    public function tree()
+    public function tree(Request $request)
     {
         try {
-            $categories = Category::with('childrenRecursive')
-                ->whereNull('parent_id')
-                ->orderBy('order')
-                ->get();
+            $query = Category::with('childrenRecursive')
+                ->whereNull('parent_id');
+
+            // Filtro de busca
+            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+                $search = trim($request->search);
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('slug', 'like', '%' . $search . '%')
+                        ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            }
+
+            // Filtro de estado (ativo/inativo)
+            if ($request->has('active') && $request->active !== null) {
+                $query->where('active', $request->active === 'true');
+            }
+
+            $categories = $query->orderBy('order')->get();
 
             return Inertia::render('Admin/Categories/Tree', [
-                'categories' => $categories
+                'categories' => $categories,
+                'filters' => $request->only(['search', 'active']),
             ]);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ocorreu um erro ao carregar a árvore de categorias: ' . $e->getMessage());
@@ -63,7 +131,9 @@ class CategoryController extends Controller
     public function create()
     {
         try {
-            $categories = Category::all();
+            $categories = Category::whereNull('parent_id')
+                ->orderBy('order')
+                ->get();
 
             return Inertia::render('Admin/Categories/Create', [
                 'categories' => $categories

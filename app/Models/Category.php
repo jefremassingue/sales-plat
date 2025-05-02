@@ -108,6 +108,13 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id');
     }
+    /**
+     * Obter as categorias filhas.
+     */
+    public function subcategories(): HasMany
+    {
+        return $this->hasMany(Category::class, 'parent_id');
+    }
 
     /**
      * Obter todas as categorias filhas recursivamente.

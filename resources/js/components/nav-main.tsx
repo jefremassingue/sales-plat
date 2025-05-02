@@ -2,26 +2,51 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 
-export function NavMain({ items = [] }: { items: NavItem[] }) {
+interface NavItemExtended extends NavItem {
+    activeRoutes?: string[];
+}
+
+export function NavMain({ items = [] }: { items: any[] }) {
     const page = usePage();
+    const currentUrl = page.url;
+    const currentRoute = page.props.route ? page.props.route : '';
+
+    // Função para verificar se um item deve estar ativo
+    const isItemActive = (item: NavItemExtended) => {
+        // Verificar primeiro se o URL corresponde exatamente
+        if (item.href === currentUrl) return true;
+
+        // Depois verificar se alguma das rotas ativas corresponde à rota atual
+        if (item.activeRoutes && item.activeRoutes.length > 0) {
+            return item.activeRoutes.some(routeName => currentRoute === routeName);
+        }
+
+        return false;
+    };
+
     return (
-        <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
-            <SidebarMenu>
-                {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton  
-                            asChild isActive={item.href === page.url}
-                            tooltip={{ children: item.title }}
-                        >
-                            <Link href={item.href} prefetch>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
-        </SidebarGroup>
+        <>
+            {items.map((section, index) => (
+                <SidebarGroup key={index} className="px-2 py-0">
+                    {section.group && <SidebarGroupLabel>{section.group}</SidebarGroupLabel>}
+                    <SidebarMenu>
+                        {section.items.map((item: NavItemExtended) => (
+                            <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={isItemActive(item)}
+                                    tooltip={{ children: item.title }}
+                                >
+                                    <Link href={item.href} prefetch>
+                                        {item.icon && <item.icon />}
+                                        <span>{item.title}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </SidebarGroup>
+            ))}
+        </>
     );
 }

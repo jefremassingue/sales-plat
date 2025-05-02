@@ -21,6 +21,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Executar o seeder de categorias
-        $this->call(CategorySeeder::class);
+        $this->call([
+            CategorySeeder::class,
+            ProductSeeder::class,
+            UserSeeder::class,
+        ]);
     }
 }

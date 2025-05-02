@@ -15,6 +15,18 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+// Função para formatar o slug
+const formatSlug = (text: string): string => {
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+        .replace(/[^\w\s-]/g, '') // Remove caracteres especiais
+        .replace(/\s+/g, '-') // Substitui espaços por hífens
+        .replace(/-+/g, '-') // Remove hífens duplicados
+        .trim();
+};
+
 interface Category {
     id: number;
     name: string;
@@ -112,6 +124,21 @@ export default function Create({ categories }: Props) {
         }
     }, [errors, form]);
 
+    // Efeito para atualizar automaticamente o slug quando o nome mudar
+    useEffect(() => {
+        const nameValue = form.getValues('name');
+        const slugValue = form.getValues('slug');
+
+        if (nameValue && (!slugValue || slugValue === '')) {
+            form.setValue('slug', formatSlug(nameValue));
+        }
+    }, [form.watch('name')]);
+
+    // Função que gerencia a alteração manual do campo slug
+    const handleSlugChange = (value: string) => {
+        form.setValue('slug', formatSlug(value));
+    };
+
     function onSubmit(values: z.infer<typeof formSchema>) {
         try {
             router.post(
@@ -196,6 +223,7 @@ export default function Create({ categories }: Props) {
                                                         placeholder="slug-da-categoria"
                                                         {...field}
                                                         value={field.value || ''}
+                                                        onChange={(e) => handleSlugChange(e.target.value)}
                                                         className="h-12 text-lg"
                                                     />
                                                 </FormControl>

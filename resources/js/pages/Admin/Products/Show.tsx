@@ -1,32 +1,29 @@
+import { DeleteAlert } from '@/components/delete-alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DeleteAlert } from '@/components/delete-alert';
+import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, Edit, Trash, PackageSearch, Hammer, Certificate, Tag, Palette, Ruler, Scan } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
+import { ArrowLeft, Edit, File, Hammer, PackageSearch, Palette, Ruler, Scan, Tag, Trash } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface Image {
     id: number;
-    path: string;
     name: string;
     original_name: string;
     size: number;
-    extension: string;
     is_main?: boolean;
-    typeable_id?: number;
-    typeable_type?: string;
-    created_at: string;
-    updated_at: string;
+    url: string;
+    versions?: Image[];
+    version: string;
 }
 
 interface Color {
@@ -128,29 +125,26 @@ export default function Show({ product }: Props) {
     const { toast } = useToast();
     const { flash } = usePage().props as any;
 
-    const mainImage = product.images.find(img => img.is_main) || product.images[0];
+    const mainImage = product.images.find((img) => img.is_main) || product.images[0];
 
     // Imagens organizadas: primeiro a principal, depois as restantes
-    const organizedImages = [
-        ...(mainImage ? [mainImage] : []),
-        ...product.images.filter(img => img.id !== (mainImage?.id || 0))
-    ];
+    const organizedImages = [...(mainImage ? [mainImage] : []), ...product.images.filter((img) => img.id !== (mainImage?.id || 0))];
 
     // Mostrar mensagens flash vindas do backend
     useEffect(() => {
         if (flash?.success) {
             toast({
-                title: "Operação bem sucedida",
+                title: 'Operação bem sucedida',
                 description: flash.success,
-                variant: "success",
+                variant: 'success',
             });
         }
 
         if (flash?.error) {
             toast({
-                title: "Erro",
+                title: 'Erro',
                 description: flash.error,
-                variant: "destructive",
+                variant: 'destructive',
             });
         }
     }, [flash, toast]);
@@ -174,7 +168,7 @@ export default function Show({ product }: Props) {
         if (value === null || value === undefined) return 'N/A';
         return new Intl.NumberFormat('pt-MZ', {
             style: 'currency',
-            currency: product.currency || 'MZN'
+            currency: product.currency || 'MZN',
         }).format(value);
     };
 
@@ -203,31 +197,24 @@ export default function Show({ product }: Props) {
                             </Link>
                         </Button>
                         <h1 className="text-2xl font-bold">{product.name}</h1>
-                        <Badge variant={product.active ? "success" : "secondary"}>
-                            {product.active ? 'Activo' : 'Inactivo'}
-                        </Badge>
-                        {product.featured && (
-                            <Badge variant="default">Destaque</Badge>
-                        )}
+                        <Badge variant={product.active ? 'success' : 'secondary'}>{product.active ? 'Activo' : 'Inactivo'}</Badge>
+                        {product.featured && <Badge variant="default">Destaque</Badge>}
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" asChild>
                             <Link href={`/admin/products/${product.id}/edit`}>
-                                <Edit className="h-4 w-4 mr-2" />
+                                <Edit className="mr-2 h-4 w-4" />
                                 Editar
                             </Link>
                         </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => setDeleteAlertOpen(true)}
-                        >
-                            <Trash className="h-4 w-4 mr-2" />
+                        <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)}>
+                            <Trash className="mr-2 h-4 w-4" />
                             Eliminar
                         </Button>
                     </div>
                 </div>
 
-                <div className="grid gap-6 mt-6 lg:grid-cols-3">
+                <div className="mt-6 grid gap-6 lg:grid-cols-3">
                     <div className="lg:col-span-1">
                         <Card className="mb-6">
                             <CardHeader>
@@ -236,11 +223,16 @@ export default function Show({ product }: Props) {
                             <CardContent>
                                 {product.images.length > 0 ? (
                                     <div>
-                                        <div className="aspect-square relative rounded-lg overflow-hidden border mb-4">
+                                        <div className="relative mb-4 aspect-square overflow-hidden rounded-lg border">
                                             <img
-                                                src={`/storage/${organizedImages[activeImageIndex]?.path}`}
+                                                src={
+                                                    organizedImages[activeImageIndex]?.versions?.find((image) => image.version == 'md')?.url ||
+                                                    organizedImages[activeImageIndex]?.versions?.find((image) => image.version == 'lg')?.url ||
+                                                    organizedImages[activeImageIndex]?.versions?.find((image) => image.version == 'xl')?.url ||
+                                                    organizedImages[activeImageIndex]?.url
+                                                }
                                                 alt={product.name}
-                                                className="w-full h-full object-contain"
+                                                className="h-full w-full object-contain"
                                             />
                                             {organizedImages[activeImageIndex]?.is_main && (
                                                 <Badge variant="default" className="absolute top-2 right-2">
@@ -255,15 +247,21 @@ export default function Show({ product }: Props) {
                                                     <div
                                                         key={image.id}
                                                         className={cn(
-                                                            "cursor-pointer border rounded-md overflow-hidden aspect-square",
-                                                            activeImageIndex === index && "ring-2 ring-primary"
+                                                            'aspect-square cursor-pointer overflow-hidden rounded-md border',
+                                                            activeImageIndex === index && 'ring-primary ring-2',
                                                         )}
                                                         onClick={() => setActiveImageIndex(index)}
                                                     >
                                                         <img
-                                                            src={`/storage/${image.path}`}
+                                                            src={
+                                                                image.versions?.find((_image) => _image.version == 'sm')?.url ||
+                                                                image.versions?.find((_image) => _image.version == 'md')?.url ||
+                                                                image.versions?.find((_image) => _image.version == 'lg')?.url ||
+                                                                image.versions?.find((_image) => _image.version == 'xl')?.url ||
+                                                                image?.url
+                                                            }
                                                             alt={`${product.name} - Imagem ${index + 1}`}
-                                                            className="w-full h-full object-cover"
+                                                            className="h-full w-full object-cover"
                                                         />
                                                     </div>
                                                 ))}
@@ -271,8 +269,8 @@ export default function Show({ product }: Props) {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center text-center p-6 border border-dashed rounded-lg">
-                                        <PackageSearch className="h-10 w-10 text-gray-400 mb-2" />
+                                    <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-6 text-center">
+                                        <PackageSearch className="mb-2 h-10 w-10 text-gray-400" />
                                         <p>Sem imagens disponíveis</p>
                                     </div>
                                 )}
@@ -285,42 +283,42 @@ export default function Show({ product }: Props) {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Preço</h3>
+                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Preço</h3>
                                     <p className="text-xl font-bold">{formatCurrency(product.price)}</p>
                                 </div>
                                 {product.cost !== null && (
                                     <div>
-                                        <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Custo</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Custo</h3>
                                         <p>{formatCurrency(product.cost)}</p>
                                     </div>
                                 )}
                                 <div>
-                                    <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Categoria</h3>
+                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Categoria</h3>
                                     <p>{product.category.name}</p>
                                 </div>
                                 <div>
-                                    <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Estado</h3>
-                                    <Badge variant={product.active ? "success" : "secondary"}>
-                                        {product.active ? 'Activo' : 'Inactivo'}
-                                    </Badge>
+                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Estado</h3>
+                                    <Badge variant={product.active ? 'success' : 'secondary'}>{product.active ? 'Activo' : 'Inactivo'}</Badge>
                                     {product.featured && (
-                                        <Badge variant="default" className="ml-2">Destaque</Badge>
+                                        <Badge variant="default" className="ml-2">
+                                            Destaque
+                                        </Badge>
                                     )}
                                 </div>
                                 <div>
-                                    <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Stock</h3>
+                                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Stock</h3>
                                     <p>{product.stock > 0 ? product.stock : <span className="text-red-500">Sem stock</span>}</p>
                                 </div>
                                 {product.sku && (
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">SKU</h3>
-                                        <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md text-sm">{product.sku}</code>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">SKU</h3>
+                                        <code className="rounded-md bg-gray-100 px-2 py-1 text-sm dark:bg-gray-800">{product.sku}</code>
                                     </div>
                                 )}
                                 {product.barcode && (
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Código de Barras</h3>
-                                        <code className="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md text-sm font-mono">{product.barcode}</code>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Código de Barras</h3>
+                                        <code className="rounded-md bg-gray-100 px-2 py-1 font-mono text-sm dark:bg-gray-800">{product.barcode}</code>
                                     </div>
                                 )}
 
@@ -328,37 +326,37 @@ export default function Show({ product }: Props) {
 
                                 {product.brand && (
                                     <div>
-                                        <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Marca</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Marca</h3>
                                         <p>{product.brand}</p>
                                     </div>
                                 )}
                                 {product.certification && (
                                     <div className="flex items-center gap-2">
-                                        <Certificate className="h-4 w-4 text-primary" />
+                                        <File className="text-primary h-4 w-4" />
                                         <div>
-                                            <h3 className="font-medium text-sm">Certificação</h3>
+                                            <h3 className="text-sm font-medium">Certificação</h3>
                                             <p className="text-sm">{product.certification}</p>
                                         </div>
                                     </div>
                                 )}
                                 {product.warranty && (
                                     <div className="flex items-center gap-2">
-                                        <Hammer className="h-4 w-4 text-primary" />
+                                        <Hammer className="text-primary h-4 w-4" />
                                         <div>
-                                            <h3 className="font-medium text-sm">Garantia</h3>
+                                            <h3 className="text-sm font-medium">Garantia</h3>
                                             <p className="text-sm">{product.warranty}</p>
                                         </div>
                                     </div>
                                 )}
                                 {product.weight && (
                                     <div className="flex items-center gap-2">
-                                        <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Peso</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Peso</h3>
                                         <p>{product.weight} kg</p>
                                     </div>
                                 )}
                                 {product.origin_country && (
                                     <div>
-                                        <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">País de Origem</h3>
+                                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">País de Origem</h3>
                                         <p>{product.origin_country}</p>
                                     </div>
                                 )}
@@ -375,18 +373,15 @@ export default function Show({ product }: Props) {
                                 <Tabs defaultValue="description">
                                     <TabsList className="mb-4">
                                         <TabsTrigger value="description">Descrição</TabsTrigger>
-                                        {product.technical_details && (
-                                            <TabsTrigger value="technical">Detalhes Técnicos</TabsTrigger>
-                                        )}
-                                        {product.features && (
-                                            <TabsTrigger value="features">Características</TabsTrigger>
-                                        )}
+                                        {product.technical_details && <TabsTrigger value="technical">Detalhes Técnicos</TabsTrigger>}
+                                        {product.features && <TabsTrigger value="features">Características</TabsTrigger>}
                                     </TabsList>
 
                                     <TabsContent value="description">
                                         {product.description ? (
-                                            <div className="prose prose-sm dark:prose-invert max-w-none"
-                                                 dangerouslySetInnerHTML={{ __html: product.description }}
+                                            <div
+                                                className="prose prose-sm dark:prose-invert max-w-none"
+                                                dangerouslySetInnerHTML={{ __html: product.description }}
                                             />
                                         ) : (
                                             <p className="text-gray-500 dark:text-gray-400">Sem descrição disponível</p>
@@ -395,16 +390,18 @@ export default function Show({ product }: Props) {
 
                                     {product.technical_details && (
                                         <TabsContent value="technical">
-                                            <div className="prose prose-sm dark:prose-invert max-w-none"
-                                                 dangerouslySetInnerHTML={{ __html: product.technical_details }}
+                                            <div
+                                                className="prose prose-sm dark:prose-invert max-w-none"
+                                                dangerouslySetInnerHTML={{ __html: product.technical_details }}
                                             />
                                         </TabsContent>
                                     )}
 
                                     {product.features && (
                                         <TabsContent value="features">
-                                            <div className="prose prose-sm dark:prose-invert max-w-none"
-                                                 dangerouslySetInnerHTML={{ __html: product.features }}
+                                            <div
+                                                className="prose prose-sm dark:prose-invert max-w-none"
+                                                dangerouslySetInnerHTML={{ __html: product.features }}
                                             />
                                         </TabsContent>
                                     )}
@@ -416,19 +413,17 @@ export default function Show({ product }: Props) {
                             <Card className="mb-6">
                                 <CardHeader>
                                     <CardTitle className="flex items-center">
-                                        <Tag className="h-5 w-5 mr-2" />
+                                        <Tag className="mr-2 h-5 w-5" />
                                         Atributos do Produto
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         {product.attributes.map((attribute) => (
-                                            <div key={attribute.id} className="border rounded-md p-3">
-                                                <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">{attribute.name}</h3>
+                                            <div key={attribute.id} className="rounded-md border p-3">
+                                                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{attribute.name}</h3>
                                                 <p>{attribute.value}</p>
-                                                {attribute.description && (
-                                                    <p className="text-xs text-gray-500 mt-1">{attribute.description}</p>
-                                                )}
+                                                {attribute.description && <p className="mt-1 text-xs text-gray-500">{attribute.description}</p>}
                                             </div>
                                         ))}
                                     </div>
@@ -436,29 +431,28 @@ export default function Show({ product }: Props) {
                             </Card>
                         )}
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                             {product.colors.length > 0 && (
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <Palette className="h-5 w-5 mr-2" />
+                                            <Palette className="mr-2 h-5 w-5" />
                                             Cores Disponíveis
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="grid grid-cols-2 gap-2">
                                             {product.colors.map((color) => (
-                                                <div key={color.id} className="flex items-center gap-2 p-2 border rounded-md">
+                                                <div key={color.id} className="flex items-center gap-2 rounded-md border p-2">
                                                     {color.hex_code && (
-                                                        <div
-                                                            className="w-6 h-6 rounded-full border"
-                                                            style={{ backgroundColor: color.hex_code }}
-                                                        />
+                                                        <div className="h-6 w-6 rounded-full border" style={{ backgroundColor: color.hex_code }} />
                                                     )}
                                                     <div>
                                                         <p className="font-medium">{color.name}</p>
                                                         {!color.active && (
-                                                            <Badge variant="secondary" className="mt-1">Inactivo</Badge>
+                                                            <Badge variant="secondary" className="mt-1">
+                                                                Inactivo
+                                                            </Badge>
                                                         )}
                                                     </div>
                                                 </div>
@@ -472,26 +466,22 @@ export default function Show({ product }: Props) {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <Ruler className="h-5 w-5 mr-2" />
+                                            <Ruler className="mr-2 h-5 w-5" />
                                             Tamanhos Disponíveis
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
                                         <div className="grid grid-cols-2 gap-2">
                                             {product.sizes.map((size) => (
-                                                <div key={size.id} className="p-2 border rounded-md">
+                                                <div key={size.id} className="rounded-md border p-2">
                                                     <div className="flex items-center justify-between">
                                                         <p className="font-medium">{size.name}</p>
-                                                        <Badge variant={size.available ? "success" : "secondary"}>
+                                                        <Badge variant={size.available ? 'success' : 'secondary'}>
                                                             {size.available ? 'Disponível' : 'Indisponível'}
                                                         </Badge>
                                                     </div>
-                                                    {size.code && (
-                                                        <p className="text-xs text-gray-500">Código: {size.code}</p>
-                                                    )}
-                                                    {size.description && (
-                                                        <p className="text-xs text-gray-500 mt-1">{size.description}</p>
-                                                    )}
+                                                    {size.code && <p className="text-xs text-gray-500">Código: {size.code}</p>}
+                                                    {size.description && <p className="mt-1 text-xs text-gray-500">{size.description}</p>}
                                                 </div>
                                             ))}
                                         </div>
@@ -504,12 +494,10 @@ export default function Show({ product }: Props) {
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center">
-                                        <Scan className="h-5 w-5 mr-2" />
+                                        <Scan className="mr-2 h-5 w-5" />
                                         Variantes do Produto
                                     </CardTitle>
-                                    <CardDescription>
-                                        Combinações específicas de cores, tamanhos e outras opções
-                                    </CardDescription>
+                                    <CardDescription>Combinações específicas de cores, tamanhos e outras opções</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="rounded-md border">
@@ -532,7 +520,7 @@ export default function Show({ product }: Props) {
                                                                 <div className="flex items-center gap-2">
                                                                     {variant.color.hex_code && (
                                                                         <div
-                                                                            className="w-4 h-4 rounded-full border"
+                                                                            className="h-4 w-4 rounded-full border"
                                                                             style={{ backgroundColor: variant.color.hex_code }}
                                                                         />
                                                                     )}
@@ -543,25 +531,21 @@ export default function Show({ product }: Props) {
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {variant.size ? variant.size.name : (
-                                                                <span className="text-gray-500">—</span>
-                                                            )}
+                                                            {variant.size ? variant.size.name : <span className="text-gray-500">—</span>}
                                                         </TableCell>
+                                                        <TableCell>{variant.sku || <span className="text-gray-500">—</span>}</TableCell>
                                                         <TableCell>
-                                                            {variant.sku || <span className="text-gray-500">—</span>}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {variant.price ? formatCurrency(variant.price) : (
+                                                            {variant.price ? (
+                                                                formatCurrency(variant.price)
+                                                            ) : (
                                                                 <span className="text-gray-500">Preço padrão</span>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {variant.stock > 0 ? variant.stock : (
-                                                                <span className="text-red-500">Esgotado</span>
-                                                            )}
+                                                            {variant.stock > 0 ? variant.stock : <span className="text-red-500">Esgotado</span>}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant={variant.active ? "success" : "secondary"}>
+                                                            <Badge variant={variant.active ? 'success' : 'secondary'}>
                                                                 {variant.active ? 'Activo' : 'Inactivo'}
                                                             </Badge>
                                                         </TableCell>
@@ -583,19 +567,19 @@ export default function Show({ product }: Props) {
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <div>
-                                <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">ID do Produto</h3>
+                                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">ID do Produto</h3>
                                 <p>{product.id}</p>
                             </div>
                             <div>
-                                <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Slug</h3>
-                                <p className="font-mono text-sm bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">{product.slug}</p>
+                                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Slug</h3>
+                                <p className="rounded-md bg-gray-100 px-2 py-1 font-mono text-sm dark:bg-gray-800">{product.slug}</p>
                             </div>
                             <div>
-                                <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Data de Criação</h3>
+                                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Data de Criação</h3>
                                 <p>{formatDate(product.created_at)}</p>
                             </div>
                             <div>
-                                <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Última Actualização</h3>
+                                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Última Actualização</h3>
                                 <p>{formatDate(product.updated_at)}</p>
                             </div>
                         </div>
@@ -606,9 +590,7 @@ export default function Show({ product }: Props) {
                     <Card className="mt-6">
                         <CardHeader>
                             <CardTitle>Todas as Imagens do Produto</CardTitle>
-                            <CardDescription>
-                                Informações detalhadas sobre as imagens associadas a este produto
-                            </CardDescription>
+                            <CardDescription>Informações detalhadas sobre as imagens associadas a este produto</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="rounded-md border">
@@ -627,9 +609,15 @@ export default function Show({ product }: Props) {
                                         {product.images.map((image) => (
                                             <TableRow key={image.id}>
                                                 <TableCell>
-                                                    <div className="h-12 w-12 bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+                                                    <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-md bg-gray-100">
                                                         <img
-                                                            src={`/storage/${image.path}`}
+                                                            src={
+                                                                image.versions?.find((_image) => _image.version == 'sm')?.url ||
+                                                                image.versions?.find((_image) => _image.version == 'md')?.url ||
+                                                                image.versions?.find((_image) => _image.version == 'lg')?.url ||
+                                                                image.versions?.find((_image) => _image.version == 'xl')?.url ||
+                                                                image?.url
+                                                            }
                                                             alt={image.name}
                                                             className="h-full w-full object-cover"
                                                         />

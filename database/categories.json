@@ -1,0 +1,422 @@
+[
+    {
+      "name": "Calçados",
+      "slug": "calcados",
+      "description": "Calçados de segurança e proteção para os pés em ambientes de trabalho.",
+      "active": true,
+      "order": 0,
+      "children": [
+        {
+          "name": "Botas de Segurança",
+          "slug": "botas-seguranca",
+          "description": "Botas robustas para proteção contra impactos, perfurações e outros riscos.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Sapatos de Segurança",
+          "slug": "sapatos-seguranca",
+          "description": "Sapatos de segurança confortáveis para proteção em diversas atividades.",
+          "active": true,
+          "order": 1
+        },
+        {
+          "name": "Calçados Específicos",
+          "slug": "calcados-especificos",
+          "description": "Tamancos, botas táticas/militares e outros calçados para necessidades específicas.",
+          "active": true,
+          "order": 2
+        }
+      ]
+    },
+    {
+      "name": "Vestuário",
+      "slug": "vestuario",
+      "description": "Vestuário de proteção e uniformes para segurança e identificação no trabalho.",
+      "active": true,
+      "order": 1,
+      "children": [
+        {
+            "name": "Proteção para Pernas",
+            "slug": "protecao-pernas",
+            "description": "Perneiras e caneleiras para proteção contra cortes, picadas, solda, etc.",
+            "active": true,
+            "order": 5
+          },
+        {
+          "name": "Vestuário de Alta Visibilidade",
+          "slug": "vestuario-alta-visibilidade",
+          "description": "Roupas com material refletivo para ambientes com baixa luminosidade ou tráfego.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Vestuário de Proteção Térmica e Impermeável",
+          "slug": "vestuario-termico-impermeavel",
+          "description": "Roupas para proteção contra frio, calor, chuva e umidade (inclui vestuário para frigoríficos).",
+          "active": true,
+          "order": 1
+        },
+        {
+          "name": "Vestuário de Proteção Química",
+          "slug": "vestuario-protecao-quimica",
+          "description": "Trajes e peças para proteção contra respingos e exposição a produtos químicos.",
+          "active": true,
+          "order": 2
+        },
+        {
+          "name": "Uniformes Profissionais",
+          "slug": "uniformes-profissionais",
+          "description": "Conjuntos e peças de uniformes para diversas funções (segurança, administrativo, técnico).",
+          "active": true,
+          "order": 3
+        },
+        {
+          "name": "Peças de Vestuário Avulsas",
+          "slug": "pecas-vestuario-avulsas",
+          "description": "Calças, camisas, jaquetas e outras peças individuais de vestuário de trabalho.",
+          "active": true,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "name": "Luvas",
+      "slug": "luvas",
+      "description": "Luvas para proteção das mãos contra riscos mecânicos, químicos, térmicos e outros.",
+      "active": true,
+      "order": 2,
+      "children": [
+        {
+          "name": "Luvas de Proteção Mecânica",
+          "slug": "luvas-protecao-mecanica",
+          "description": "Luvas para proteção contra abrasão, corte, perfuração e rasgos (inclui uso geral).",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Luvas de Proteção Química",
+          "slug": "luvas-protecao-quimica",
+          "description": "Luvas resistentes à penetração e permeação de produtos químicos.",
+          "active": true,
+          "order": 1
+        },
+        {
+          "name": "Luvas de Proteção Térmica",
+          "slug": "luvas-protecao-termica",
+          "description": "Luvas para proteção contra calor, frio e chamas.",
+          "active": true,
+          "order": 2
+        }
+      ]
+    },
+    {
+      "name": "Proteção da Cabeça e Rosto",
+      "slug": "protecao-cabeca-rosto",
+      "description": "Equipamentos para proteção da cabeça e do rosto contra impactos, respingos e outros riscos.",
+      "active": true,
+      "order": 3,
+      "children": [
+        {
+          "name": "Capacetes de Segurança",
+          "slug": "capacetes-seguranca",
+          "description": "Capacetes para proteção contra impactos na cabeça.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Protetores Faciais e Óculos",
+          "slug": "protetores-faciais-oculos",
+          "description": "Equipamentos para proteção dos olhos e do rosto contra partículas, líquidos e radiações.",
+          "active": true,
+          "order": 1
+        },
+        {
+          "name": "Proteção da Cabeça (Toucas/Balaclavas)",
+          "slug": "protecao-cabeca-toucas-balaclavas",
+          "description": "Toucas, gorros e balaclavas para proteção contra frio, contaminação ou outros riscos.",
+          "active": true,
+          "order": 2
+        },
+        {
+          "name": "Acessórios para Proteção da Cabeça",
+          "slug": "acessorios-protecao-cabeca",
+          "description": "Jugulares, carneiras, viseiras e outros acessórios para capacetes e protetores.",
+          "active": true,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "name": "Proteção Respiratória",
+      "slug": "protecao-respiratoria",
+      "description": "Equipamentos para proteção das vias respiratórias contra poeiras, fumos, gases e vapores.",
+      "active": true,
+      "order": 4,
+      "children": [
+        {
+          "name": "Respiradores Descartáveis (PFF)",
+          "slug": "respiradores-descartaveis-pff",
+          "description": "Peças faciais filtrantes de uso único para proteção contra partículas.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Respiradores Reutilizáveis",
+          "slug": "respiradores-reutilizaveis",
+          "description": "Máscaras e semi-máscaras com filtros substituíveis para diversos contaminantes.",
+          "active": true,
+          "order": 1
+        },
+        {
+          "name": "Filtros e Cartuchos",
+          "slug": "filtros-cartuchos",
+          "description": "Filtros mecânicos, químicos e combinados para respiradores reutilizáveis.",
+          "active": true,
+          "order": 2
+        }
+      ]
+    },
+    {
+      "name": "Proteção Auditiva",
+      "slug": "protecao-auditiva",
+      "description": "Equipamentos para atenuação de ruído e proteção da audição em ambientes ruidosos.",
+      "active": true,
+      "order": 5,
+      "children": [
+        {
+          "name": "Protetores Auriculares Tipo Plug",
+          "slug": "protetores-auriculares-plug",
+          "description": "Protetores de inserção (plugs) descartáveis ou reutilizáveis.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Protetores Auriculares Tipo Concha",
+          "slug": "protetores-auriculares-concha",
+          "description": "Abafadores de ruído (tipo concha) para maior atenuação.",
+          "active": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "name": "Proteção Contra Quedas",
+      "slug": "protecao-contra-quedas",
+      "description": "Equipamentos e sistemas para prevenção e retenção de quedas em trabalhos em altura.",
+      "active": true,
+      "order": 6,
+      "children": [
+        {
+          "name": "Cintos de Segurança e Talabartes",
+          "slug": "cintos-talabartes",
+          "description": "Cinturões tipo paraquedista e dispositivos de conexão para retenção e posicionamento.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Sistemas de Ancoragem e Linhas de Vida",
+          "slug": "ancoragem-linhas-vida",
+          "description": "Pontos de ancoragem, linhas de vida fixas e móveis, e conectores.",
+          "active": true,
+          "order": 1
+        },
+        {
+          "name": "Trava-Quedas e Equipamentos de Resgate",
+          "slug": "trava-quedas-resgate",
+          "description": "Dispositivos trava-quedas, ascensores, descensores e kits para resgate em altura.",
+          "active": true,
+          "order": 2
+        }
+      ]
+    },
+    {
+      "name": "Sinalização e Segurança no Ambiente",
+      "slug": "sinalizacao-seguranca-ambiente",
+      "description": "Equipamentos para sinalização, delimitação, bloqueio e segurança geral no local de trabalho.",
+      "active": true,
+      "order": 7,
+      "children": [
+        {
+          "name": "Sinalização Visual e Barreiras",
+          "slug": "sinalizacao-visual-barreiras",
+          "description": "Cones, pedestais, fitas, correntes, grades e placas de sinalização.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Bloqueio e Etiquetagem (LOTO)",
+          "slug": "bloqueio-etiquetagem-loto",
+          "description": "Cadeados, garras, dispositivos de bloqueio e etiquetas para controle de energias perigosas.",
+          "active": true,
+          "order": 1
+        },
+        {
+          "name": "Iluminação e Sinalização de Emergência",
+          "slug": "iluminacao-sinalizacao-emergencia",
+          "description": "Lanternas, luminárias de emergência e sinalizadores luminosos.",
+          "active": true,
+          "order": 2
+        },
+        {
+          "name": "Tapetes e Pisos de Segurança",
+          "slug": "tapetes-pisos-seguranca",
+          "description": "Tapetes ergonômicos, isolantes elétricos e antiderrapantes.",
+          "active": true,
+          "order": 3
+        }
+      ]
+    },
+    {
+      "name": "Primeiros Socorros e Emergência",
+      "slug": "primeiros-socorros-emergencia",
+      "description": "Kits e materiais para atendimento de primeiros socorros em caso de acidentes.",
+      "active": true,
+      "order": 8,
+      "children": [
+        {
+          "name": "Kits de Primeiros Socorros",
+          "slug": "kits-primeiros-socorros",
+          "description": "Conjuntos montados de materiais para primeiros socorros (fixos, móveis, veiculares).",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Materiais de Curativo e Imobilização",
+          "slug": "materiais-curativo-imobilizacao",
+          "description": "Gazes, ataduras, esparadrapos, talas e outros itens avulsos.",
+          "active": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "name": "Equipamentos de Contenção e Defesa",
+      "slug": "equipamentos-contencao-defesa",
+      "description": "Equipamentos para uso por profissionais de segurança e vigilância.",
+      "active": true,
+      "order": 9,
+      "children": [
+        {
+            "name": "Coletes Balísticos",
+            "slug": "coletes-balisticos",
+            "description": "Coletes à prova de bala para proteção do torso.",
+            "active": true,
+            "order": 0
+          },
+        {
+          "name": "Bastões e Tonfas",
+          "slug": "bastoes-tonfas",
+          "description": "Equipamentos de manejo e defesa não letal.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Algemas e Dispositivos de Imobilização",
+          "slug": "algemas-dispositivos-imobilizacao",
+          "description": "Equipamentos para contenção e restrição de movimento.",
+          "active": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "name": "Instrumentos de Medição e Monitoramento",
+      "slug": "instrumentos-medicao-monitoramento",
+      "description": "Equipamentos para medição de parâmetros ambientais e de segurança.",
+      "active": true,
+      "order": 10,
+      "children": [
+        {
+          "name": "Detectores de Gases",
+          "slug": "detectores-gases",
+          "description": "Equipamentos para detecção de gases tóxicos, inflamáveis ou falta de oxigênio.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Termômetros e Medidores Ambientais",
+          "slug": "termometros-medidores-ambientais",
+          "description": "Equipamentos para medição de temperatura, umidade, ruído, luz, etc.",
+          "active": true,
+          "order": 1
+        }
+      ]
+    },
+     {
+      "name": "Acessórios e Armazenamento",
+      "slug": "acessorios-armazenamento",
+      "description": "Itens complementares e soluções para organizar e transportar EPIs.",
+      "active": true,
+      "order": 11,
+      "children": [
+         {
+          "name": "Bolsas e Mochilas para EPIs",
+          "slug": "bolsas-mochilas-epis",
+          "description": "Soluções para transporte e armazenamento de equipamentos de proteção individual.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Peças de Reposição Diversas",
+          "slug": "pecas-reposicao-diversas",
+          "description": "Componentes e peças para manutenção de equipamentos de segurança diversos.",
+          "active": true,
+          "order": 1
+        },
+        {
+            "name": "Acessórios Diversos",
+            "slug": "acessorios-diversos",
+            "description": "Itens acessórios como apitos, cordões, porta-crachás, etc.",
+            "active": true,
+            "order": 2
+        }
+      ]
+    },
+    {
+      "name": "Limpeza e Higienização Profissional",
+      "slug": "limpeza-higienizacao-profissional",
+      "description": "Equipamentos e produtos para limpeza e higienização em ambientes profissionais.",
+      "active": true,
+      "order": 12,
+      "children": [
+        {
+          "name": "Ferramentas de Limpeza",
+          "slug": "ferramentas-limpeza",
+          "description": "Vassouras, rodos, mops, baldes e outros utensílios para limpeza.",
+          "active": true,
+          "order": 0
+        },
+        {
+          "name": "Produtos de Higienização",
+          "slug": "produtos-higienizacao",
+          "description": "Desinfetantes, detergentes, álcool em gel e outros produtos para higiene.",
+          "active": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+        "name": "Serviços de Personalização",
+        "slug": "servicos-personalizacao",
+        "description": "Serviços de aplicação de logotipos, nomes e outras personalizações em vestuário e equipamentos.",
+        "active": true,
+        "order": 14,
+        "children": [
+          {
+            "name": "Bordados e Estampagens",
+            "slug": "bordados-estampagens",
+            "description": "Serviços de bordado e estampagem (impressão) em peças de vestuário e acessórios.",
+            "active": true,
+            "order": 0
+          },
+          {
+            "name": "Aplicações e Acabamentos",
+            "slug": "aplicacoes-acabamentos",
+            "description": "Serviços de aplicação de vinil, adesivos, montagens e outros acabamentos personalizados.",
+            "active": true,
+            "order": 1
+          }
+        ]
+      }
+  ]

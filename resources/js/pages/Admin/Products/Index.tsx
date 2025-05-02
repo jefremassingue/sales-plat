@@ -27,9 +27,10 @@ import { useEffect, useState } from 'react';
 
 interface Image {
     id: number;
-    path: string;
+    url: string;
     name: string;
-    is_main?: boolean;
+    versions?: Image[];
+    version: string;
 }
 
 interface Category {
@@ -55,7 +56,7 @@ interface Product {
     brand: string | null;
     created_at: string;
     updated_at: string;
-    mainImage: Image | null;
+    main_image: Image | null;
     category: Category;
 }
 
@@ -103,6 +104,7 @@ export default function Index({ products, categories, filters }: Props) {
     const [activeFilter, setActiveFilter] = useState(filters.active || '');
     const [sortField, setSortField] = useState(filters.sort_field || 'created_at');
     const [sortOrder, setSortOrder] = useState(filters.sort_order || 'desc');
+    const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
     const { toast } = useToast();
     const { flash } = usePage().props as any;
@@ -143,6 +145,46 @@ export default function Index({ products, categories, filters }: Props) {
             },
         );
     };
+
+    // Função de debounce para pesquisa
+    const debouncedSearch = (value: string) => {
+        // Limpa o timeout anterior se existir
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        // Define o valor da pesquisa imediatamente para atualizar a UI
+        setSearchQuery(value);
+
+        // Cria um novo timeout para enviar a pesquisa após 500ms
+        const timeout = setTimeout(() => {
+            router.get(
+                '/admin/products',
+                {
+                    search: value || null,
+                    category_id: categoryFilter || null,
+                    active: activeFilter || null,
+                    sort_field: sortField,
+                    sort_order: sortOrder,
+                },
+                {
+                    preserveState: true,
+                    replace: true,
+                }
+            );
+        }, 500);
+
+        setSearchTimeout(timeout);
+    };
+
+    // Limpar o timeout quando o componente for desmontado
+    useEffect(() => {
+        return () => {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+        };
+    }, [searchTimeout]);
 
     // Lida com a alteração na ordenação
     const handleSort = (field: string) => {
@@ -213,9 +255,13 @@ export default function Index({ products, categories, filters }: Props) {
             <Card key={product.id} className="flex h-full flex-col">
                 <CardHeader className="pb-3">
                     <div className="relative mb-3 aspect-square w-full overflow-hidden rounded-md">
-                        {product.mainImage ? (
+                        {product.main_image ? (
                             <img
-                                src={`/storage/${product.mainImage.path}`}
+                                src={
+                                    product.main_image.versions?.find((image) => image.version == 'md')?.url ||
+                                    product.main_image.versions?.find((image) => image.version == 'lg')?.url ||
+                                    product.main_image.url
+                                }
                                 alt={product.name}
                                 className="h-full w-full object-cover transition-all hover:scale-105"
                             />
@@ -235,7 +281,7 @@ export default function Index({ products, categories, filters }: Props) {
                         <div className="text-lg font-bold">{formatCurrency(product.price)}</div>
                         <Badge variant={product.active ? 'success' : 'secondary'}>{product.active ? 'Activo' : 'Inactivo'}</Badge>
                     </div>
-                    <CardDescription className="line-clamp-2">{product.description || 'Sem descrição'}</CardDescription>
+                    {/* <CardDescription className="line-clamp-2">{product.description || 'Sem descrição'}</CardDescription> */}
                 </CardHeader>
                 <CardContent className="flex-grow">
                     <div className="grid grid-cols-2 gap-2 text-sm">
@@ -338,6 +384,7 @@ export default function Index({ products, categories, filters }: Props) {
                                     <Input
                                         placeholder="Pesquisar por nome, descrição ou SKU"
                                         value={searchQuery}
+                                        onChange={(e) => debouncedSearch(e.target.value)}
                                         className="w-full"
                                     />
                                 </div>
@@ -431,9 +478,17 @@ export default function Index({ products, categories, filters }: Props) {
                                                             </TableCell>
                                                             <TableCell>
                                                                 <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-md bg-gray-100">
-                                                                    {product.mainImage ? (
+                                                                    {product.main_image ? (
                                                                         <img
-                                                                            src={`/storage/${product.mainImage.path}`}
+                                                                            src={
+                                                                                product.main_image.versions?.find((image) => image.version == 'sm')
+                                                                                    ?.url ||
+                                                                                product.main_image.versions?.find((image) => image.version == 'md')
+                                                                                    ?.url ||
+                                                                                product.main_image.versions?.find((image) => image.version == 'lg')
+                                                                                    ?.url ||
+                                                                                product.main_image.url
+                                                                            }
                                                                             alt={product.name}
                                                                             className="h-full w-full object-cover"
                                                                         />
@@ -511,7 +566,7 @@ export default function Index({ products, categories, filters }: Props) {
                                 </TabsContent>
 
                                 <TabsContent value="cards" className="mt-0">
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2  xl:grid-cols-4">
                                         {products.data.length > 0 ? (
                                             products.data.map((product) => renderProductCard(product))
                                         ) : (

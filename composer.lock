@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c4d7cca6ec6ccbf698cb5bd12982cf8",
+    "content-hash": "4cd3b484bde7d2b816e9ce53a1a3c019",
     "packages": [
         {
             "name": "brick/math",
@@ -1265,6 +1265,74 @@
                 }
             ],
             "time": "2025-02-27T13:08:55+00:00"
+        },
+        {
+            "name": "jefremassingue/spatie-permission-generate",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jefremassingue/spatie-permission-generate.git",
+                "reference": "951e2fa7e985f40535611130f96fa04242ca46a5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jefremassingue/spatie-permission-generate/zipball/951e2fa7e985f40535611130f96fa04242ca46a5",
+                "reference": "951e2fa7e985f40535611130f96fa04242ca46a5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.3",
+                "spatie/laravel-permission": "^4.2|^5.0|^6.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^6.0",
+                "phpunit/phpunit": "^9.0"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "SpatiePermissionGenerate": "Jefre\\SpatiePermissionGenerate\\Providers\\ServiceProvider\\Facade"
+                    },
+                    "providers": [
+                        "Jefre\\SpatiePermissionGenerate\\Providers\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/SpatiePermissionGenerate.php"
+                ],
+                "psr-4": {
+                    "Jefre\\SpatiePermissionGenerate\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jefre Massingue",
+                    "email": "jefremassingue.jm@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Package for genarate permissions",
+            "homepage": "https://github.com/jefremassingue/spatie-permission-generate",
+            "keywords": [
+                "generate",
+                "jefremassingue",
+                "spatie permission generate",
+                "spatie-permission",
+                "spatie-permission-generate"
+            ],
+            "support": {
+                "issues": "https://github.com/jefremassingue/spatie-permission-generate/issues",
+                "source": "https://github.com/jefremassingue/spatie-permission-generate/tree/main"
+            },
+            "time": "2023-04-10T21:38:43+00:00"
         },
         {
             "name": "laravel/framework",
@@ -3497,6 +3565,89 @@
                 }
             ],
             "time": "2024-04-27T21:32:50+00:00"
+        },
+        {
+            "name": "spatie/laravel-permission",
+            "version": "6.17.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-permission.git",
+                "reference": "02ada8f638b643713fa2fb543384738e27346ddb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/02ada8f638b643713fa2fb543384738e27346ddb",
+                "reference": "02ada8f638b643713fa2fb543384738e27346ddb",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/auth": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/container": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/contracts": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "illuminate/database": "^8.12|^9.0|^10.0|^11.0|^12.0",
+                "php": "^8.0"
+            },
+            "require-dev": {
+                "laravel/passport": "^11.0|^12.0",
+                "laravel/pint": "^1.0",
+                "orchestra/testbench": "^6.23|^7.0|^8.0|^9.0|^10.0",
+                "phpunit/phpunit": "^9.4|^10.1|^11.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Spatie\\Permission\\PermissionServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "6.x-dev",
+                    "dev-master": "6.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/helpers.php"
+                ],
+                "psr-4": {
+                    "Spatie\\Permission\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Permission handling for Laravel 8.0 and up",
+            "homepage": "https://github.com/spatie/laravel-permission",
+            "keywords": [
+                "acl",
+                "laravel",
+                "permission",
+                "permissions",
+                "rbac",
+                "roles",
+                "security",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/laravel-permission/issues",
+                "source": "https://github.com/spatie/laravel-permission/tree/6.17.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-04-08T15:06:14+00:00"
         },
         {
             "name": "symfony/clock",
@@ -9289,7 +9440,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "jefremassingue/spatie-permission-generate": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
