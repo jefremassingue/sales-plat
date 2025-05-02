@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Client;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
-class ClientController extends Controller
+class CustomerController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -20,7 +20,7 @@ class ClientController extends Controller
     public function index(Request $request)
     {
 
-        $query = Client::query();
+        $query = Customer::query();
 
         // Filtro de busca
         if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
@@ -54,10 +54,10 @@ class ClientController extends Controller
         $query->with('user:id,name,email');
 
         // Paginação
-        $clients = $query->paginate(10)->withQueryString();
+        $customers = $query->paginate(10)->withQueryString();
 
-        return Inertia::render('Admin/Clients/Index', [
-            'clients' => $clients,
+        return Inertia::render('Admin/Customers/Index', [
+            'customers' => $customers,
             'filters' => $request->only(['search', 'client_type', 'active', 'sort_field', 'sort_order']),
         ]);
     }
@@ -68,7 +68,7 @@ class ClientController extends Controller
     public function create()
     {
         try {
-            return Inertia::render('Admin/Clients/Create');
+            return Inertia::render('Admin/Customers/Create');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
         }
@@ -107,9 +107,8 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
 
             // Dados do utilizador (opcional)
-            'create_user' => 'boolean',
-            'user_email' => 'required_if:create_user,true|nullable|email|unique:users,email',
-            'user_password' => 'required_if:create_user,true|nullable|min:8',
+            'connect_user' => 'boolean',
+            'user_id' => 'nullable|exists:users,id|required_if:connect_user,true',
         ]);
 
         if ($validator->fails()) {
@@ -122,27 +121,27 @@ class ClientController extends Controller
             DB::beginTransaction();
 
             // Dados para criar o cliente
-            $clientData = $request->except(['create_user', 'user_email', 'user_password']);
+            $customerData = $request->except(['connect_user', 'user_id']);
 
-            // Se a opção de criar utilizador estiver marcada, criar um utilizador e associá-lo ao cliente
-            if ($request->create_user) {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->user_email,
-                    'password' => Hash::make($request->user_password),
-                ]);
+            // Se a opção de associar utilizador estiver marcada
+            if ($request->connect_user && $request->user_id) {
+                // Verificar se o utilizador existe
+                $user = User::find($request->user_id);
+                if (!$user) {
+                    throw new \Exception('O utilizador selecionado não existe.');
+                }
 
                 // Adicionar ID do utilizador aos dados do cliente
-                $clientData['user_id'] = $user->id;
+                $customerData['user_id'] = $user->id;
             }
 
             // Criar o cliente
-            $client = Client::create($clientData);
+            $customer = Customer::create($customerData);
 
             DB::commit();
 
-            return redirect()->route('admin.clients.index')
-                ->with('success', 'Cliente criado com sucesso!');
+            return redirect()->route('admin.customers.index')
+                ->with('success', 'Customere criado com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -155,34 +154,34 @@ class ClientController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Client $client)
+    public function show(Customer $customer)
     {
 
         // Carregar o utilizador associado, se existir
-        $client->load('user:id,name,email');
+        $customer->load('user:id,name,email');
 
-        return Inertia::render('Admin/Clients/Show', [
-            'client' => $client,
+        return Inertia::render('Admin/Customers/Show', [
+            'customer' => $customer,
         ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Client $client)
+    public function edit(Customer $customer)
     {
         // Carregar o utilizador associado, se existir
-        $client->load('user:id,name,email');
+        $customer->load('user:id,name,email');
 
-        return Inertia::render('Admin/Clients/Edit', [
-            'client' => $client,
+        return Inertia::render('Admin/Customers/Edit', [
+            'customer' => $customer,
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Client $client)
+    public function update(Request $request, Customer $customer)
     {
         // Validar os dados do cliente
         $validator = Validator::make($request->all(), [
@@ -212,18 +211,8 @@ class ClientController extends Controller
             'notes' => 'nullable|string',
 
             // Dados do utilizador (opcional)
-            'create_user' => 'boolean',
-            'user_email' => [
-                'nullable',
-                'email',
-                Rule::requiredIf($request->create_user && !$client->user_id),
-                Rule::unique('users', 'email')->ignore($client->user_id ?? 0),
-            ],
-            'user_password' => [
-                'nullable',
-                Rule::requiredIf($request->create_user && !$client->user_id),
-                'min:8',
-            ],
+            'connect_user' => 'boolean',
+            'user_id' => 'nullable|exists:users,id|required_if:connect_user,true',
         ]);
 
         if ($validator->fails()) {
@@ -236,44 +225,31 @@ class ClientController extends Controller
             DB::beginTransaction();
 
             // Dados para atualizar o cliente
-            $clientData = $request->except(['create_user', 'user_email', 'user_password']);
+            $customerData = $request->except(['connect_user', 'user_id']);
 
-            // Se a opção de criar utilizador estiver marcada e o cliente ainda não tem um utilizador
-            if ($request->create_user && !$client->user_id) {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->user_email,
-                    'password' => Hash::make($request->user_password),
-                ]);
-
-                // Adicionar ID do utilizador aos dados do cliente
-                $clientData['user_id'] = $user->id;
+            // Atualizar associação de utilizador
+            if ($request->connect_user) {
+                // Se solicitou conectar a um utilizador
+                if ($request->user_id) {
+                    // Verificar se o utilizador existe
+                    $user = User::find($request->user_id);
+                    if (!$user) {
+                        throw new \Exception('O utilizador selecionado não existe.');
+                    }
+                    $customerData['user_id'] = $user->id;
+                }
+            } else {
+                // Se não solicitou conectar a utilizador, remover a associação
+                $customerData['user_id'] = null;
             }
 
             // Atualizar o cliente
-            $client->update($clientData);
-
-            // Se o cliente já tem um utilizador e foi fornecido email/senha novos
-            if ($client->user_id && ($request->user_email || $request->user_password)) {
-                $userData = [];
-
-                if ($request->user_email) {
-                    $userData['email'] = $request->user_email;
-                }
-
-                if ($request->user_password) {
-                    $userData['password'] = Hash::make($request->user_password);
-                }
-
-                if (!empty($userData)) {
-                    User::where('id', $client->user_id)->update($userData);
-                }
-            }
+            $customer->update($customerData);
 
             DB::commit();
 
-            return redirect()->route('admin.clients.index')
-                ->with('success', 'Cliente atualizado com sucesso!');
+            return redirect()->route('admin.customers.index')
+                ->with('success', 'Customere atualizado com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -286,23 +262,74 @@ class ClientController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Client $client)
+    public function destroy(Customer $customer)
     {
         try {
             DB::beginTransaction();
 
             // Não remove o utilizador associado, apenas o cliente
-            $client->delete();
+            $customer->delete();
 
             DB::commit();
 
-            return redirect()->route('admin.clients.index')
-                ->with('success', 'Cliente eliminado com sucesso!');
+            return redirect()->route('admin.customers.index')
+                ->with('success', 'Customere eliminado com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();
 
             return redirect()->back()
                 ->with('error', 'Ocorreu um erro ao eliminar o cliente: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Pesquisar utilizadores pelo termo.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchUsers(Request $request)
+    {
+        try {
+            $term = $request->input('term');
+
+            if (empty($term) || strlen($term) < 2) {
+                return response()->json([]);
+            }
+
+            $users = User::where('name', 'like', "%{$term}%")
+                ->orWhere('email', 'like', "%{$term}%")
+                ->select('id', 'name', 'email')
+                ->orderBy('name')
+                ->limit(10)
+                ->get();
+
+            return response()->json($users);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Ocorreu um erro ao pesquisar utilizadores'], 500);
+        }
+    }
+
+    /**
+     * Obter informações de um utilizador específico.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUser($id)
+    {
+        try {
+            $user = User::where('id', $id)
+                ->select('id', 'name', 'email')
+                ->first();
+
+            if (!$user) {
+                return response()->json(['error' => 'Utilizador não encontrado'], 404);
+            }
+
+            return response()->json($user);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Ocorreu um erro ao obter o utilizador'], 500);
         }
     }
 }

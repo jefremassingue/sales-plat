@@ -31,7 +31,7 @@ interface User {
     email: string;
 }
 
-interface Client {
+interface Customer {
     id: number;
     name: string;
     company_name: string | null;
@@ -53,8 +53,8 @@ interface Client {
 }
 
 interface Props {
-    clients: {
-        data: Client[];
+    customers: {
+        data: Customer[];
         links: any[];
         current_page: number;
         from: number;
@@ -80,15 +80,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
     {
         title: 'Clientes',
-        href: '/admin/clients',
+        href: '/admin/customers',
     },
 ];
 
-export default function Index({ clients, filters = {} }: Props) {
-    const [selectedClients, setSelectedClients] = useState<number[]>([]);
+export default function Index({ customers, filters = {} }: Props) {
+    const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
     const [viewTab, setViewTab] = useState<string>('table');
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
-    const [clientToDelete, setClientToDelete] = useState<number | null>(null);
+    const [customerToDelete, setCustomerToDelete] = useState<number | null>(null);
     const [bulkDeleteAlertOpen, setBulkDeleteAlertOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
     const [clientTypeFilter, setClientTypeFilter] = useState(filters.client_type || '');
@@ -120,28 +120,28 @@ export default function Index({ clients, filters = {} }: Props) {
     }, [flash, toast]);
 
     const handleSelectAll = () => {
-        if (selectedClients.length === clients.data.length) {
-            setSelectedClients([]);
+        if (selectedCustomers.length === customers.data.length) {
+            setSelectedCustomers([]);
         } else {
-            setSelectedClients(clients.data.map((client) => client.id));
+            setSelectedCustomers(customers.data.map((customer) => customer.id));
         }
     };
 
     const handleSelect = (id: number) => {
-        if (selectedClients.includes(id)) {
-            setSelectedClients(selectedClients.filter((clientId) => clientId !== id));
+        if (selectedCustomers.includes(id)) {
+            setSelectedCustomers(selectedCustomers.filter((customerId) => customerId !== id));
         } else {
-            setSelectedClients([...selectedClients, id]);
+            setSelectedCustomers([...selectedCustomers, id]);
         }
     };
 
     const handleDeleteClick = (id: number) => {
-        setClientToDelete(id);
+        setCustomerToDelete(id);
         setDeleteAlertOpen(true);
     };
 
     const handleBulkDeleteClick = () => {
-        if (selectedClients.length === 0) return;
+        if (selectedCustomers.length === 0) return;
         setBulkDeleteAlertOpen(true);
     };
 
@@ -196,7 +196,7 @@ export default function Index({ clients, filters = {} }: Props) {
         sort_order?: string;
     }) => {
         router.get(
-            '/admin/clients',
+            '/admin/customers',
             {
                 search: filterParams.search || null,
                 client_type: filterParams.client_type || null,
@@ -226,63 +226,63 @@ export default function Index({ clients, filters = {} }: Props) {
     };
 
     // Função para renderizar cards de clientes
-    const renderClientCard = (client: Client) => {
+    const renderCustomerCard = (customer: Customer) => {
         return (
-            <Card key={client.id} className="flex h-full flex-col">
+            <Card key={customer.id} className="flex h-full flex-col">
                 <CardHeader>
                     <div className="flex items-center justify-between">
                         <CardTitle>
                             <div className="flex items-center space-x-2">
-                                {client.client_type === 'company' ? (
+                                {customer.client_type === 'company' ? (
                                     <Building size={16} className="shrink-0" />
                                 ) : (
                                     <Contact size={16} className="shrink-0" />
                                 )}
                                 <span>
-                                    {client.name}
-                                    {client.company_name && <span className="ml-2 text-sm font-normal">({client.company_name})</span>}
+                                    {customer.name}
+                                    {customer.company_name && <span className="ml-2 text-sm font-normal">({customer.company_name})</span>}
                                 </span>
                             </div>
                         </CardTitle>
-                        <Badge variant={client.active ? 'success' : 'secondary'}>{client.active ? 'Activo' : 'Inactivo'}</Badge>
+                        <Badge variant={customer.active ? 'success' : 'secondary'}>{customer.active ? 'Activo' : 'Inactivo'}</Badge>
                     </div>
                     <div className="text-muted-foreground text-sm">
-                        {client.email && <div>{client.email}</div>}
-                        {client.phone && <div>Tel: {client.phone}</div>}
-                        {client.mobile && <div>Telemóvel: {client.mobile}</div>}
+                        {customer.email && <div>{customer.email}</div>}
+                        {customer.phone && <div>Tel: {customer.phone}</div>}
+                        {customer.mobile && <div>Telemóvel: {customer.mobile}</div>}
                     </div>
                 </CardHeader>
                 <CardContent className="flex-grow text-sm">
-                    {client.address && (
+                    {customer.address && (
                         <div className="mb-2">
                             <div className="font-medium">Morada:</div>
-                            <div>{client.address}</div>
+                            <div>{customer.address}</div>
                             <div>
-                                {client.city}
-                                {client.province ? `, ${client.province}` : ''}
-                                {client.postal_code ? ` ${client.postal_code}` : ''}
+                                {customer.city}
+                                {customer.province ? `, ${customer.province}` : ''}
+                                {customer.postal_code ? ` ${customer.postal_code}` : ''}
                             </div>
-                            <div>{client.country}</div>
+                            <div>{customer.country}</div>
                         </div>
                     )}
 
-                    {client.user && (
+                    {customer.user && (
                         <div className="bg-primary/10 mt-2 rounded-md p-2">
                             <div className="font-medium">Utilizador associado:</div>
-                            <div>{client.user.name}</div>
-                            <div>{client.user.email}</div>
+                            <div>{customer.user.name}</div>
+                            <div>{customer.user.email}</div>
                         </div>
                     )}
                 </CardContent>
                 <div className="mt-auto flex justify-end gap-2 border-t p-4 pt-0">
                     <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/clients/${client.id}`}>
+                        <Link href={`/admin/customers/${customer.id}`}>
                             <Eye className="mr-1 h-4 w-4" />
                             Ver
                         </Link>
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/clients/${client.id}/edit`}>
+                        <Link href={`/admin/customers/${customer.id}/edit`}>
                             <Edit className="mr-1 h-4 w-4" />
                             Editar
                         </Link>
@@ -290,7 +290,7 @@ export default function Index({ clients, filters = {} }: Props) {
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDeleteClick(client.id)}
+                        onClick={() => handleDeleteClick(customer.id)}
                         className="text-destructive hover:text-destructive"
                     >
                         <Trash className="mr-1 h-4 w-4" />
@@ -310,7 +310,7 @@ export default function Index({ clients, filters = {} }: Props) {
                     <h1 className="text-2xl font-bold">Gerir Clientes</h1>
                     <div className="flex gap-2">
                         <Button asChild>
-                            <Link href="/admin/clients/create">
+                            <Link href="/admin/customers/create">
                                 <Plus className="mr-2 h-4 w-4" />
                                 <span>Novo Cliente</span>
                             </Link>
@@ -325,7 +325,7 @@ export default function Index({ clients, filters = {} }: Props) {
                                 <CardTitle>Clientes</CardTitle>
 
                                 <div className="flex items-center gap-2">
-                                    {selectedClients.length > 0 && (
+                                    {selectedCustomers.length > 0 && (
                                         <Button variant="destructive" size="sm" onClick={handleBulkDeleteClick}>
                                             <Trash className="mr-2 h-4 w-4" />
                                             Eliminar Selecionados
@@ -432,7 +432,7 @@ export default function Index({ clients, filters = {} }: Props) {
                                             <TableRow>
                                                 <TableHead className="w-[50px]">
                                                     <Checkbox
-                                                        checked={clients.data.length > 0 && selectedClients.length === clients.data.length}
+                                                        checked={customers.data.length > 0 && selectedCustomers.length === customers.data.length}
                                                         onCheckedChange={handleSelectAll}
                                                     />
                                                 </TableHead>
@@ -448,58 +448,58 @@ export default function Index({ clients, filters = {} }: Props) {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {clients.data.length > 0 ? (
-                                                clients.data.map((client) => (
-                                                    <TableRow key={client.id}>
+                                            {customers.data.length > 0 ? (
+                                                customers.data.map((customer) => (
+                                                    <TableRow key={customer.id}>
                                                         <TableCell>
                                                             <Checkbox
-                                                                checked={selectedClients.includes(client.id)}
-                                                                onCheckedChange={() => handleSelect(client.id)}
+                                                                checked={selectedCustomers.includes(customer.id)}
+                                                                onCheckedChange={() => handleSelect(customer.id)}
                                                             />
                                                         </TableCell>
                                                         <TableCell className="font-medium">
                                                             <div className="flex items-center space-x-2">
-                                                                {client.client_type === 'company' ? (
+                                                                {customer.client_type === 'company' ? (
                                                                     <Building size={16} className="shrink-0" />
                                                                 ) : (
                                                                     <Contact size={16} className="shrink-0" />
                                                                 )}
-                                                                <span>{client.name}</span>
+                                                                <span>{customer.name}</span>
                                                             </div>
-                                                            {client.company_name && (
-                                                                <div className="text-muted-foreground text-sm">{client.company_name}</div>
+                                                            {customer.company_name && (
+                                                                <div className="text-muted-foreground text-sm">{customer.company_name}</div>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {client.client_type === 'company' ? 'Empresa' : 'Particular'}
-                                                            {client.tax_id && (
-                                                                <div className="text-muted-foreground text-xs">NUIT: {client.tax_id}</div>
+                                                            {customer.client_type === 'company' ? 'Empresa' : 'Particular'}
+                                                            {customer.tax_id && (
+                                                                <div className="text-muted-foreground text-xs">NUIT: {customer.tax_id}</div>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {client.email && <div className="max-w-[150px] truncate">{client.email}</div>}
-                                                            {client.phone && <div>{client.phone}</div>}
-                                                            {client.mobile && <div>{client.mobile}</div>}
+                                                            {customer.email && <div className="max-w-[150px] truncate">{customer.email}</div>}
+                                                            {customer.phone && <div>{customer.phone}</div>}
+                                                            {customer.mobile && <div>{customer.mobile}</div>}
                                                         </TableCell>
                                                         <TableCell>
-                                                            {client.city && (
+                                                            {customer.city && (
                                                                 <div className="max-w-[150px] truncate">
-                                                                    {client.city}
-                                                                    {client.province ? `, ${client.province}` : ''}
+                                                                    {customer.city}
+                                                                    {customer.province ? `, ${customer.province}` : ''}
                                                                 </div>
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant={client.active ? 'success' : 'secondary'}>
-                                                                {client.active ? 'Activo' : 'Inactivo'}
+                                                            <Badge variant={customer.active ? 'success' : 'secondary'}>
+                                                                {customer.active ? 'Activo' : 'Inactivo'}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            {client.user ? (
+                                                            {customer.user ? (
                                                                 <div className="text-sm">
-                                                                    <div>{client.user.name}</div>
+                                                                    <div>{customer.user.name}</div>
                                                                     <div className="text-muted-foreground max-w-[150px] truncate text-xs">
-                                                                        {client.user.email}
+                                                                        {customer.user.email}
                                                                     </div>
                                                                 </div>
                                                             ) : (
@@ -516,19 +516,19 @@ export default function Index({ clients, filters = {} }: Props) {
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end">
                                                                     <DropdownMenuItem asChild>
-                                                                        <Link href={`/admin/clients/${client.id}`}>
+                                                                        <Link href={`/admin/customers/${customer.id}`}>
                                                                             <Eye className="mr-2 h-4 w-4" />
                                                                             <span>Ver Detalhes</span>
                                                                         </Link>
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuItem asChild>
-                                                                        <Link href={`/admin/clients/${client.id}/edit`}>
+                                                                        <Link href={`/admin/customers/${customer.id}/edit`}>
                                                                             <Edit className="mr-2 h-4 w-4" />
                                                                             <span>Editar</span>
                                                                         </Link>
                                                                     </DropdownMenuItem>
                                                                     <DropdownMenuItem
-                                                                        onClick={() => handleDeleteClick(client.id)}
+                                                                        onClick={() => handleDeleteClick(customer.id)}
                                                                         className="text-destructive focus:text-destructive"
                                                                     >
                                                                         <Trash className="mr-2 h-4 w-4" />
@@ -550,27 +550,27 @@ export default function Index({ clients, filters = {} }: Props) {
                                     </Table>
 
                                     {/* Paginação */}
-                                    {clients.last_page > 1 && (
+                                    {customers.last_page > 1 && (
                                         <div className="flex items-center justify-between px-2 py-4">
                                             <div className="text-muted-foreground text-sm">
-                                                Mostrando {clients.from} a {clients.to} de {clients.total} registos
+                                                Mostrando {customers.from} a {customers.to} de {customers.total} registos
                                             </div>
                                             <div className="flex gap-1">
-                                                {clients.current_page > 1 && (
+                                                {customers.current_page > 1 && (
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => router.get(`/admin/clients?page=${clients.current_page - 1}`)}
+                                                        onClick={() => router.get(`/admin/customers?page=${customers.current_page - 1}`)}
                                                     >
                                                         Anterior
                                                     </Button>
                                                 )}
 
-                                                {clients.current_page < clients.last_page && (
+                                                {customers.current_page < customers.last_page && (
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => router.get(`/admin/clients?page=${clients.current_page + 1}`)}
+                                                        onClick={() => router.get(`/admin/customers?page=${customers.current_page + 1}`)}
                                                     >
                                                         Próximo
                                                     </Button>
@@ -582,35 +582,35 @@ export default function Index({ clients, filters = {} }: Props) {
 
                                 <TabsContent value="cards" className="mt-0">
                                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                        {clients.data.length > 0 ? (
-                                            clients.data.map((client) => renderClientCard(client))
+                                        {customers.data.length > 0 ? (
+                                            customers.data.map((customer) => renderCustomerCard(customer))
                                         ) : (
                                             <div className="col-span-full py-6 text-center">Nenhum cliente encontrado</div>
                                         )}
                                     </div>
 
                                     {/* Paginação */}
-                                    {clients.last_page > 1 && (
+                                    {customers.last_page > 1 && (
                                         <div className="flex items-center justify-between px-2 py-4">
                                             <div className="text-muted-foreground text-sm">
-                                                Mostrando {clients.from} a {clients.to} de {clients.total} registos
+                                                Mostrando {customers.from} a {customers.to} de {customers.total} registos
                                             </div>
                                             <div className="flex gap-1">
-                                                {clients.current_page > 1 && (
+                                                {customers.current_page > 1 && (
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => router.get(`/admin/clients?page=${clients.current_page - 1}`)}
+                                                        onClick={() => router.get(`/admin/customers?page=${customers.current_page - 1}`)}
                                                     >
                                                         Anterior
                                                     </Button>
                                                 )}
 
-                                                {clients.current_page < clients.last_page && (
+                                                {customers.current_page < customers.last_page && (
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        onClick={() => router.get(`/admin/clients?page=${clients.current_page + 1}`)}
+                                                        onClick={() => router.get(`/admin/customers?page=${customers.current_page + 1}`)}
                                                     >
                                                         Próximo
                                                     </Button>
@@ -626,16 +626,16 @@ export default function Index({ clients, filters = {} }: Props) {
             </div>
 
             {/* Alerta de confirmação de exclusão */}
-            {clientToDelete && (
+            {customerToDelete && (
                 <DeleteAlert
                     isOpen={deleteAlertOpen}
                     onClose={() => {
                         setDeleteAlertOpen(false);
-                        setClientToDelete(null);
+                        setCustomerToDelete(null);
                     }}
                     title="Eliminar Cliente"
                     description="Tem certeza que deseja eliminar este cliente? Esta acção não pode ser desfeita."
-                    deleteUrl={`/admin/clients/${clientToDelete}`}
+                    deleteUrl={`/admin/customers/${customerToDelete}`}
                 />
             )}
 
@@ -645,7 +645,7 @@ export default function Index({ clients, filters = {} }: Props) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Eliminar Clientes Selecionados</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Tem certeza que deseja eliminar {selectedClients.length} clientes? Esta acção não pode ser desfeita.
+                            Tem certeza que deseja eliminar {selectedCustomers.length} clientes? Esta acção não pode ser desfeita.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

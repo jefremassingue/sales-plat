@@ -9,7 +9,7 @@ import {
     Users, Package, BarChart, Settings, ClipboardList,
     Building, Truck, User, UserCircle, Store, FileText,
     ShoppingBag, FileCheck, CreditCard, Warehouse,
-    UserCog, Receipt, Calculator
+    UserCog, Receipt, Calculator, Shield
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -128,14 +128,25 @@ const mainNavItems = [
                 ]
             },
             {
-                title: 'Grupos',
-                href: '/admin/groups',
-                icon: Users,
+                title: 'Funções',
+                href: '/admin/roles',
+                icon: Shield,
                 activeRoutes: [
-                    'admin.groups.index',
-                    'admin.groups.create',
-                    'admin.groups.edit',
-                    'admin.groups.show'
+                    'admin.roles.index',
+                    'admin.roles.create',
+                    'admin.roles.edit',
+                    'admin.roles.show'
+                ]
+            },
+            {
+                title: 'Permissões',
+                href: '/admin/permissions',
+                icon: Settings,
+                activeRoutes: [
+                    'admin.permissions.index',
+                    'admin.permissions.create',
+                    'admin.permissions.edit',
+                    'admin.permissions.show'
                 ]
             },
             {

@@ -17,7 +17,7 @@ interface User {
     email: string;
 }
 
-interface Client {
+interface Customer {
     id: number;
     name: string;
     company_name: string | null;
@@ -45,10 +45,10 @@ interface Client {
 }
 
 interface Props {
-    client: Client;
+    customer: Customer;
 }
 
-export default function Show({ client }: Props) {
+export default function Show({ customer }: Props) {
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
     const { toast } = useToast();
     const { flash } = usePage().props as any;
@@ -79,11 +79,11 @@ export default function Show({ client }: Props) {
         },
         {
             title: 'Clientes',
-            href: '/admin/clients',
+            href: '/admin/customers',
         },
         {
-            title: client.name,
-            href: `/admin/clients/${client.id}`,
+            title: customer.name,
+            href: `/admin/customers/${customer.id}`,
         },
     ];
 
@@ -98,36 +98,36 @@ export default function Show({ client }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={client.name} />
+            <Head title={customer.name} />
 
             <div className="container px-4 py-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="outline" size="icon" asChild>
-                            <Link href="/admin/clients">
+                            <Link href="/admin/customers">
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
                         </Button>
                         <div>
                             <h1 className="text-2xl font-bold flex items-center gap-2">
-                                {client.client_type === 'company' ? (
+                                {customer.client_type === 'company' ? (
                                     <Building className="h-5 w-5" />
                                 ) : (
                                     <Contact className="h-5 w-5" />
                                 )}
-                                {client.name}
+                                {customer.name}
                             </h1>
-                            {client.company_name && (
-                                <p className="text-muted-foreground">{client.company_name}</p>
+                            {customer.company_name && (
+                                <p className="text-muted-foreground">{customer.company_name}</p>
                             )}
                         </div>
-                        <Badge variant={client.active ? "success" : "secondary"}>
-                            {client.active ? 'Activo' : 'Inactivo'}
+                        <Badge variant={customer.active ? "success" : "secondary"}>
+                            {customer.active ? 'Activo' : 'Inactivo'}
                         </Badge>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" asChild>
-                            <Link href={`/admin/clients/${client.id}/edit`}>
+                            <Link href={`/admin/customers/${customer.id}/edit`}>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Editar
                             </Link>
@@ -150,13 +150,13 @@ export default function Show({ client }: Props) {
                         <CardContent className="space-y-4">
                             <div>
                                 <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Nome</h3>
-                                <p>{client.name}</p>
+                                <p>{customer.name}</p>
                             </div>
 
                             <div>
                                 <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Tipo de Cliente</h3>
                                 <p className="flex items-center gap-2">
-                                    {client.client_type === 'company' ? (
+                                    {customer.client_type === 'company' ? (
                                         <>
                                             <Building className="h-4 w-4" />
                                             Empresa
@@ -170,21 +170,21 @@ export default function Show({ client }: Props) {
                                 </p>
                             </div>
 
-                            {client.company_name && (
+                            {customer.company_name && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Nome da Empresa</h3>
-                                    <p>{client.company_name}</p>
+                                    <p>{customer.company_name}</p>
                                 </div>
                             )}
 
-                            {client.tax_id && (
+                            {customer.tax_id && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">NUIT</h3>
-                                    <p>{client.tax_id}</p>
+                                    <p>{customer.tax_id}</p>
                                 </div>
                             )}
 
-                            {client.birth_date && (
+                            {customer.birth_date && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">
                                         <span className="flex items-center gap-1">
@@ -192,35 +192,35 @@ export default function Show({ client }: Props) {
                                             Data de Nascimento
                                         </span>
                                     </h3>
-                                    <p>{formatDate(client.birth_date)}</p>
+                                    <p>{formatDate(customer.birth_date)}</p>
                                 </div>
                             )}
 
-                            {client.contact_person && (
+                            {customer.contact_person && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Pessoa de Contacto</h3>
-                                    <p>{client.contact_person}</p>
+                                    <p>{customer.contact_person}</p>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Data de Registo</h3>
-                                    <p>{formatDateTime(client.created_at)}</p>
+                                    <p>{formatDateTime(customer.created_at)}</p>
                                 </div>
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Última Actualização</h3>
-                                    <p>{formatDateTime(client.updated_at)}</p>
+                                    <p>{formatDateTime(customer.updated_at)}</p>
                                 </div>
                             </div>
 
-                            {client.notes && (
+                            {customer.notes && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                         <FileText className="h-4 w-4" />
                                         Notas
                                     </h3>
-                                    <p className="whitespace-pre-line">{client.notes}</p>
+                                    <p className="whitespace-pre-line">{customer.notes}</p>
                                 </div>
                             )}
                         </CardContent>
@@ -231,37 +231,37 @@ export default function Show({ client }: Props) {
                             <CardTitle>Contacto</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {client.email && (
+                            {customer.email && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                         <Mail className="h-4 w-4" />
                                         Email
                                     </h3>
-                                    <p>{client.email}</p>
+                                    <p>{customer.email}</p>
                                 </div>
                             )}
 
-                            {client.phone && (
+                            {customer.phone && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                         <Phone className="h-4 w-4" />
                                         Telefone
                                     </h3>
-                                    <p>{client.phone}</p>
+                                    <p>{customer.phone}</p>
                                 </div>
                             )}
 
-                            {client.mobile && (
+                            {customer.mobile && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                         <Phone className="h-4 w-4" />
                                         Telemóvel
                                     </h3>
-                                    <p>{client.mobile}</p>
+                                    <p>{customer.mobile}</p>
                                 </div>
                             )}
 
-                            {client.website && (
+                            {customer.website && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                         <Globe className="h-4 w-4" />
@@ -269,12 +269,12 @@ export default function Show({ client }: Props) {
                                     </h3>
                                     <p>
                                         <a
-                                            href={client.website.startsWith('http') ? client.website : `https://${client.website}`}
+                                            href={customer.website.startsWith('http') ? customer.website : `https://${customer.website}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-primary hover:underline"
                                         >
-                                            {client.website}
+                                            {customer.website}
                                         </a>
                                     </p>
                                 </div>
@@ -285,41 +285,41 @@ export default function Show({ client }: Props) {
                                     <MapPin className="h-4 w-4" />
                                     Morada Principal
                                 </h3>
-                                {client.address ? (
+                                {customer.address ? (
                                     <div className="mt-1">
-                                        <p>{client.address}</p>
-                                        <p>{client.city}{client.province ? `, ${client.province}` : ''}</p>
-                                        <p>{client.postal_code ? `${client.postal_code}, ` : ''}{client.country}</p>
+                                        <p>{customer.address}</p>
+                                        <p>{customer.city}{customer.province ? `, ${customer.province}` : ''}</p>
+                                        <p>{customer.postal_code ? `${customer.postal_code}, ` : ''}{customer.country}</p>
                                     </div>
                                 ) : (
                                     <p className="text-muted-foreground italic">Nenhuma morada registada</p>
                                 )}
                             </div>
 
-                            {client.billing_address && (
+                            {customer.billing_address && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-4">
                                         <MapPin className="h-4 w-4" />
                                         Morada de Faturação
                                     </h3>
-                                    <p className="mt-1">{client.billing_address}</p>
+                                    <p className="mt-1">{customer.billing_address}</p>
                                 </div>
                             )}
 
-                            {client.shipping_address && (
+                            {customer.shipping_address && (
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-4">
                                         <MapPin className="h-4 w-4" />
                                         Morada de Entrega
                                     </h3>
-                                    <p className="mt-1">{client.shipping_address}</p>
+                                    <p className="mt-1">{customer.shipping_address}</p>
                                 </div>
                             )}
                         </CardContent>
                     </Card>
                 </div>
 
-                {client.user && (
+                {customer.user && (
                     <Card className="mt-6">
                         <CardHeader>
                             <CardTitle>
@@ -336,11 +336,11 @@ export default function Show({ client }: Props) {
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Nome do Utilizador</h3>
-                                    <p>{client.user.name}</p>
+                                    <p>{customer.user.name}</p>
                                 </div>
                                 <div>
                                     <h3 className="font-medium text-sm text-gray-500 dark:text-gray-400">Email do Utilizador</h3>
-                                    <p>{client.user.email}</p>
+                                    <p>{customer.user.email}</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -354,7 +354,7 @@ export default function Show({ client }: Props) {
                 onClose={() => setDeleteAlertOpen(false)}
                 title="Eliminar Cliente"
                 description="Tem certeza que deseja eliminar este cliente? Esta acção não pode ser desfeita."
-                deleteUrl={`/admin/clients/${client.id}`}
+                deleteUrl={`/admin/customers/${customer.id}`}
             />
         </AppLayout>
     );
