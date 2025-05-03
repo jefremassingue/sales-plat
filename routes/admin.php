@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\InventoryAdjustmentController;
 use App\Http\Controllers\Admin\InventoryController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
@@ -37,6 +39,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('inventories/{inventory}/adjustments/{adjustment}', [InventoryAdjustmentController::class, 'update'])->name('inventories.adjustments.update');
     Route::delete('inventories/{inventory}/adjustments/{adjustment}', [InventoryAdjustmentController::class, 'destroy'])->name('inventories.adjustments.destroy');
 
+    // Rotas para cotações
+    Route::resource('quotations', QuotationController::class);
+    Route::post('quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.status');
+    Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'generatePdf'])->name('quotations.pdf');
+    Route::get('api/product-inventory', [QuotationController::class, 'getProductInventory'])->name('api.product.inventory');
+
     // Rotas para gestão de clientes
     Route::resource('customers', CustomerController::class);
 
@@ -45,6 +53,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Rotas para gestão de armazéns
     Route::resource('warehouses', WarehouseController::class);
+
+    // Rotas para gestão de moedas
+    Route::resource('currencies', CurrencyController::class);
+    Route::post('currencies/{currency}/set-default', [CurrencyController::class, 'setDefault'])
+        ->name('currencies.set-default');
 
     // Rotas para API de utilizadores (para o formulário de cliente e fornecedor)
     Route::prefix('api')->group(function () {
