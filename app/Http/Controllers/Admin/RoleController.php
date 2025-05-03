@@ -17,33 +17,29 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-        try {
-            $query = Role::query();
+        $query = Role::query();
 
-            // Filtro de busca
-            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
-                $search = trim($request->search);
-                $query->where('name', 'like', '%' . $search . '%');
-            }
-
-            // Ordenação
-            $sortField = $request->input('sort_field', 'name');
-            $sortOrder = $request->input('sort_order', 'asc');
-            $query->orderBy($sortField, $sortOrder);
-
-            // Incluir permissões relacionadas
-            $query->with('permissions:id,name,guard_name');
-
-            // Paginação
-            $roles = $query->paginate(10)->withQueryString();
-
-            return Inertia::render('Admin/Roles/Index', [
-                'roles' => $roles,
-                'filters' => $request->only(['search', 'sort_field', 'sort_order']),
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao listar as funções: ' . $e->getMessage());
+        // Filtro de busca
+        if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->where('name', 'like', '%' . $search . '%');
         }
+
+        // Ordenação
+        $sortField = $request->input('sort_field', 'name');
+        $sortOrder = $request->input('sort_order', 'asc');
+        $query->orderBy($sortField, $sortOrder);
+
+        // Incluir permissões relacionadas
+        $query->with('permissions:id,name,guard_name');
+
+        // Paginação
+        $roles = $query->paginate(10)->withQueryString();
+
+        return Inertia::render('Admin/Roles/Index', [
+            'roles' => $roles,
+            'filters' => $request->only(['search', 'sort_field', 'sort_order']),
+        ]);
     }
 
     /**
@@ -51,16 +47,12 @@ class RoleController extends Controller
      */
     public function create()
     {
-        try {
-            // Obter todas as permissões disponíveis
-            $permissions = Permission::orderBy('name')->get();
+        // Obter todas as permissões disponíveis
+        $permissions = Permission::orderBy('name')->get();
 
-            return Inertia::render('Admin/Roles/Create', [
-                'permissions' => $permissions,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Roles/Create', [
+            'permissions' => $permissions,
+        ]);
     }
 
     /**
@@ -115,16 +107,12 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        try {
-            // Carregar as permissões relacionadas
-            $role->load('permissions');
+        // Carregar as permissões relacionadas
+        $role->load('permissions');
 
-            return Inertia::render('Admin/Roles/Show', [
-                'role' => $role,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao mostrar os detalhes da função: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Roles/Show', [
+            'role' => $role,
+        ]);
     }
 
     /**
@@ -132,21 +120,17 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        try {
-            // Obter todas as permissões disponíveis
-            $permissions = Permission::orderBy('name')->get();
+        // Obter todas as permissões disponíveis
+        $permissions = Permission::orderBy('name')->get();
 
-            // Obter IDs das permissões atualmente atribuídas à função
-            $rolePermissions = $role->permissions->pluck('id')->toArray();
+        // Obter IDs das permissões atualmente atribuídas à função
+        $rolePermissions = $role->permissions->pluck('id')->toArray();
 
-            return Inertia::render('Admin/Roles/Edit', [
-                'role' => $role,
-                'permissions' => $permissions,
-                'rolePermissions' => $rolePermissions,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de edição: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Roles/Edit', [
+            'role' => $role,
+            'permissions' => $permissions,
+            'rolePermissions' => $rolePermissions,
+        ]);
     }
 
     /**

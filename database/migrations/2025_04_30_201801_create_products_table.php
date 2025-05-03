@@ -25,7 +25,6 @@ return new class extends Migration
             $table->string('barcode')->nullable();
             $table->decimal('weight', 8, 2)->nullable()->comment('em kilos');
             $table->foreignId('category_id')->constrained('categories')->onDelete('restrict');
-            $table->integer('stock')->default(0);
             $table->boolean('active')->default(true);
             $table->boolean('featured')->default(false);
             $table->boolean('ecommerce_available')->default(false);
@@ -35,6 +34,7 @@ return new class extends Migration
             $table->string('origin_country')->nullable()->default('Mozambique');
             $table->string('currency')->default('MZN');
             $table->timestamps();
+            $table->softDeletes(); // Soft delete para manter histórico
         });
     }
 

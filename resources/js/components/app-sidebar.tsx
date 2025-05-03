@@ -51,13 +51,13 @@ const mainNavItems = [
             },
             {
                 title: 'Inventário',
-                href: '/admin/inventory',
+                href: '/admin/inventories',
                 icon: Package,
                 activeRoutes: [
-                    'admin.inventory.index',
-                    'admin.inventory.create',
-                    'admin.inventory.edit',
-                    'admin.inventory.show'
+                    'admin.inventories.index',
+                    'admin.inventories.create',
+                    'admin.inventories.edit',
+                    'admin.inventories.show'
                 ]
             },
         ]
@@ -184,17 +184,17 @@ const mainNavItems = [
                     'admin.suppliers.show'
                 ]
             },
-            {
-                title: 'Transportadoras',
-                href: '/admin/carriers',
-                icon: Truck,
-                activeRoutes: [
-                    'admin.carriers.index',
-                    'admin.carriers.create',
-                    'admin.carriers.edit',
-                    'admin.carriers.show'
-                ]
-            },
+            // {
+            //     title: 'Transportadoras',
+            //     href: '/admin/carriers',
+            //     icon: Truck,
+            //     activeRoutes: [
+            //         'admin.carriers.index',
+            //         'admin.carriers.create',
+            //         'admin.carriers.edit',
+            //         'admin.carriers.show'
+            //     ]
+            // },
             // {
             //     title: 'Parceiros',
             //     href: '/admin/partners',

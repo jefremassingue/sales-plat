@@ -17,7 +17,6 @@ class PermissionController extends Controller
      */
     public function index(Request $request)
     {
-        try {
             $query = Permission::query();
 
             // Filtro de busca
@@ -41,9 +40,7 @@ class PermissionController extends Controller
                 'permissions' => $permissions,
                 'filters' => $request->only(['search', 'sort_field', 'sort_order']),
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao listar as permissões: ' . $e->getMessage());
-        }
+
     }
 
     /**
@@ -51,11 +48,8 @@ class PermissionController extends Controller
      */
     public function create()
     {
-        try {
             return Inertia::render('Admin/Permissions/Create');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
-        }
+
     }
 
     /**
@@ -106,16 +100,13 @@ class PermissionController extends Controller
      */
     public function show(Permission $permission)
     {
-        try {
             // Carregar as funções relacionadas
             $permission->load('roles');
 
             return Inertia::render('Admin/Permissions/Show', [
                 'permission' => $permission,
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao mostrar os detalhes da permissão: ' . $e->getMessage());
-        }
+
     }
 
     /**
@@ -123,13 +114,10 @@ class PermissionController extends Controller
      */
     public function edit(Permission $permission)
     {
-        try {
             return Inertia::render('Admin/Permissions/Edit', [
                 'permission' => $permission,
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de edição: ' . $e->getMessage());
-        }
+  
     }
 
     /**

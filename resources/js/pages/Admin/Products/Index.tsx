@@ -22,7 +22,7 @@ import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronDown, Edit, Eye, Filter, GridIcon, ListIcon, MoreHorizontal, PackageSearch, Plus, Trash } from 'lucide-react';
+import { ChevronDown, Edit, Eye, Filter, GridIcon, ListIcon, MoreHorizontal, PackageSearch, Plus, Store, Trash, WarehouseIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Image {
@@ -58,6 +58,8 @@ interface Product {
     updated_at: string;
     main_image: Image | null;
     category: Category;
+    total_stock?: number;
+    inventories?: any[];
 }
 
 interface Props {
@@ -291,7 +293,20 @@ export default function Index({ products, categories, filters }: Props) {
                         </div>
                         <div>
                             <span className="text-gray-500 dark:text-gray-400">Stock:</span>
-                            <p className="font-medium">{product.stock > 0 ? product.stock : <span className="text-red-500">Esgotado</span>}</p>
+                            <div className="font-medium flex items-center gap-1">
+                                {product.total_stock !== undefined ? (
+                                    <>
+                                        {product.total_stock > 0 ? product.total_stock : <span className="text-red-500">Esgotado</span>}
+                                        {product.inventories && product.inventories.length > 0 && (
+                                            <Badge variant="outline" className="ml-1 text-xs">
+                                                {product.inventories.length} armazém(ns)
+                                            </Badge>
+                                        )}
+                                    </>
+                                ) : (
+                                    product.stock > 0 ? product.stock : <span className="text-red-500">Esgotado</span>
+                                )}
+                            </div>
                         </div>
                         {product.sku && (
                             <div>
@@ -312,6 +327,12 @@ export default function Index({ products, categories, filters }: Props) {
                         <Link href={`/admin/products/${product.id}`}>
                             <Eye className="mr-1 h-4 w-4" />
                             Ver
+                        </Link>
+                    </Button>
+                    <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/admin/products/${product.id}/inventory`}>
+                            <WarehouseIcon className="mr-1 h-4 w-4" />
+                            Inventário
                         </Link>
                     </Button>
                     <Button variant="ghost" size="sm" asChild>
@@ -504,10 +525,26 @@ export default function Index({ products, categories, filters }: Props) {
                                                             <TableCell>{formatCurrency(product.price)}</TableCell>
                                                             <TableCell>{product.category?.name || 'N/A'}</TableCell>
                                                             <TableCell>
-                                                                {product.stock > 0 ? (
-                                                                    <span>{product.stock}</span>
+                                                                {product.total_stock !== undefined ? (
+                                                                    <div>
+                                                                        {product.total_stock > 0 ? (
+                                                                            <span>{product.total_stock}</span>
+                                                                        ) : (
+                                                                            <span className="text-red-500">Esgotado</span>
+                                                                        )}
+                                                                        {product.inventories && product.inventories.length > 0 && (
+                                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                                                                <WarehouseIcon className="h-3 w-3" />
+                                                                                <span>{product.inventories.length} armazém(ns)</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
                                                                 ) : (
-                                                                    <span className="text-red-500">Esgotado</span>
+                                                                    product.stock > 0 ? (
+                                                                        <span>{product.stock}</span>
+                                                                    ) : (
+                                                                        <span className="text-red-500">Esgotado</span>
+                                                                    )
                                                                 )}
                                                             </TableCell>
                                                             <TableCell>
@@ -533,6 +570,12 @@ export default function Index({ products, categories, filters }: Props) {
                                                                             <Link href={`/admin/products/${product.id}`}>
                                                                                 <Eye className="mr-2 h-4 w-4" />
                                                                                 <span>Ver Detalhes</span>
+                                                                            </Link>
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem asChild>
+                                                                            <Link href={`/admin/products/${product.id}/inventory`}>
+                                                                                <Store className="mr-2 h-4 w-4" />
+                                                                                <span>Gerir Inventário</span>
                                                                             </Link>
                                                                         </DropdownMenuItem>
                                                                         <DropdownMenuItem asChild>

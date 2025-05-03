@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Warehouse;
+use App\Models\Inventory;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -17,46 +19,45 @@ class WarehouseController extends Controller
      */
     public function index(Request $request)
     {
-            $query = Warehouse::query();
+        $query = Warehouse::query();
 
-            // Filtro de busca
-            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
-                $search = trim($request->search);
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('code', 'like', '%' . $search . '%')
-                      ->orWhere('email', 'like', '%' . $search . '%')
-                      ->orWhere('phone', 'like', '%' . $search . '%')
-                      ->orWhere('city', 'like', '%' . $search . '%');
-                });
-            }
+        // Filtro de busca
+        if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('code', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%')
+                    ->orWhere('city', 'like', '%' . $search . '%');
+            });
+        }
 
-            // Filtro por estado (ativo/inativo)
-            if ($request->has('active') && $request->active !== null) {
-                $query->where('active', $request->active === 'true');
-            }
+        // Filtro por estado (ativo/inativo)
+        if ($request->has('active') && $request->active !== null) {
+            $query->where('active', $request->active === 'true');
+        }
 
-            // Filtro por principal
-            if ($request->has('is_main') && $request->is_main !== null) {
-                $query->where('is_main', $request->is_main === 'true');
-            }
+        // Filtro por principal
+        if ($request->has('is_main') && $request->is_main !== null) {
+            $query->where('is_main', $request->is_main === 'true');
+        }
 
-            // Ordenação
-            $sortField = $request->input('sort_field', 'name');
-            $sortOrder = $request->input('sort_order', 'asc');
-            $query->orderBy($sortField, $sortOrder);
+        // Ordenação
+        $sortField = $request->input('sort_field', 'name');
+        $sortOrder = $request->input('sort_order', 'asc');
+        $query->orderBy($sortField, $sortOrder);
 
-            // Incluir o gestor associado, se existir
-            $query->with('manager:id,name,email');
+        // Incluir o gestor associado, se existir
+        $query->with('manager:id,name,email');
 
-            // Paginação
-            $warehouses = $query->paginate(10)->withQueryString();
+        // Paginação
+        $warehouses = $query->paginate(10)->withQueryString();
 
-            return Inertia::render('Admin/Warehouses/Index', [
-                'warehouses' => $warehouses,
-                'filters' => $request->only(['search', 'active', 'is_main', 'sort_field', 'sort_order']),
-            ]);
-
+        return Inertia::render('Admin/Warehouses/Index', [
+            'warehouses' => $warehouses,
+            'filters' => $request->only(['search', 'active', 'is_main', 'sort_field', 'sort_order']),
+        ]);
     }
 
     /**
@@ -64,17 +65,13 @@ class WarehouseController extends Controller
      */
     public function create()
     {
-        try {
-            // Obter todos os utilizadores para listar como possíveis gestores
-            $users = User::orderBy('name')->select('id', 'name', 'email')->get();
+        // Obter todos os utilizadores para listar como possíveis gestores
+        $users = User::orderBy('name')->select('id', 'name', 'email')->get();
 
-            return Inertia::render('Admin/Warehouses/Create', [
-                'users' => $users,
-                'hasMainWarehouse' => Warehouse::where('is_main', true)->exists(),
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Warehouses/Create', [
+            'users' => $users,
+            'hasMainWarehouse' => Warehouse::where('is_main', true)->exists(),
+        ]);
     }
 
     /**
@@ -148,15 +145,67 @@ class WarehouseController extends Controller
             // Carregar o gestor associado, se existir
             $warehouse->load('manager:id,name,email');
 
-            // Obter contagem de produtos no armazém
-            $productCount = 0; #$warehouse->products()->count();
+            // Obter estatísticas de inventário
+            $inventoryStats = DB::table('inventories')
+                ->select(
+                    DB::raw('COUNT(DISTINCT product_id) as total_products'),
+                    DB::raw('SUM(quantity) as total_items'),
+                    DB::raw('COUNT(*) as total_records'),
+                    DB::raw('SUM(quantity * IFNULL(unit_cost, 0)) as total_value')
+                )
+                ->where('warehouse_id', $warehouse->id)
+                ->first();
+
+            // Obter resumo dos produtos em stock no armazém
+            $inventoryItems = Inventory::where('warehouse_id', $warehouse->id)
+                ->with(['product:id,name,sku,price', 'productVariant:id,product_id,sku'])
+                ->orderBy('quantity', 'desc')
+                ->take(10) // Limitar a 10 produtos mais vendidos para não sobrecarregar
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_id' => $item->product_id,
+                        'product_name' => $item->product->name,
+                        'sku' => $item->product->sku ?? ($item->productVariant->sku ?? 'N/A'),
+                        'variant_id' => $item->product_variant_id,
+                        'variant_name' => $item->productVariant ? $item->productVariant->name : null,
+                        'quantity' => $item->quantity,
+                        'min_quantity' => $item->min_quantity,
+                        'location' => $item->location,
+                        'status' => $item->status,
+                        'unit_cost' => $item->unit_cost ?? $item->product->price, // Incluindo preço do produto como fallback
+                        'product_price' => $item->product->price, // Adicionando preço do produto
+                    ];
+                });
+
+            // Obter produtos com estoque baixo (abaixo do mínimo)
+            $lowStockCount = Inventory::where('warehouse_id', $warehouse->id)
+                ->whereRaw('quantity < min_quantity')
+                ->where('min_quantity', '>', 0)
+                ->count();
+
+            // Obter dados para gráficos ou visualizações (exemplo simplificado)
+            $inventoryByStatus = Inventory::where('warehouse_id', $warehouse->id)
+                ->select('status', DB::raw('COUNT(*) as count'), DB::raw('SUM(quantity) as total_quantity'))
+                ->groupBy('status')
+                ->get();
 
             return Inertia::render('Admin/Warehouses/Show', [
                 'warehouse' => $warehouse,
-                'productCount' => $productCount,
+                'inventoryStats' => [
+                    'totalProducts' => $inventoryStats->total_products ?? 0,
+                    'totalItems' => $inventoryStats->total_items ?? 0,
+                    'totalRecords' => $inventoryStats->total_records ?? 0,
+                    'totalValue' => $inventoryStats->total_value ?? 0,
+                    'lowStockCount' => $lowStockCount,
+                ],
+                'inventoryItems' => $inventoryItems,
+                'inventoryByStatus' => $inventoryByStatus,
             ]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao mostrar os detalhes do armazém: ' . $e->getMessage());
+            return redirect()->route('admin.warehouses.index')
+                ->with('error', 'Ocorreu um erro ao visualizar o armazém: ' . $e->getMessage());
         }
     }
 
@@ -165,27 +214,23 @@ class WarehouseController extends Controller
      */
     public function edit(Warehouse $warehouse)
     {
-        try {
-            // Carregar o gestor associado, se existir
-            $warehouse->load('manager:id,name,email');
+        // Carregar o gestor associado, se existir
+        $warehouse->load('manager:id,name,email');
 
-            // Obter todos os utilizadores para listar como possíveis gestores
-            $users = User::orderBy('name')->select('id', 'name', 'email')->get();
+        // Obter todos os utilizadores para listar como possíveis gestores
+        $users = User::orderBy('name')->select('id', 'name', 'email')->get();
 
-            // Verificar se existe algum armazém principal além deste
-            $hasOtherMainWarehouse = false;
-            if (!$warehouse->is_main) {
-                $hasOtherMainWarehouse = Warehouse::where('is_main', true)->exists();
-            }
-
-            return Inertia::render('Admin/Warehouses/Edit', [
-                'warehouse' => $warehouse,
-                'users' => $users,
-                'hasOtherMainWarehouse' => $hasOtherMainWarehouse,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de edição: ' . $e->getMessage());
+        // Verificar se existe algum armazém principal além deste
+        $hasOtherMainWarehouse = false;
+        if (!$warehouse->is_main) {
+            $hasOtherMainWarehouse = Warehouse::where('is_main', true)->exists();
         }
+
+        return Inertia::render('Admin/Warehouses/Edit', [
+            'warehouse' => $warehouse,
+            'users' => $users,
+            'hasOtherMainWarehouse' => $hasOtherMainWarehouse,
+        ]);
     }
 
     /**

@@ -212,9 +212,9 @@ export default function Edit({ warehouse, users = [], hasMainWarehouse = false }
               </TabsList>
 
               <TabsContent value="general-data" className="space-y-4">
-                <GeneralDataTab 
-                  form={form as any} 
-                  hasMainWarehouse={hasMainWarehouse && !warehouse.is_main} 
+                <GeneralDataTab
+                  form={form as any}
+                  hasMainWarehouse={hasMainWarehouse && !warehouse.is_main}
                 />
               </TabsContent>
 

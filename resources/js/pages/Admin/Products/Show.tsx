@@ -12,7 +12,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
-import { ArrowLeft, Edit, File, Hammer, PackageSearch, Palette, Ruler, Scan, Tag, Trash } from 'lucide-react';
+import { ArrowLeft, Edit, File, Hammer, PackageSearch, Palette, Ruler, Scan, Tag, Trash, WarehouseIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Image {
@@ -84,6 +84,15 @@ interface Category {
     slug: string;
 }
 
+interface Inventory {
+    id: number;
+    warehouse: {
+        name: string;
+    };
+    location: string | null;
+    quantity: number;
+}
+
 interface Product {
     id: number;
     name: string;
@@ -113,11 +122,76 @@ interface Product {
     sizes: Size[];
     attributes: Attribute[];
     variants: Variant[];
+    total_stock: number;
+    inventories: Inventory[];
 }
 
 interface Props {
     product: Product;
 }
+
+// Componente CardStock atualizado
+const CardStock = ({ product }: { product: Product }) => {
+    // Calcular estoque total
+    const totalStock = product.total_stock || 0;
+
+    // Obter inventário por armazém
+    const inventories = product.inventories || [];
+
+    return (
+        <Card className="mb-4">
+            <CardHeader>
+                <CardTitle>
+                    <div className="flex justify-between items-center">
+                        <span>Informações de Stock</span>
+                        <Badge>{totalStock > 0 ? 'Em Stock' : 'Sem Stock'}</Badge>
+                    </div>
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-3">
+                    <div>
+                        <div className="font-medium">Stock Total</div>
+                        <div className="text-2xl">{totalStock}</div>
+                    </div>
+
+                    {inventories.length > 0 && (
+                        <>
+                            <Separator />
+                            <div>
+                                <div className="font-medium mb-2">Stock por Armazém</div>
+                                <ul className="space-y-2">
+                                    {inventories.map((inv) => (
+                                        <li key={inv.id} className="flex justify-between items-center">
+                                            <div>
+                                                <span className="font-medium">{inv.warehouse?.name || 'Armazém'}</span>
+                                                {inv.location && (
+                                                    <span className="text-muted-foreground text-sm block">
+                                                        {inv.location}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <Badge variant="outline">{inv.quantity}</Badge>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </>
+                    )}
+
+                    <div className="mt-4 flex justify-end">
+                        <Button variant="outline" size="sm" asChild>
+                            <Link href={`/admin/products/${product.id}/inventory`}>
+                                <WarehouseIcon className="mr-2 h-4 w-4" />
+                                Gerir Inventário
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
 
 export default function Show({ product }: Props) {
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
@@ -205,6 +279,12 @@ export default function Show({ product }: Props) {
                             <Link href={`/admin/products/${product.id}/edit`}>
                                 <Edit className="mr-2 h-4 w-4" />
                                 Editar
+                            </Link>
+                        </Button>
+                        <Button variant="outline" asChild className="ml-2">
+                            <Link href={`/admin/products/${product.id}/inventory`}>
+                                <WarehouseIcon className="mr-2 h-4 w-4" />
+                                Gerir Inventário
                             </Link>
                         </Button>
                         <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)}>
@@ -305,10 +385,10 @@ export default function Show({ product }: Props) {
                                         </Badge>
                                     )}
                                 </div>
-                                <div>
+                                {/* <div>
                                     <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Stock</h3>
                                     <p>{product.stock > 0 ? product.stock : <span className="text-red-500">Sem stock</span>}</p>
-                                </div>
+                                </div> */}
                                 {product.sku && (
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">SKU</h3>
@@ -365,6 +445,8 @@ export default function Show({ product }: Props) {
                     </div>
 
                     <div className="lg:col-span-2">
+                        <CardStock product={product} />
+
                         <Card className="mb-6">
                             <CardHeader>
                                 <CardTitle>Detalhes do Produto</CardTitle>

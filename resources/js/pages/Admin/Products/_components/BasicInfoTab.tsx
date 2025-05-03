@@ -3,6 +3,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { WarehouseIcon } from 'lucide-react';
+import { Link } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 // Função para formatar o slug
@@ -32,7 +35,6 @@ interface BasicInfoTabProps {
         sku: string;
         barcode: string;
         weight: string;
-        stock: string;
         category_id: string;
         active: boolean;
         featured: boolean;
@@ -45,9 +47,11 @@ interface BasicInfoTabProps {
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     categories: Category[];
+    isEditing?: boolean;
+    productId?: number;
 }
 
-export default function BasicInfoTab({ data, setData, errors, categories }: BasicInfoTabProps) {
+export default function BasicInfoTab({ data, setData, errors, categories, isEditing = false, productId }: BasicInfoTabProps) {
     // Efeito para formatar o slug quando o nome mudar
     useEffect(() => {
         if (data.name && (!data.slug || data.slug === '')) {
@@ -77,6 +81,18 @@ export default function BasicInfoTab({ data, setData, errors, categories }: Basi
 
     return (
         <div className="space-y-4">
+            {/* Mostrar botão de gestão de inventário apenas durante edição */}
+            {isEditing && productId && (
+                <div className="mb-4 flex justify-end">
+                    <Button asChild variant="outline" className="flex items-center gap-2">
+                        <Link href={`/admin/products/${productId}/inventory`}>
+                            <WarehouseIcon className="h-4 w-4" />
+                            <span>Gerir Inventário</span>
+                        </Link>
+                    </Button>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name" className="required">Nome do Produto *</Label>
@@ -185,6 +201,9 @@ export default function BasicInfoTab({ data, setData, errors, categories }: Basi
                     {errors.price && (
                         <p className="text-destructive text-sm">{errors.price}</p>
                     )}
+                    <p className="text-sm text-muted-foreground">
+                        Este é o preço padrão do produto que será usado como referência para o inventário.
+                    </p>
                 </div>
 
                 <div className="space-y-2">
@@ -198,6 +217,9 @@ export default function BasicInfoTab({ data, setData, errors, categories }: Basi
                         onChange={(e) => setData('cost', e.target.value)}
                         placeholder="Ex: 800.00"
                     />
+                    <p className="text-sm text-muted-foreground">
+                        Custo de aquisição padrão, valor de referência para o inventário.
+                    </p>
                 </div>
 
                 <div className="space-y-2">
@@ -222,21 +244,6 @@ export default function BasicInfoTab({ data, setData, errors, categories }: Basi
                         onChange={(e) => setData('barcode', e.target.value)}
                         placeholder="Ex: 5901234123457"
                     />
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="stock">Stock</Label>
-                    <Input
-                        id="stock"
-                        type="number"
-                        min="0"
-                        value={data.stock}
-                        onChange={(e) => setData('stock', e.target.value)}
-                        placeholder="0"
-                    />
-                    <p className="text-sm text-muted-foreground">
-                        Deixe 0 se estiver gerindo stock por variantes.
-                    </p>
                 </div>
 
                 <div className="space-y-2">

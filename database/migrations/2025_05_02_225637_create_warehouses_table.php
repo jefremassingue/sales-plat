@@ -27,6 +27,7 @@ return new class extends Migration
             $table->boolean('active')->default(true);
             $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
+            $table->softDeletes(); // Soft delete para manter histórico
         });
     }
 

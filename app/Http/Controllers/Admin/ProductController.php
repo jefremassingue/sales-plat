@@ -10,6 +10,8 @@ use App\Models\ProductVariant;
 use App\Models\ProductAttribute;
 use App\Models\Category;
 use App\Models\Image;
+use App\Models\Inventory;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -73,15 +75,12 @@ class ProductController extends Controller
      */
     public function create()
     {
-        try {
             $categories = Category::whereNull('parent_id')->with('subcategories')->get();
 
             return Inertia::render('Admin/Products/Create', [
                 'categories' => $categories
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
-        }
+
     }
 
     /**
@@ -365,7 +364,8 @@ class ProductController extends Controller
                 'attributes',
                 'variants',
                 'variants.color',
-                'variants.size'
+                'variants.size',
+        'inventories.warehouse' // Adicionar esta linha
             ]);
 
             return Inertia::render('Admin/Products/Show', [
@@ -379,7 +379,6 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        try {
             $product->load([
                 'category',
                 'images',
@@ -397,9 +396,6 @@ class ProductController extends Controller
                 'product' => $product,
                 'categories' => $categories
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de edição: ' . $e->getMessage());
-        }
     }
 
     /**
@@ -869,6 +865,232 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->back()->with('error', 'Ocorreu um erro ao eliminar o produto: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Mostrar página para gerir inventário do produto
+     */
+    public function manageInventory(Request $request, Product $product)
+    {
+        try {
+            // Carregar o produto com suas variantes
+            $product->load(['variants', 'variants.color', 'variants.size']);
+
+            // Obter todos os armazéns
+            $warehouses = Warehouse::select('id', 'name', 'location')->get();
+
+            // Obter o inventário atual para este produto e suas variantes
+            $productIds = [$product->id];
+            $variantIds = $product->variants->pluck('id')->toArray();
+
+            $inventories = Inventory::where(function($query) use ($product, $variantIds) {
+                $query->where('product_id', $product->id)
+                      ->whereNull('product_variant_id');
+            })->orWhere(function($query) use ($variantIds) {
+                if (!empty($variantIds)) {
+                    $query->whereIn('product_variant_id', $variantIds);
+                }
+            })->with(['warehouse'])->get();
+
+            // Preparar dados para a visualização
+            $productInventory = [
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'sku' => $product->sku,
+                    'inventories' => $inventories->where('product_id', $product->id)
+                                               ->whereNull('product_variant_id')
+                                               ->values()
+                ]
+            ];
+
+            // Adicionar inventário para cada variante
+            if ($product->variants->count() > 0) {
+                $productInventory['variants'] = $product->variants->map(function($variant) use ($inventories) {
+                    $variantName = '';
+                    if ($variant->color) {
+                        $variantName .= $variant->color->name;
+                    }
+                    if ($variant->size) {
+                        $variantName .= $variantName ? ' / ' . $variant->size->name : $variant->size->name;
+                    }
+
+                    return [
+                        'id' => $variant->id,
+                        'name' => $variantName ?: 'Variante ' . $variant->id,
+                        'sku' => $variant->sku,
+                        'inventories' => $inventories->where('product_variant_id', $variant->id)->values()
+                    ];
+                });
+            }
+
+            return Inertia::render('Admin/Products/ManageInventory', [
+                'product' => $product,
+                'productInventory' => $productInventory,
+                'warehouses' => $warehouses,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao carregar página de gestão de inventário: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar a página: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Adicionar ou atualizar o inventário para um produto/variante em um armazém específico
+     */
+    public function updateInventory(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'items' => 'required|array',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
+                'items.*.warehouse_id' => 'required|exists:warehouses,id',
+                'items.*.quantity' => 'required|integer|min:0',
+                'items.*.min_quantity' => 'nullable|integer|min:0',
+                'items.*.location' => 'nullable|string|max:255',
+            ], [
+                'items.required' => 'Nenhum item de inventário foi fornecido.',
+                'items.*.product_id.required' => 'O produto é obrigatório.',
+                'items.*.product_id.exists' => 'Produto inválido.',
+                'items.*.warehouse_id.required' => 'O armazém é obrigatório.',
+                'items.*.warehouse_id.exists' => 'Armazém inválido.',
+                'items.*.quantity.required' => 'Quantidade é obrigatória.',
+                'items.*.quantity.integer' => 'Quantidade deve ser um número inteiro.',
+                'items.*.quantity.min' => 'Quantidade não pode ser negativa.',
+                'items.*.min_quantity.integer' => 'Quantidade mínima deve ser um número inteiro.',
+                'items.*.min_quantity.min' => 'Quantidade mínima não pode ser negativa.',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+
+            DB::beginTransaction();
+
+            try {
+                $items = $request->items;
+                $productId = null;
+
+                foreach ($items as $item) {
+                    // Guardar o productId do primeiro item para o redirecionamento
+                    if (!$productId) {
+                        $productId = $item['product_id'];
+                    }
+
+                    // Verificar se já existe um registo de inventário para este produto/variante e armazém
+                    $inventory = Inventory::where('product_id', $item['product_id'])
+                        ->where('product_variant_id', $item['product_variant_id'] ?? null)
+                        ->where('warehouse_id', $item['warehouse_id'])
+                        ->first();
+
+                    if ($inventory) {
+                        // Verificar se houve alteração na quantidade para registar um ajuste
+                        $oldQuantity = $inventory->quantity;
+                        $newQuantity = $item['quantity'];
+
+                        // Atualizar inventário existente
+                        $inventory->quantity = $item['quantity'];
+                        $inventory->min_quantity = $item['min_quantity'] ?? 0;
+                        $inventory->max_quantity = $item['max_quantity'] ?? null;
+                        $inventory->location = $item['location'] ?? null;
+                        $inventory->unit_cost = $item['unit_cost'] ?? null;
+                        $inventory->batch_number = $item['batch_number'] ?? null;
+                        $inventory->expiry_date = $item['expiry_date'] ?? null;
+                        $inventory->status = $item['status'] ?? 'active';
+                        $inventory->notes = $item['notes'] ?? null;
+                        $inventory->user_id = auth()->id();
+                        $inventory->save();
+
+                        // Se a quantidade foi alterada, criar um ajuste automático
+                        if ($oldQuantity != $newQuantity) {
+                            $quantityDifference = $newQuantity - $oldQuantity;
+                            $adjustmentType = $quantityDifference > 0 ? 'addition' : 'correction';
+
+                            if ($quantityDifference < 0) {
+                                $adjustmentType = 'correction';
+                            }
+
+                            // Criar o ajuste
+                            $adjustment = new \App\Models\InventoryAdjustment([
+                                'inventory_id' => $inventory->id,
+                                'quantity' => $quantityDifference,
+                                'type' => $adjustmentType,
+                                'reference_number' => null,
+                                'supplier_id' => null,
+                                'reason' => 'Ajuste automático devido a edição de inventário',
+                                'notes' => 'Este ajuste foi gerado automaticamente pelo sistema quando a quantidade foi alterada de ' .
+                                            $oldQuantity . ' para ' . $newQuantity . ' na gestão de inventário.',
+                                'user_id' => auth()->id(),
+                            ]);
+
+                            $adjustment->save();
+                        }
+                    } else {
+                        // Criar novo registo de inventário
+                        $inventory = Inventory::create([
+                            'product_id' => $item['product_id'],
+                            'product_variant_id' => $item['product_variant_id'] ?? null,
+                            'warehouse_id' => $item['warehouse_id'],
+                            'quantity' => $item['quantity'],
+                            'min_quantity' => $item['min_quantity'] ?? 0,
+                            'max_quantity' => $item['max_quantity'] ?? null,
+                            'location' => $item['location'] ?? null,
+                            'unit_cost' => $item['unit_cost'] ?? null,
+                            'batch_number' => $item['batch_number'] ?? null,
+                            'expiry_date' => $item['expiry_date'] ?? null,
+                            'status' => $item['status'] ?? 'active',
+                            'notes' => $item['notes'] ?? null,
+                            'user_id' => auth()->id(),
+                        ]);
+
+                        // Criar um ajuste de inventário para o stock inicial
+                        if ($item['quantity'] > 0) {
+                            $adjustment = new \App\Models\InventoryAdjustment([
+                                'inventory_id' => $inventory->id,
+                                'quantity' => $item['quantity'],
+                                'type' => 'initial',
+                                'reference_number' => null,
+                                'supplier_id' => null,
+                                'reason' => 'Stock inicial criado pelo sistema',
+                                'notes' => 'Este ajuste foi gerado automaticamente ao criar um novo registo de inventário.',
+                                'user_id' => auth()->id(),
+                            ]);
+
+                            $adjustment->save();
+                        }
+                    }
+                }
+
+                DB::commit();
+
+                return redirect()->route('admin.products.show', $productId)
+                    ->with('success', 'Inventário atualizado com sucesso!');
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Erro ao atualizar inventário: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString(),
+                    'request' => $request->all()
+                ]);
+
+                return redirect()->back()
+                    ->withErrors(['error' => 'Ocorreu um erro ao atualizar o inventário: ' . $e->getMessage()])
+                    ->withInput();
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Erro na validação do inventário: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Ocorreu um erro ao validar os dados: ' . $e->getMessage()])
+                ->withInput();
         }
     }
 }

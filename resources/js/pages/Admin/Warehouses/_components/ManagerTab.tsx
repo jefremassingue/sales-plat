@@ -42,7 +42,7 @@ export function ManagerTab({ form, users = [] }: ManagerTabProps) {
   // Filtrar utilizadores baseado no termo de pesquisa
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    
+
     if (term.length < 2) {
       setFilteredUsers(users);
       return;
@@ -50,8 +50,8 @@ export function ManagerTab({ form, users = [] }: ManagerTabProps) {
 
     setIsSearching(true);
     try {
-      const filtered = users.filter(user => 
-        user.name.toLowerCase().includes(term.toLowerCase()) || 
+      const filtered = users.filter(user =>
+        user.name.toLowerCase().includes(term.toLowerCase()) ||
         user.email.toLowerCase().includes(term.toLowerCase())
       );
       setFilteredUsers(filtered);

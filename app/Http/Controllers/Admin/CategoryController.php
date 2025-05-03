@@ -18,7 +18,6 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        try {
             // Query base para categorias de nível superior
             $query = Category::query()
                 ->with(['children' => function ($query) use ($request) {
@@ -85,9 +84,7 @@ class CategoryController extends Controller
                 'allCategories' => $allCategories,
                 'filters' => $request->only(['search', 'active']),
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar as categorias: ' . $e->getMessage());
-        }
+
     }
 
     /**
@@ -95,7 +92,6 @@ class CategoryController extends Controller
      */
     public function tree(Request $request)
     {
-        try {
             $query = Category::with('childrenRecursive')
                 ->whereNull('parent_id');
 
@@ -120,9 +116,7 @@ class CategoryController extends Controller
                 'categories' => $categories,
                 'filters' => $request->only(['search', 'active']),
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar a árvore de categorias: ' . $e->getMessage());
-        }
+
     }
 
     /**
@@ -130,7 +124,6 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        try {
             $categories = Category::whereNull('parent_id')
                 ->orderBy('order')
                 ->get();
@@ -138,9 +131,7 @@ class CategoryController extends Controller
             return Inertia::render('Admin/Categories/Create', [
                 'categories' => $categories
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
-        }
+
     }
 
     /**
@@ -221,7 +212,6 @@ class CategoryController extends Controller
      */
     public function edit(Category $category)
     {
-        try {
             $categories = Category::where('id', '!=', $category->id)
                 ->whereNotIn('id', $this->getCategoryChildrenIds($category))
                 ->get();
@@ -230,9 +220,7 @@ class CategoryController extends Controller
                 'category' => $category,
                 'categories' => $categories
             ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
-        }
+     
     }
 
     /**

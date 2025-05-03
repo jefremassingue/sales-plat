@@ -19,48 +19,44 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        try {
-            $query = User::query();
+        $query = User::query();
 
-            // Filtro de busca
-            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
-                $search = trim($request->search);
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('email', 'like', '%' . $search . '%');
-                });
-            }
-
-            // Filtro por função
-            if ($request->has('role') && $request->role !== null && trim($request->role) !== '') {
-                $roleId = trim($request->role);
-                $query->whereHas('roles', function ($q) use ($roleId) {
-                    $q->where('roles.id', $roleId);
-                });
-            }
-
-            // Ordenação
-            $sortField = $request->input('sort_field', 'name');
-            $sortOrder = $request->input('sort_order', 'asc');
-            $query->orderBy($sortField, $sortOrder);
-
-            // Incluir funções relacionadas
-            $query->with('roles:id,name,guard_name');
-
-            // Paginação
-            $users = $query->paginate(10)->withQueryString();
-
-            // Obter todas as funções para o filtro
-            $roles = Role::orderBy('name')->get(['id', 'name', 'guard_name']);
-
-            return Inertia::render('Admin/Users/Index', [
-                'users' => $users,
-                'roles' => $roles,
-                'filters' => $request->only(['search', 'role', 'sort_field', 'sort_order']),
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao listar os utilizadores: ' . $e->getMessage());
+        // Filtro de busca
+        if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
         }
+
+        // Filtro por função
+        if ($request->has('role') && $request->role !== null && trim($request->role) !== '') {
+            $roleId = trim($request->role);
+            $query->whereHas('roles', function ($q) use ($roleId) {
+                $q->where('roles.id', $roleId);
+            });
+        }
+
+        // Ordenação
+        $sortField = $request->input('sort_field', 'name');
+        $sortOrder = $request->input('sort_order', 'asc');
+        $query->orderBy($sortField, $sortOrder);
+
+        // Incluir funções relacionadas
+        $query->with('roles:id,name,guard_name');
+
+        // Paginação
+        $users = $query->paginate(10)->withQueryString();
+
+        // Obter todas as funções para o filtro
+        $roles = Role::orderBy('name')->get(['id', 'name', 'guard_name']);
+
+        return Inertia::render('Admin/Users/Index', [
+            'users' => $users,
+            'roles' => $roles,
+            'filters' => $request->only(['search', 'role', 'sort_field', 'sort_order']),
+        ]);
     }
 
     /**
@@ -68,16 +64,12 @@ class UserController extends Controller
      */
     public function create()
     {
-        try {
-            // Obter todas as funções disponíveis
-            $roles = Role::orderBy('name')->get();
+        // Obter todas as funções disponíveis
+        $roles = Role::orderBy('name')->get();
 
-            return Inertia::render('Admin/Users/Create', [
-                'roles' => $roles,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Users/Create', [
+            'roles' => $roles,
+        ]);
     }
 
     /**
@@ -125,7 +117,6 @@ class UserController extends Controller
 
             return redirect()->route('admin.users.index')
                 ->with('success', 'Utilizador criado com sucesso!');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -140,16 +131,12 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        try {
-            // Carregar as funções relacionadas
-            $user->load('roles');
+        // Carregar as funções relacionadas
+        $user->load('roles');
 
-            return Inertia::render('Admin/Users/Show', [
-                'user' => $user,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao mostrar os detalhes do utilizador: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Users/Show', [
+            'user' => $user,
+        ]);
     }
 
     /**
@@ -157,21 +144,17 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        try {
-            // Obter todas as funções disponíveis
-            $roles = Role::orderBy('name')->get();
+        // Obter todas as funções disponíveis
+        $roles = Role::orderBy('name')->get();
 
-            // Obter IDs das funções atualmente atribuídas ao utilizador
-            $userRoles = $user->roles->pluck('id')->toArray();
+        // Obter IDs das funções atualmente atribuídas ao utilizador
+        $userRoles = $user->roles->pluck('id')->toArray();
 
-            return Inertia::render('Admin/Users/Edit', [
-                'user' => $user,
-                'roles' => $roles,
-                'userRoles' => $userRoles,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de edição: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Users/Edit', [
+            'user' => $user,
+            'roles' => $roles,
+            'userRoles' => $userRoles,
+        ]);
     }
 
     /**
@@ -232,7 +215,6 @@ class UserController extends Controller
 
             return redirect()->route('admin.users.index')
                 ->with('success', 'Utilizador atualizado com sucesso!');
-
         } catch (\Exception $e) {
             DB::rollBack();
 

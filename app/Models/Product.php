@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Product extends Model
@@ -22,7 +23,6 @@ class Product extends Model
         'barcode',
         'weight',
         'category_id',
-        'stock',
         'active',
         'featured',
         'certification',
@@ -39,6 +39,8 @@ class Product extends Model
         'active' => 'boolean',
         'featured' => 'boolean',
     ];
+
+    protected $appends = ['total_stock', 'inventory_price'];
 
     /**
      * Gera automaticamente um slug ao criar o produto
@@ -112,10 +114,67 @@ class Product extends Model
     }
 
     /**
+     * Relação com os itens de inventário
+     */
+    public function inventories()
+    {
+        return $this->hasMany(Inventory::class);
+    }
+
+    /**
+     * Obter o estoque total do produto em todos os armazéns
+     */
+    public function getTotalStockAttribute()
+    {
+        return $this->inventories()
+            ->where('status', 'active')
+            ->sum('quantity');
+    }
+
+    /**
+     * Obter o preço médio do produto no inventário
+     */
+    public function getInventoryPriceAttribute()
+    {
+        $averageUnitCost = $this->inventories()
+            ->where('status', 'active')
+            ->where('unit_cost', '>', 0)
+            ->avg('unit_cost');
+
+        // Se não encontrar preço no inventário, usa o preço de referência do produto
+        return $averageUnitCost ?: $this->price;
+    }
+
+    /**
      * Verificar se um produto tem estoque disponível
      */
     public function hasStock()
     {
-        return $this->stock > 0;
+        return $this->total_stock > 0;
+    }
+
+    /**
+     * Obter o estoque do produto num armazém específico
+     */
+    public function stockInWarehouse($warehouseId)
+    {
+        return $this->inventories()
+            ->where('warehouse_id', $warehouseId)
+            ->where('status', 'active')
+            ->sum('quantity');
+    }
+
+    /**
+     * Obter o preço unitário mais recente no inventário
+     */
+    public function getLatestUnitCost()
+    {
+        $latestInventory = $this->inventories()
+            ->where('status', 'active')
+            ->where('unit_cost', '>', 0)
+            ->orderByDesc('created_at')
+            ->first();
+
+        return $latestInventory ? $latestInventory->unit_cost : $this->price;
     }
 }
