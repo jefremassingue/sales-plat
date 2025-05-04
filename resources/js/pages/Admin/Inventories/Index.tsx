@@ -210,6 +210,8 @@ export default function Index({ inventories, products, warehouses, statuses, fil
                 return 'destructive';
             case 'expired':
                 return 'outline';
+            case 'desative':
+                return 'error';
             default:
                 return 'secondary';
         }

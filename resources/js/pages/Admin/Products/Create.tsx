@@ -33,6 +33,7 @@ interface Category {
 
 interface Props {
     categories: Category[];
+    units: { value: string; label: string }[]; // Adicionado array de unidades
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -50,7 +51,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Create({ categories }: Props) {
+export default function Create({ categories, units }: Props) {
     const [activeTab, setActiveTab] = useState('basic');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [description, setDescription] = useState('');
@@ -104,6 +105,7 @@ export default function Create({ categories }: Props) {
         brand: '',
         origin_country: 'Moçambique',
         currency: 'MZN',
+        unit: units && units.length > 0 ? units[0].value : '', // Definir a primeira unidade por padrão
     });
 
     // Verificar se há erros e mudar para a aba correspondente
@@ -140,6 +142,13 @@ export default function Create({ categories }: Props) {
             }
         }
     }, [errors]);
+
+    // Garantir que a unidade padrão seja definida quando as unidades são carregadas
+    useEffect(() => {
+        if (units && units.length > 0 && !data.unit) {
+            setData('unit', units[0].value);
+        }
+    }, [units]);
 
     // Adicionar cor
     const handleAddColor = () => {
@@ -586,6 +595,7 @@ export default function Create({ categories }: Props) {
                                             setData={handleSetData}
                                             errors={errors}
                                             categories={categories}
+                                            units={units}
                                         />
                                     </TabsContent>
 

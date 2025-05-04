@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UnitEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +30,8 @@ class Product extends Model
         'warranty',
         'brand',
         'origin_country',
-        'currency'
+        'currency',
+        'unit'
     ];
 
     protected $casts = [
@@ -38,6 +40,7 @@ class Product extends Model
         'weight' => 'float',
         'active' => 'boolean',
         'featured' => 'boolean',
+        'unit' => UnitEnum::class,
     ];
 
     protected $appends = ['total_stock', 'inventory_price'];
@@ -176,5 +179,13 @@ class Product extends Model
             ->first();
 
         return $latestInventory ? $latestInventory->unit_cost : $this->price;
+    }
+
+    /**
+     * Obter o nome formatado da unidade para exibição
+     */
+    public function getUnitLabelAttribute(): string
+    {
+        return $this->unit ? $this->unit->label() : UnitEnum::UNIT->label();
     }
 }

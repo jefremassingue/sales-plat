@@ -21,68 +21,61 @@ class InventoryController extends Controller
      */
     public function index(Request $request)
     {
-        try {
-            $query = Inventory::query()
-                ->with('product', 'productVariant', 'warehouse');
+        $query = Inventory::query()
+            ->with('product', 'productVariant', 'warehouse');
 
-            // Filtros
-            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
-                $search = trim($request->search);
-                $query->whereHas('product', function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('sku', 'like', '%' . $search . '%');
-                })
+        // Filtros
+        if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->whereHas('product', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('sku', 'like', '%' . $search . '%');
+            })
                 ->orWhereHas('warehouse', function ($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%');
                 })
                 ->orWhere('location', 'like', '%' . $search . '%')
                 ->orWhere('batch_number', 'like', '%' . $search . '%');
-            }
-
-            if ($request->has('product_id') && $request->product_id) {
-                $query->where('product_id', $request->product_id);
-            }
-
-            if ($request->has('warehouse_id') && $request->warehouse_id) {
-                $query->where('warehouse_id', $request->warehouse_id);
-            }
-
-            if ($request->has('status') && $request->status) {
-                $query->where('status', $request->status);
-            }
-
-            // Ordenação
-            $sortField = $request->input('sort_field', 'created_at');
-            $sortOrder = $request->input('sort_order', 'desc');
-
-            $allowedSortFields = ['quantity', 'min_quantity', 'location', 'batch_number', 'expiry_date', 'status', 'created_at'];
-            if (in_array($sortField, $allowedSortFields)) {
-                $query->orderBy($sortField, $sortOrder);
-            }
-
-            $inventories = $query->paginate(15)->withQueryString();
-            $products = Product::select('id', 'name', 'sku')->get();
-            $warehouses = Warehouse::select('id', 'name')->get();
-
-            return Inertia::render('Admin/Inventories/Index', [
-                'inventories' => $inventories,
-                'products' => $products,
-                'warehouses' => $warehouses,
-                'filters' => $request->only(['search', 'product_id', 'warehouse_id', 'status', 'sort_field', 'sort_order']),
-                'statuses' => [
-                    ['value' => 'active', 'label' => 'Ativo'],
-                    ['value' => 'reserved', 'label' => 'Reservado'],
-                    ['value' => 'damaged', 'label' => 'Danificado'],
-                    ['value' => 'expired', 'label' => 'Expirado']
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erro ao listar inventário: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()->back()->with('error', 'Ocorreu um erro ao listar o inventário: ' . $e->getMessage());
         }
+
+        if ($request->has('product_id') && $request->product_id) {
+            $query->where('product_id', $request->product_id);
+        }
+
+        if ($request->has('warehouse_id') && $request->warehouse_id) {
+            $query->where('warehouse_id', $request->warehouse_id);
+        }
+
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        }
+
+        // Ordenação
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        $allowedSortFields = ['quantity', 'min_quantity', 'location', 'batch_number', 'expiry_date', 'status', 'created_at'];
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortOrder);
+        }
+
+        $inventories = $query->paginate(15)->withQueryString();
+        $products = Product::select('id', 'name', 'sku')->get();
+        $warehouses = Warehouse::select('id', 'name')->get();
+
+        return Inertia::render('Admin/Inventories/Index', [
+            'inventories' => $inventories,
+            'products' => $products,
+            'warehouses' => $warehouses,
+            'filters' => $request->only(['search', 'product_id', 'warehouse_id', 'status', 'sort_field', 'sort_order']),
+            'statuses' => [
+                ['value' => 'active', 'label' => 'Ativo'],
+                ['value' => 'inactive', 'label' => 'Inativo'],
+                ['value' => 'reserved', 'label' => 'Reservado'],
+                ['value' => 'damaged', 'label' => 'Danificado'],
+                ['value' => 'expired', 'label' => 'Expirado']
+            ]
+        ]);
     }
 
     /**
@@ -90,27 +83,20 @@ class InventoryController extends Controller
      */
     public function create()
     {
-        try {
-            $products = Product::select('id', 'name', 'sku')->with('variants')->get();
-            $warehouses = Warehouse::select('id', 'name')->get();
+        $products = Product::select('id', 'name', 'sku')->with('variants')->get();
+        $warehouses = Warehouse::select('id', 'name')->get();
 
-            return Inertia::render('Admin/Inventories/Create', [
-                'products' => $products,
-                'warehouses' => $warehouses,
-                'statuses' => [
-                    ['value' => 'active', 'label' => 'Ativo'],
-                    ['value' => 'reserved', 'label' => 'Reservado'],
-                    ['value' => 'damaged', 'label' => 'Danificado'],
-                    ['value' => 'expired', 'label' => 'Expirado']
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erro ao abrir formulário de criação de inventário: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de criação: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Inventories/Create', [
+            'products' => $products,
+            'warehouses' => $warehouses,
+            'statuses' => [
+                ['value' => 'active', 'label' => 'Ativo'],
+                ['value' => 'inactive', 'label' => 'Inativo'],
+                ['value' => 'reserved', 'label' => 'Reservado'],
+                ['value' => 'damaged', 'label' => 'Danificado'],
+                ['value' => 'expired', 'label' => 'Expirado']
+            ]
+        ]);
     }
 
     /**
@@ -130,7 +116,7 @@ class InventoryController extends Controller
                 'batch_number' => 'nullable|string|max:255',
                 'expiry_date' => 'nullable|date|after_or_equal:today',
                 'unit_cost' => 'nullable|numeric|min:0',
-                'status' => 'required|string|in:active,reserved,damaged,expired',
+                'status' => 'required|string|in:active,reserved,damaged,expired,inactive',
                 'notes' => 'nullable|string',
             ], [
                 'product_id.required' => 'O produto é obrigatório.',
@@ -293,29 +279,23 @@ class InventoryController extends Controller
      */
     public function edit(Inventory $inventory)
     {
-        try {
-            $inventory->load(['product', 'productVariant', 'warehouse']);
-            $products = Product::select('id', 'name', 'sku')->with('variants')->get();
-            $warehouses = Warehouse::select('id', 'name')->get();
 
-            return Inertia::render('Admin/Inventories/Edit', [
-                'inventory' => $inventory,
-                'products' => $products,
-                'warehouses' => $warehouses,
-                'statuses' => [
-                    ['value' => 'active', 'label' => 'Ativo'],
-                    ['value' => 'reserved', 'label' => 'Reservado'],
-                    ['value' => 'damaged', 'label' => 'Danificado'],
-                    ['value' => 'expired', 'label' => 'Expirado']
-                ]
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Erro ao abrir formulário de edição de inventário: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
+        $inventory->load(['product', 'productVariant', 'warehouse']);
+        $products = Product::select('id', 'name', 'sku')->with('variants')->get();
+        $warehouses = Warehouse::select('id', 'name')->get();
 
-            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de edição: ' . $e->getMessage());
-        }
+        return Inertia::render('Admin/Inventories/Edit', [
+            'inventory' => $inventory,
+            'products' => $products,
+            'warehouses' => $warehouses,
+            'statuses' => [
+                ['value' => 'active', 'label' => 'Ativo'],
+                ['value' => 'inactive', 'label' => 'Inativo'],
+                ['value' => 'reserved', 'label' => 'Reservado'],
+                ['value' => 'damaged', 'label' => 'Danificado'],
+                ['value' => 'expired', 'label' => 'Expirado']
+            ]
+        ]);
     }
 
     /**
@@ -335,7 +315,7 @@ class InventoryController extends Controller
                 'batch_number' => 'nullable|string|max:255',
                 'expiry_date' => 'nullable|date',
                 'unit_cost' => 'nullable|numeric|min:0',
-                'status' => 'required|string|in:active,reserved,damaged,expired',
+                'status' => 'required|string|in:active,reserved,damaged,expired,inactive',
                 'notes' => 'nullable|string',
             ], [
                 'product_id.required' => 'O produto é obrigatório.',
@@ -366,10 +346,12 @@ class InventoryController extends Controller
 
             try {
                 // Verificar se está a tentar alterar para uma combinação já existente de produto/variante e armazém
-                if ($inventory->product_id != $request->product_id ||
+                if (
+                    $inventory->product_id != $request->product_id ||
                     $inventory->product_variant_id != $request->product_variant_id ||
                     $inventory->warehouse_id != $request->warehouse_id ||
-                    $inventory->batch_number != $request->batch_number) {
+                    $inventory->batch_number != $request->batch_number
+                ) {
 
                     $existingInventory = Inventory::where('product_id', $request->product_id)
                         ->where('product_variant_id', $request->product_variant_id)
@@ -410,7 +392,7 @@ class InventoryController extends Controller
                         'supplier_id' => null,
                         'reason' => 'Ajuste automático devido a edição manual do inventário',
                         'notes' => 'Este ajuste foi gerado automaticamente pelo sistema quando a quantidade foi alterada de ' .
-                                    $oldQuantity . ' para ' . $newQuantity . ' na edição do inventário.',
+                            $oldQuantity . ' para ' . $newQuantity . ' na edição do inventário.',
                         'user_id' => Auth::id(),
                     ]);
 

@@ -10,9 +10,9 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Calendar, Eye, FileText, Filter, MoreHorizontal, MoreVertical, Pencil, Plus, Printer, Trash } from 'lucide-react';
+import { Calendar, Eye, FileText, Filter, MoreHorizontal, Pencil, Plus, Printer, Trash, Send, Copy, Download, ArrowUpRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Customer, Quotation, QuotationStatus } from './_components/types';
 import { format } from 'date-fns';
 
@@ -28,6 +28,12 @@ interface Props {
     to: number;
     total: number;
   };
+  currency: {
+    symbol: string;
+    decimal_places: number;
+    decimal_separator: string;
+    thousand_separator: string;
+  };
   customers: Customer[];
   statuses: QuotationStatus[];
   filters?: {
@@ -38,6 +44,17 @@ interface Props {
     date_to?: string | null;
     sort_field?: string;
     sort_order?: string;
+  };
+  stats?: {
+    total: number;
+    draft: number;
+    sent: number;
+    approved: number;
+    rejected: number;
+    expired: number;
+    converted: number;
+    total_value: number;
+    pending_value: number;
   };
 }
 
@@ -52,7 +69,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Index({ quotations, customers, statuses, filters = {} }: Props) {
+export default function Index({ quotations, customers, statuses, currency, filters = {}, stats }: Props) {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [quotationToDelete, setQuotationToDelete] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
@@ -67,6 +84,7 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
   const [sortField, setSortField] = useState(filters.sort_field || 'issue_date');
   const [sortOrder, setSortOrder] = useState(filters.sort_order || 'desc');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [statusUpdating, setStatusUpdating] = useState<boolean>(false);
 
   const { toast } = useToast();
   const { flash } = usePage().props as any;
@@ -113,10 +131,10 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
         .replace(/#/g, currency.thousand_separator)
         .replace(/\$/g, currency.decimal_separator);
 
-      return `${currency.symbol} ${formattedValue}`;
+      return `${currency?.symbol} ${formattedValue}`;
     } catch (error) {
       // Fallback para formatação padrão
-      return `${currency.symbol} ${amount.toFixed(2)}`;
+      return `${currency?.symbol} ${amount.toFixed(2)}`;
     }
   };
 
@@ -203,6 +221,77 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
     return statusObj?.color || 'secondary';
   };
 
+  // Atualiza o status da cotação
+  const handleStatusChange = (quotationId: number, newStatus: string) => {
+    setStatusUpdating(true);
+
+    router.post(`/admin/quotations/${quotationId}/status`, {
+      status: newStatus
+    }, {
+      preserveState: true,
+      onSuccess: () => {
+        toast({
+          title: 'Status atualizado',
+          description: 'O status da cotação foi atualizado com sucesso.',
+          variant: 'success',
+        });
+        setStatusUpdating(false);
+      },
+      onError: () => {
+        toast({
+          title: 'Erro',
+          description: 'Ocorreu um erro ao atualizar o status da cotação.',
+          variant: 'destructive',
+        });
+        setStatusUpdating(false);
+      }
+    });
+  };
+
+  // Enviar cotação por email
+  const handleSendEmail = (quotationId: number, hasEmail: boolean) => {
+    if (!hasEmail) {
+      toast({
+        title: 'Erro',
+        description: 'O cliente não possui um endereço de email válido.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    router.post(`/admin/quotations/${quotationId}/send-email`, {}, {
+      preserveState: true,
+      onSuccess: () => {
+        toast({
+          title: 'Email enviado',
+          description: 'A cotação foi enviada por email com sucesso.',
+          variant: 'success',
+        });
+      },
+      onError: () => {
+        toast({
+          title: 'Erro',
+          description: 'Ocorreu um erro ao enviar o email.',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
+  // Duplicar cotação
+  const handleDuplicate = (quotationId: number) => {
+    router.post(`/admin/quotations/${quotationId}/duplicate`, {}, {
+      preserveState: false,
+      onError: () => {
+        toast({
+          title: 'Erro',
+          description: 'Ocorreu um erro ao duplicar a cotação.',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Gestão de Cotações" />
@@ -216,6 +305,61 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
               <span>Nova Cotação</span>
             </Link>
           </Button>
+        </div>
+
+        {/* Estatísticas rápidas */}
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total de Cotações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.total || quotations.total || 0}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Valor total: {formatCurrency(stats?.total_value || 0, currency)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats?.sent || 0}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Valor pendente: {formatCurrency(stats?.pending_value || 0, currency)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Aprovadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <div className="text-2xl font-bold mr-2">{stats?.approved || 0}</div>
+                <Badge variant="success" className="ml-auto">
+                  {((stats?.approved || 0) / (stats?.total || 1) * 100).toFixed(1)}%
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Expiradas/Rejeitadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <div className="text-2xl font-bold mr-2">{(stats?.expired || 0) + (stats?.rejected || 0)}</div>
+                <Badge variant="destructive" className="ml-auto">
+                  {(((stats?.expired || 0) + (stats?.rejected || 0)) / (stats?.total || 1) * 100).toFixed(1)}%
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Card className="mb-6">
@@ -252,7 +396,6 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
                     <SelectValue placeholder="Filtrar por cliente" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* <SelectItem value="">Todos os clientes</SelectItem> */}
                     {customers.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id.toString()}>
                         {customer.name}
@@ -282,7 +425,6 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
                     <SelectValue placeholder="Filtrar por estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    {/* <SelectItem value="">Todos os estados</SelectItem> */}
                     {statuses.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -404,10 +546,17 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
                           </div>
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {formatCurrency(quotation.total)}
+                          {formatCurrency(quotation.total, currency)}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={getStatusBadgeVariant(quotation.status)}>
+                          <Badge
+                            variant={getStatusBadgeVariant(quotation.status)}
+                            className="cursor-pointer"
+                            onClick={() => {
+                              // Abrir menu de status ao clicar no badge
+                              document.getElementById(`status-trigger-${quotation.id}`)?.click();
+                            }}
+                          >
                             {statuses.find(s => s.value === quotation.status)?.label || quotation.status}
                           </Badge>
                         </TableCell>
@@ -435,15 +584,69 @@ export default function Index({ quotations, customers, statuses, filters = {} }:
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem asChild>
-                                <Link href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
+                                <a href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
                                   <FileText className="mr-2 h-4 w-4" />
                                   <span>Ver PDF</span>
-                                </Link>
+                                </a>
                               </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <a href={`/admin/quotations/${quotation.id}/pdf?download=true`} target="_blank">
+                                  <Download className="mr-2 h-4 w-4" />
+                                  <span>Descarregar PDF</span>
+                                </a>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleSendEmail(
+                                  quotation.id,
+                                  Boolean(quotation.customer?.email)
+                                )}
+                                disabled={!quotation.customer?.email}
+                              >
+                                <Send className="mr-2 h-4 w-4" />
+                                <span>Enviar por Email</span>
+                                {!quotation.customer?.email && (
+                                  <span className="ml-1 text-xs text-destructive">(Sem email)</span>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleDuplicate(quotation.id)}>
+                                <Copy className="mr-2 h-4 w-4" />
+                                <span>Duplicar Cotação</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleDeleteClick(quotation.id)}>
                                 <Trash className="mr-2 h-4 w-4" />
                                 <span>Eliminar</span>
                               </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                id={`status-trigger-${quotation.id}`}
+                                variant="ghost"
+                                size="sm"
+                                className="hidden"
+                              >
+                                <span className="sr-only">Alterar status</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem disabled className="font-semibold">
+                                Alterar status
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {statuses.map((status) => (
+                                <DropdownMenuItem
+                                  key={status.value}
+                                  disabled={status.value === quotation.status || statusUpdating}
+                                  onClick={() => handleStatusChange(quotation.id, status.value)}
+                                >
+                                  <Badge variant={status.color} className="mr-2">
+                                    {status.label}
+                                  </Badge>
+                                </DropdownMenuItem>
+                              ))}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

@@ -11,7 +11,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Registrar o alias do PDF
+        $this->app->bind('PDF', function() {
+            return new \Barryvdh\DomPDF\PDF;
+        });
     }
 
     /**

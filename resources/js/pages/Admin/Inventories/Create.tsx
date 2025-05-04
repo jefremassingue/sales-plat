@@ -55,7 +55,7 @@ const formSchema = z.object({
         .refine(val => val === '' || !isNaN(Number(val)), { message: "Deve ser um número válido" })
         .refine(val => val === '' || Number(val) >= 0, { message: "Não pode ser negativo" })
         .optional(),
-    status: z.enum(['active', 'reserved', 'damaged', 'expired'], {
+    status: z.enum(['active', 'inactive', 'reserved', 'damaged', 'expired'], {
         required_error: "Por favor, selecione um estado",
     }),
     notes: z.string().optional(),

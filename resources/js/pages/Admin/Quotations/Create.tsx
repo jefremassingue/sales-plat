@@ -1,30 +1,23 @@
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Form } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card } from '@/components/ui/card';
+import { Form } from '@/components/ui/form';
 import { useToast } from '@/components/ui/use-toast';
-import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { pt } from 'date-fns/locale';
-import { ArrowLeft, CalendarIcon, Check, CreditCard, Loader2, Minus, Package, Pencil, Plus, Trash, User } from 'lucide-react';
+import { ArrowLeft, Check, CreditCard, Loader2, Package, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { Customer, Currency, Product, ProductVariant, Warehouse, QuotationStatus, TaxRate, DiscountType } from './_components/types';
 import ProductSelector from './_components/ProductSelector';
 import ItemForm, { ItemFormValues } from './_components/ItemForm';
+import DetailsTab from './_components/DetailsTab';
+import ItemsTab from './_components/ItemsTab';
+import NotesTab from './_components/NotesTab';
 
 interface Props {
   quotationNumber: string;
@@ -34,13 +27,14 @@ interface Props {
   currencies: Currency[];
   defaultCurrency: Currency;
   taxRates: TaxRate[];
+  units: { value: string; label: string }[];
   statuses: QuotationStatus[];
   discountTypes: DiscountType[];
 }
 
 // Schema de validação do formulário
 const formSchema = z.object({
-  quotation_number: z.string().min(1, { message: "Número da cotação é obrigatório" }),
+  quotation_number: z.string().optional().nullable(),
   customer_id: z.string().optional(),
   issue_date: z.date({ required_error: "Data de emissão é obrigatória" }),
   expiry_date: z.date().optional().nullable(),
@@ -103,6 +97,7 @@ export default function Create({
   defaultCurrency,
   taxRates,
   statuses,
+  units,
   discountTypes
 }: Props) {
   const { toast } = useToast();
@@ -137,10 +132,12 @@ export default function Create({
   });
 
   // Field array para manipular os itens da cotação
-  const { fields, append, remove, update } = useFieldArray({
+  const fieldArray = useFieldArray({
     control: form.control,
     name: "items",
   });
+
+  const { fields, append, remove, update } = fieldArray;
 
   // Selecionar a taxa de câmbio quando a moeda muda
   const watchCurrency = form.watch('currency_code');
@@ -175,40 +172,45 @@ export default function Create({
 
   // Lidar com a seleção de um produto no seletor
   const handleProductSelect = (productId: string) => {
-    // Fechar o seletor de produtos
     setProductSelectorOpen(false);
 
     // Obter o produto selecionado
     const selectedProduct = products.find(p => p.id.toString() === productId);
     if (!selectedProduct) return;
 
-    // Preparar os dados do item com base no produto selecionado
-    const itemData = {
-      product_id: productId,
-      name: selectedProduct.name,
-      quantity: '1',
-      unit_price: selectedProduct.price.toString(),
-      unit: 'unit',
-      discount_percentage: '0',
-      tax_percentage: '17', // Taxa padrão de IVA em Moçambique
-    };
-
     // Se estiver editando um item existente
     if (editingItemIndex !== null) {
       // Atualizar o item existente com os dados do produto
-      update(editingItemIndex, itemData);
+      const currentItem = { ...fields[editingItemIndex] };
+      update(editingItemIndex, {
+        ...currentItem,
+        product_id: productId,
+        name: selectedProduct.name,
+        unit_price: selectedProduct.price.toString(),
+        unit: selectedProduct.unit || 'unit', // Usar a unidade do produto
+      });
     } else {
-      // Adicionar novo item
-      append(itemData);
+      // Criar um novo item com os dados do produto
+      const newItem = {
+        product_id: productId,
+        name: selectedProduct.name,
+        quantity: '1',
+        unit_price: selectedProduct.price.toString(),
+        unit: selectedProduct.unit || 'unit', // Usar a unidade do produto
+        discount_percentage: '0',
+        tax_percentage: taxRates.find(tax => tax.is_default == true)?.value || '16', // Taxa padrão de IVA em Moçambique
+      };
 
-      // Definir o índice do item recém adicionado como editando
+      // Adicionar diretamente no form
+      append(newItem);
+
+      // Definir o item recém adicionado como item em edição
       setTimeout(() => {
         setEditingItemIndex(fields.length);
+        // Abrir formulário de item para editar detalhes adicionais
+        setItemFormOpen(true);
       }, 0);
     }
-
-    // Abrir o formulário de item para edição adicional
-    setItemFormOpen(true);
   };
 
   // Adicionar um novo item
@@ -262,34 +264,29 @@ export default function Create({
     };
   };
 
-  // Calcular totais da cotação
-  const calculateTotals = () => {
-    let subtotal = 0;
-    let taxAmount = 0;
-    let discountAmount = 0;
-    let total = 0;
+  // Formatar valor monetário baseado na moeda selecionada
+  const formatCurrency = (value: number | null | undefined, withSymbol = true) => {
+    if (value === null || value === undefined) return 'N/A';
 
-    fields.forEach((item) => {
-      const values = calculateItemValues(item);
-      subtotal += parseFloat(values.subtotal);
-      taxAmount += parseFloat(values.tax_amount);
-      discountAmount += parseFloat(values.discount_amount);
-    });
+    const selectedCurrencyCode = form.getValues('currency_code');
+    const selectedCurrency = currencies.find(c => c.code === selectedCurrencyCode) || defaultCurrency;
 
-    total = subtotal - discountAmount;
-    if (form.getValues('include_tax')) {
-      total += taxAmount;
+    if (!selectedCurrency) {
+      return new Intl.NumberFormat('pt-PT', {
+        style: withSymbol ? 'currency' : 'decimal',
+        currency: 'MZN'
+      }).format(value);
     }
 
-    return {
-      subtotal,
-      taxAmount,
-      discountAmount,
-      total,
-    };
-  };
+    const { decimal_separator, thousand_separator, decimal_places, symbol } = selectedCurrency;
 
-  const totals = calculateTotals();
+    const formattedValue = value.toFixed(decimal_places)
+      .replace('.', 'DECIMAL')
+      .replace(/\B(?=(\d{3})+(?!\d))/g, thousand_separator)
+      .replace('DECIMAL', decimal_separator);
+
+    return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
+  };
 
   // Função para submeter o formulário
   const onSubmit = (values: FormValues) => {
@@ -346,30 +343,6 @@ export default function Create({
     });
   };
 
-  // Formatar valor monetário baseado na moeda selecionada
-  const formatCurrency = (value: number | null | undefined, withSymbol = true) => {
-    if (value === null || value === undefined) return 'N/A';
-
-    const selectedCurrencyCode = form.getValues('currency_code');
-    const selectedCurrency = currencies.find(c => c.code === selectedCurrencyCode) || defaultCurrency;
-
-    if (!selectedCurrency) {
-      return new Intl.NumberFormat('pt-PT', {
-        style: withSymbol ? 'currency' : 'decimal',
-        currency: 'MZN'
-      }).format(value);
-    }
-
-    const { decimal_separator, thousand_separator, decimal_places, symbol } = selectedCurrency;
-
-    const formattedValue = value.toFixed(decimal_places)
-      .replace('.', 'DECIMAL')
-      .replace(/\B(?=(\d{3})+(?!\d))/g, thousand_separator)
-      .replace('DECIMAL', decimal_separator);
-
-    return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
-  };
-
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Nova Cotação" />
@@ -404,504 +377,42 @@ export default function Create({
 
               {/* Tab de Dados Gerais */}
               <TabsContent value="details" className="mt-6">
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Cliente e Datas</CardTitle>
-                      <CardDescription>
-                        Informações do cliente e datas da cotação
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="quotation_number"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Número da Cotação <span className="text-destructive">*</span></FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormDescription>
-                              Número único de identificação da cotação
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="customer_id"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Cliente</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um cliente (opcional)" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {/* <SelectItem value="">Nenhum</SelectItem> */}
-                                {customers.map(customer => (
-                                  <SelectItem key={customer.id} value={customer.id.toString()}>
-                                    {customer.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Cliente para quem esta cotação é direcionada
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="issue_date"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Data de Emissão <span className="text-destructive">*</span></FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className={cn(
-                                        "pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "dd/MM/yyyy", { locale: pt })
-                                      ) : (
-                                        <span>Selecione uma data</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value}
-                                    onSelect={field.onChange}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormDescription>
-                                Data em que a cotação foi emitida
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="expiry_date"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                              <FormLabel>Data de Validade</FormLabel>
-                              <Popover>
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      variant="outline"
-                                      className={cn(
-                                        "pl-3 text-left font-normal",
-                                        !field.value && "text-muted-foreground"
-                                      )}
-                                    >
-                                      {field.value ? (
-                                        format(field.value, "dd/MM/yyyy", { locale: pt })
-                                      ) : (
-                                        <span>Selecione uma data</span>
-                                      )}
-                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={field.value || undefined}
-                                    onSelect={field.onChange}
-                                    disabled={(date) => date < today}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
-                              <FormDescription>
-                                Data até quando a cotação é válida
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Informações Adicionais</CardTitle>
-                      <CardDescription>
-                        Configurações de moeda e status da cotação
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="status"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Estado da Cotação <span className="text-destructive">*</span></FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um estado" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {statuses.filter(s => ['draft', 'sent', 'approved', 'rejected'].includes(s.value)).map(status => (
-                                  <SelectItem key={status.value} value={status.value}>
-                                    {status.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Estado atual desta cotação
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="currency_code"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Moeda <span className="text-destructive">*</span></FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione uma moeda" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {currencies.map(currency => (
-                                  <SelectItem key={currency.code} value={currency.code}>
-                                    {currency.name} ({currency.code})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>
-                              Moeda utilizada nesta cotação
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="exchange_rate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Taxa de Câmbio <span className="text-destructive">*</span></FormLabel>
-                            <FormControl>
-                              <Input {...field} type="number" min="0.0001" step="0.0001" />
-                            </FormControl>
-                            <FormDescription>
-                              Taxa de câmbio em relação à moeda base
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="include_tax"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                            <div className="space-y-0.5">
-                              <FormLabel>Incluir Imposto</FormLabel>
-                              <FormDescription>
-                                Incluir o valor do imposto no total da cotação
-                              </FormDescription>
-                            </div>
-                            <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
+                <DetailsTab
+                  control={form.control}
+                  customers={customers}
+                  currencies={currencies}
+                  statuses={statuses}
+                />
               </TabsContent>
 
               {/* Tab de Itens */}
               <TabsContent value="items" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <CardTitle>Itens da Cotação</CardTitle>
-                        <CardDescription>
-                          Adicione produtos ou serviços a esta cotação
-                        </CardDescription>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            setEditingItemIndex(null);
-                            setItemFormOpen(true);
-                          }}
-                          variant="outline"
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Item Manual
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            setEditingItemIndex(null);
-                            setProductSelectorOpen(true);
-                          }}
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Adicionar Produto
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[300px]">Produto</TableHead>
-                            <TableHead>Armazém</TableHead>
-                            <TableHead className="text-right">Quantidade</TableHead>
-                            <TableHead className="text-right">Preço</TableHead>
-                            <TableHead className="text-right">Desconto</TableHead>
-                            <TableHead className="text-right">Imposto</TableHead>
-                            <TableHead className="text-right">Total</TableHead>
-                            <TableHead className="text-center w-[100px]">Ações</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {fields.length > 0 ? (
-                            fields.map((item, index) => {
-                              const values = calculateItemValues(item);
-                              return (
-                                <TableRow key={item.id}>
-                                  <TableCell className="font-medium">
-                                    {item.name}
-                                    {item.description && (
-                                      <div className="text-sm text-muted-foreground">
-                                        {item.description.length > 50
-                                          ? `${item.description.substring(0, 50)}...`
-                                          : item.description}
-                                      </div>
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    {item.warehouse_id ? (
-                                      warehouses.find(w => w.id.toString() === item.warehouse_id)?.name || 'N/A'
-                                    ) : (
-                                      <span className="text-muted-foreground">Não definido</span>
-                                    )}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    {parseFloat(item.quantity).toFixed(2)} {item.unit || 'un'}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    {formatCurrency(parseFloat(item.unit_price))}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    {item.discount_percentage && parseFloat(item.discount_percentage) > 0
-                                      ? `${parseFloat(item.discount_percentage).toFixed(2)}%`
-                                      : '-'}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    {item.tax_percentage && parseFloat(item.tax_percentage) > 0
-                                      ? `${parseFloat(item.tax_percentage).toFixed(2)}%`
-                                      : '-'}
-                                  </TableCell>
-                                  <TableCell className="text-right font-medium">
-                                    {formatCurrency(parseFloat(values.total))}
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="flex justify-center gap-1">
-                                      <Button
-                                        type="button"
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() => handleEditItem(index)}
-                                      >
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        size="icon"
-                                        variant="ghost"
-                                        onClick={() => handleRemoveItem(index)}
-                                        className="text-destructive"
-                                      >
-                                        <Trash className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={8} className="h-24 text-center">
-                                Nenhum item adicionado à cotação.
-                                <div className="mt-2 flex justify-center gap-2">
-                                  <Button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingItemIndex(null);
-                                      setItemFormOpen(true);
-                                    }}
-                                    variant="outline"
-                                    size="sm"
-                                  >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Item Manual
-                                  </Button>
-                                  <Button
-                                    type="button"
-                                    onClick={() => {
-                                      setEditingItemIndex(null);
-                                      setProductSelectorOpen(true);
-                                    }}
-                                    size="sm"
-                                  >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Adicionar Produto
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </div>
-
-                    {/* Totais */}
-                    {fields.length > 0 && (
-                      <div className="mt-4 flex justify-end">
-                        <div className="w-64">
-                          <div className="flex justify-between py-2">
-                            <span className="text-muted-foreground">Subtotal:</span>
-                            <span>{formatCurrency(totals.subtotal)}</span>
-                          </div>
-
-                          <div className="flex justify-between py-2">
-                            <span className="text-muted-foreground">Desconto:</span>
-                            <span>{formatCurrency(totals.discountAmount)}</span>
-                          </div>
-
-                          <div className="flex justify-between py-2">
-                            <span className="text-muted-foreground">
-                              IVA ({form.getValues('include_tax') ? 'incluído' : 'excluído'}):
-                            </span>
-                            <span>{formatCurrency(totals.taxAmount)}</span>
-                          </div>
-
-                          <Separator className="my-2" />
-                          <div className="flex justify-between py-2">
-                            <span className="font-medium">Total:</span>
-                            <span className="font-bold text-lg">{formatCurrency(totals.total)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <ItemsTab
+                  fieldArray={fieldArray}
+                  products={products}
+                  warehouses={warehouses}
+                  taxRates={taxRates}
+                  units={units}
+                  form={form}
+                  currencies={currencies}
+                  calculateItemValues={calculateItemValues}
+                  formatCurrency={formatCurrency}
+                  onAddItemManual={() => {
+                    setEditingItemIndex(null);
+                    setItemFormOpen(true);
+                  }}
+                  onAddProduct={() => {
+                    setEditingItemIndex(null);
+                    setProductSelectorOpen(true);
+                  }}
+                  onEditItem={handleEditItem}
+                  onRemoveItem={handleRemoveItem}
+                />
               </TabsContent>
 
               {/* Tab de Notas e Termos */}
               <TabsContent value="notes" className="mt-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Notas e Termos</CardTitle>
-                    <CardDescription>
-                      Informações adicionais para a cotação
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notas</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Notas adicionais para o cliente"
-                              className="min-h-[150px]"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Informações extras, especificações ou mensagens para o cliente
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="terms"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Termos e Condições</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Termos e condições da cotação"
-                              className="min-h-[150px]"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Termos legais, condições de pagamento, prazo de entrega, etc.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </CardContent>
-                </Card>
+                <NotesTab control={form.control} />
               </TabsContent>
             </Tabs>
 
@@ -942,6 +453,7 @@ export default function Create({
           products={products}
           warehouses={warehouses}
           taxRates={taxRates}
+          units={units}
           initialValues={editingItemIndex !== null ? fields[editingItemIndex] : undefined}
           title={editingItemIndex !== null ? "Editar Item" : "Adicionar Item"}
           isManualItemMode={editingItemIndex === null && !productSelectorOpen}

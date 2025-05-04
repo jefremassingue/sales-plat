@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\UnitEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Customer;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class QuotationController extends Controller
@@ -81,16 +83,74 @@ class QuotationController extends Controller
 
         $quotations = $query->paginate(15)->withQueryString();
 
+        // Calcular estatísticas
+        $stats = $this->calculateQuotationStats();
+
         // Dados para filtros
         $customers = Customer::select('id', 'name', 'email')->orderBy('name')->get();
         $statuses = $this->getQuotationStatuses();
+
+        // Obter a moeda padrão para formatação de valores
+        $defaultCurrency = Currency::where('is_default', true)->first();
 
         return Inertia::render('Admin/Quotations/Index', [
             'quotations' => $quotations,
             'customers' => $customers,
             'statuses' => $statuses,
+            'currency' => $defaultCurrency,
+            'stats' => $stats,
             'filters' => $request->all(['search', 'customer_id', 'status', 'date_from', 'date_to', 'sort_field', 'sort_order']),
         ]);
+    }
+
+    /**
+     * Calcular estatísticas das cotações
+     */
+    private function calculateQuotationStats()
+    {
+        try {
+            // Cache as estatísticas por um curto período para melhor performance
+            return Cache::remember('quotation_stats', 60, function () {
+                $total = Quotation::count();
+                $draftCount = Quotation::where('status', 'draft')->count();
+                $sentCount = Quotation::where('status', 'sent')->count();
+                $approvedCount = Quotation::where('status', 'approved')->count();
+                $rejectedCount = Quotation::where('status', 'rejected')->count();
+                $expiredCount = Quotation::where('status', 'expired')->count();
+                $convertedCount = Quotation::where('status', 'converted')->count();
+
+                // Calcular valores financeiros (usando a moeda base)
+                $totalValue = Quotation::sum('total');
+                $pendingValue = Quotation::whereIn('status', ['draft', 'sent'])->sum('total');
+
+                return [
+                    'total' => $total,
+                    'draft' => $draftCount,
+                    'sent' => $sentCount,
+                    'approved' => $approvedCount,
+                    'rejected' => $rejectedCount,
+                    'expired' => $expiredCount,
+                    'converted' => $convertedCount,
+                    'total_value' => $totalValue,
+                    'pending_value' => $pendingValue
+                ];
+            });
+        } catch (\Exception $e) {
+            Log::error('Erro ao calcular estatísticas das cotações: ' . $e->getMessage());
+
+            // Retornar valores padrão em caso de erro
+            return [
+                'total' => 0,
+                'draft' => 0,
+                'sent' => 0,
+                'approved' => 0,
+                'rejected' => 0,
+                'expired' => 0,
+                'converted' => 0,
+                'total_value' => 0,
+                'pending_value' => 0
+            ];
+        }
     }
 
     /**
@@ -98,15 +158,17 @@ class QuotationController extends Controller
      */
     public function create()
     {
-            $quotationNumber = Quotation::generateQuotationNumber();
+        try {
+            $placeholderNumber = 'AUTO-' . date('Ym');
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
-            $products = Product::select('id', 'name', 'price', 'sku', 'cost')->with('variants')->get();
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')->with('variants')->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
             $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);
+            $units = UnitEnum::toArray();
 
             return Inertia::render('Admin/Quotations/Create', [
-                'quotationNumber' => $quotationNumber,
+                'quotationPlaceholder' => $placeholderNumber,
                 'customers' => $customers,
                 'products' => $products,
                 'warehouses' => $warehouses,
@@ -115,8 +177,15 @@ class QuotationController extends Controller
                 'taxRates' => $this->getTaxRates(),
                 'statuses' => $this->getQuotationStatuses(),
                 'discountTypes' => $this->getDiscountTypes(),
+                'units' => $units,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao carregar formulário de cotação: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
             ]);
 
+            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -126,7 +195,6 @@ class QuotationController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'quotation_number' => 'required|string|unique:quotations',
                 'customer_id' => 'nullable|exists:customers,id',
                 'issue_date' => 'required|date',
                 'expiry_date' => 'nullable|date|after_or_equal:issue_date',
@@ -155,19 +223,18 @@ class QuotationController extends Controller
 
             DB::beginTransaction();
             try {
-                // Criar a cotação
+                $quotationNumber = $this->generateUniqueQuotationNumber();
                 $quotationData = $request->except('items');
                 $quotationData['user_id'] = Auth::id();
+                $quotationData['quotation_number'] = $quotationNumber;
 
                 $quotation = Quotation::create($quotationData);
 
-                // Adicionar os itens
                 $sort = 0;
                 foreach ($request->items as $itemData) {
                     $itemData['quotation_id'] = $quotation->id;
                     $itemData['sort_order'] = $sort++;
 
-                    // Buscar produto se existir
                     if (!empty($itemData['product_id'])) {
                         $product = Product::find($itemData['product_id']);
                         if (!$product) {
@@ -187,13 +254,11 @@ class QuotationController extends Controller
                         }
                     }
 
-                    // Calcular valores do item
                     $item = new QuotationItem($itemData);
                     $item->calculateValues();
                     $item->save();
                 }
 
-                // Calcular totais da cotação
                 $quotation->calculateTotals();
 
                 DB::commit();
@@ -224,29 +289,65 @@ class QuotationController extends Controller
     }
 
     /**
+     * Gera um número de cotação único com bloqueio para evitar duplicação em ambiente multi-usuário
+     */
+    private function generateUniqueQuotationNumber()
+    {
+        $lockName = 'quotation_number_generation_lock';
+        $lockAcquired = Cache::lock($lockName, 10)->get();
+
+        if (!$lockAcquired) {
+            sleep(1);
+            return $this->generateUniqueQuotationNumber();
+        }
+
+        try {
+            $prefix = 'QT-' . date('Ym') . '-';
+            $lastQuotation = Quotation::where('quotation_number', 'LIKE', $prefix . '%')
+                ->orderByRaw('CAST(SUBSTRING(quotation_number, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
+                ->first();
+
+            if ($lastQuotation) {
+                $lastNumber = substr($lastQuotation->quotation_number, strlen($prefix));
+                $nextNumber = intval($lastNumber) + 1;
+            } else {
+                $nextNumber = 1;
+            }
+
+            $quotationNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+            while (Quotation::where('quotation_number', $quotationNumber)->exists()) {
+                $nextNumber++;
+                $quotationNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            }
+
+            return $quotationNumber;
+        } finally {
+            Cache::lock($lockName)->release();
+        }
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(Quotation $quotation)
     {
-            $quotation->load(['customer', 'user', 'currency', 'items' => function ($query) {
-                $query->with(['product', 'productVariant', 'warehouse']);
-            }]);
+        $quotation->load(['customer', 'user', 'currency', 'items' => function ($query) {
+            $query->with(['product', 'productVariant', 'warehouse']);
+        }]);
 
-            // Verificar e atualizar status se a cotação expirou
-            $quotation->updateStatusIfExpired();
+        $quotation->updateStatusIfExpired();
 
-            // Verificar disponibilidade de produtos nos armazéns
-            $quotation->items->map(function ($item) {
-                $item->available_quantity = $item->getInventoryAvailability();
-                return $item;
-            });
+        $quotation->items->map(function ($item) {
+            $item->available_quantity = $item->getInventoryAvailability();
+            return $item;
+        });
 
-            return Inertia::render('Admin/Quotations/Show', [
-                'quotation' => $quotation,
-                'statuses' => $this->getQuotationStatuses(),
-                'currency' => Currency::where('code', $quotation->currency)->first() ?: null,
-            ]);
-
+        return Inertia::render('Admin/Quotations/Show', [
+            'quotation' => $quotation,
+            'statuses' => $this->getQuotationStatuses(),
+            'currency' => Currency::where('code', $quotation->currency)->first() ?: null,
+        ]);
     }
 
     /**
@@ -254,32 +355,32 @@ class QuotationController extends Controller
      */
     public function edit(Quotation $quotation)
     {
-            // Verificar se a cotação pode ser editada
-            if (!$quotation->isEditable()) {
-                return redirect()->route('admin.quotations.show', $quotation)
-                    ->with('error', 'Esta cotação não pode ser editada devido ao seu status atual.');
-            }
+        if (!$quotation->isEditable()) {
+            return redirect()->route('admin.quotations.show', $quotation)
+                ->with('error', 'Esta cotação não pode ser editada devido ao seu status atual.');
+        }
 
-            $quotation->load(['customer', 'items' => function ($query) {
-                $query->with(['product', 'productVariant', 'warehouse']);
-            }]);
+        $quotation->load(['customer', 'items' => function ($query) {
+            $query->with(['product', 'productVariant', 'warehouse']);
+        }]);
 
-            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
-            $products = Product::select('id', 'name', 'price', 'sku', 'cost')->with('variants')->get();
-            $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
-            $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
+        $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
+        $products = Product::select('id', 'name', 'price', 'sku', 'cost')->with('variants')->get();
+        $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
+        $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
+        $units = UnitEnum::toArray();
 
-            return Inertia::render('Admin/Quotations/Edit', [
-                'quotation' => $quotation,
-                'customers' => $customers,
-                'products' => $products,
-                'warehouses' => $warehouses,
-                'currencies' => $currencies,
-                'taxRates' => $this->getTaxRates(),
-                'statuses' => $this->getQuotationStatuses(),
-                'discountTypes' => $this->getDiscountTypes(),
-            ]);
-
+        return Inertia::render('Admin/Quotations/Edit', [
+            'quotation' => $quotation,
+            'customers' => $customers,
+            'products' => $products,
+            'warehouses' => $warehouses,
+            'currencies' => $currencies,
+            'taxRates' => $this->getTaxRates(),
+            'statuses' => $this->getQuotationStatuses(),
+            'discountTypes' => $this->getDiscountTypes(),
+            'units' => $units,
+        ]);
     }
 
     /**
@@ -288,7 +389,6 @@ class QuotationController extends Controller
     public function update(Request $request, Quotation $quotation)
     {
         try {
-            // Verificar se a cotação pode ser editada
             if (!$quotation->isEditable()) {
                 return redirect()->route('admin.quotations.show', $quotation)
                     ->with('error', 'Esta cotação não pode ser editada devido ao seu status atual.');
@@ -325,18 +425,15 @@ class QuotationController extends Controller
 
             DB::beginTransaction();
             try {
-                // Atualizar a cotação
                 $quotationData = $request->except('items');
                 $quotation->update($quotationData);
 
-                // Processar os itens
                 $existingItemIds = [];
                 $sort = 0;
 
                 foreach ($request->items as $itemData) {
                     $itemData['sort_order'] = $sort++;
 
-                    // Buscar produto se existir
                     if (!empty($itemData['product_id'])) {
                         $product = Product::find($itemData['product_id']);
 
@@ -351,7 +448,6 @@ class QuotationController extends Controller
                         }
                     }
 
-                    // Atualizar item existente ou criar novo
                     if (!empty($itemData['id'])) {
                         $item = QuotationItem::find($itemData['id']);
                         if ($item && $item->quotation_id == $quotation->id) {
@@ -369,15 +465,12 @@ class QuotationController extends Controller
                     }
                 }
 
-                // Remover itens que não estão mais presentes
                 QuotationItem::where('quotation_id', $quotation->id)
                     ->whereNotIn('id', $existingItemIds)
                     ->delete();
 
-                // Recalcular totais da cotação
                 $quotation->calculateTotals();
 
-                // Finalizar
                 DB::commit();
 
                 return redirect()->route('admin.quotations.show', $quotation)
@@ -413,7 +506,6 @@ class QuotationController extends Controller
         try {
             DB::beginTransaction();
 
-            // Excluir a cotação (soft delete)
             $quotation->delete();
 
             DB::commit();
@@ -474,27 +566,186 @@ class QuotationController extends Controller
      */
     public function generatePdf(Quotation $quotation)
     {
+        // Carregar a cotação com seus relacionamentos
+        $quotation->load(['customer', 'user', 'items' => function ($query) {
+            $query->with(['product', 'productVariant', 'warehouse']);
+        }]);
+
+        // Obter informações de inventário para cada item
+        foreach ($quotation->items as $item) {
+            $item->available_quantity = $item->getInventoryAvailability();
+        }
+
+        // Carregar informações da empresa e dados bancários
+        $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+        $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
+
+        // Obter dados de moeda
+        $currency = Currency::where('code', $quotation->currency_code)->first() ?: null;
+
+        // Gerar o PDF usando a view
+        $pdf = \PDF::setOptions([
+            'isPhpEnabled'        => true,
+            'isHtml5ParserEnabled'=> true,
+            'isRemoteEnabled'        => true,            // <-- permite URLs remotas (http/https)
+            'enable_local_file_access'=> true,           // <-- permite file:// e acessos locais
+            'chroot'                 => public_path(),
+        ])->loadView('pdf.quotation', [
+            'quotation' => $quotation,
+            'company' => $company,
+            'currency' => $currency,
+            'bank' => $bank
+        ]);
+
+        // Definir o nome do arquivo
+        $filename = 'cotacao_' . $quotation->quotation_number . '.pdf';
+
+        // Verificar se é para download ou visualização
+        if (request()->has('download') && request()->download === 'true') {
+            // Download do arquivo
+            return $pdf->download($filename);
+        } else {
+            // Visualização no navegador
+            return $pdf->stream($filename);
+        }
+    }
+
+    /**
+     * Enviar cotação por e-mail para o cliente
+     */
+    public function sendEmail(Quotation $quotation)
+    {
         try {
-            $quotation->load(['customer', 'user', 'items' => function ($query) {
+            DB::beginTransaction();
+
+            // Verificar se o cliente existe e tem email
+            if (!$quotation->customer || !$quotation->customer->email) {
+                return redirect()->back()->with('error', 'Cliente sem endereço de email válido para envio.');
+            }
+
+            // Carregar relações necessárias
+            $quotation->load(['customer', 'items' => function ($query) {
                 $query->with(['product', 'productVariant', 'warehouse']);
             }]);
 
-            // Verificar disponibilidade de produtos nos armazéns para essa cotação
-            foreach ($quotation->items as $item) {
-                $item->available_quantity = $item->getInventoryAvailability();
-            }
+            // Obter informações da empresa e dados bancários
+            $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+            $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
 
-            // Aqui você implementaria a geração do PDF
-            // Por exemplo, usando Dompdf, Mpdf ou Snappy PDF
+            // Obter dados de moeda
+            $currency = Currency::where('code', $quotation->currency_code)->first() ?: null;
 
-            return redirect()->back()->with('error', 'Funcionalidade de geração de PDF ainda não implementada.');
-        } catch (\Exception $e) {
-            Log::error('Erro ao gerar PDF da cotação: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            // Gerar PDF anexo
+            $pdf = \PDF::setOptions([
+                'isPhpEnabled'        => true,
+                'isHtml5ParserEnabled'=> true,
+                'isRemoteEnabled'     => true,
+                'enable_local_file_access'=> true,
+                'chroot'              => public_path(),
+            ])->loadView('pdf.quotation', [
+                'quotation' => $quotation,
+                'company' => $company,
+                'currency' => $currency,
+                'bank' => $bank
             ]);
 
-            return redirect()->back()
-                ->with('error', 'Ocorreu um erro ao gerar o PDF: ' . $e->getMessage());
+            $pdfContent = $pdf->output();
+            $pdfFilename = 'cotacao_' . $quotation->quotation_number . '.pdf';
+
+            // Enviar email com o PDF anexo
+            \Mail::send('emails.quotation', [
+                'quotation' => $quotation,
+                'company' => $company,
+            ], function($message) use ($quotation, $pdfContent, $pdfFilename, $company) {
+                $message->to($quotation->customer->email, $quotation->customer->name)
+                        ->subject('Cotação ' . $quotation->quotation_number)
+                        ->attachData($pdfContent, $pdfFilename, [
+                            'mime' => 'application/pdf',
+                        ]);
+
+                // Adicionar remetente se configurado
+                if (isset($company['email'])) {
+                    $senderName = $company['name'] ?? 'Matony';
+                    $message->from($company['email']->value, $senderName->value);
+                }
+            });
+
+            // Se o status for rascunho e o envio foi bem-sucedido, altera para enviado
+            if ($quotation->status === 'draft') {
+                $quotation->status = 'sent';
+                $quotation->save();
+            }
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Cotação enviada com sucesso para ' . $quotation->customer->email);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao enviar cotação por email: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'quotation_id' => $quotation->id
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao enviar o email: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Duplicar uma cotação existente
+     */
+    public function duplicate(Quotation $quotation)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Carregar itens da cotação
+            $quotation->load('items');
+
+            // Criar nova cotação com os mesmos dados mas com status rascunho
+            $newQuotation = $quotation->replicate([
+                'quotation_number',
+                'status',
+                'created_at',
+                'updated_at'
+            ]);
+
+            $newQuotation->quotation_number = $this->generateUniqueQuotationNumber();
+            $newQuotation->status = 'draft';
+            $newQuotation->issue_date = now()->format('Y-m-d');
+
+            // Se a cotação original tinha data de validade, definir nova data de validade
+            if ($quotation->expiry_date) {
+                $daysValid = now()->diffInDays($quotation->expiry_date);
+                $newQuotation->expiry_date = now()->addDays($daysValid)->format('Y-m-d');
+            }
+
+            $newQuotation->save();
+
+            // Duplicar os itens da cotação
+            foreach ($quotation->items as $item) {
+                $newItem = $item->replicate(['quotation_id', 'created_at', 'updated_at']);
+                $newItem->quotation_id = $newQuotation->id;
+                $newItem->save();
+            }
+
+            $newQuotation->calculateTotals();
+
+            DB::commit();
+
+            return redirect()->route('admin.quotations.edit', $newQuotation)
+                ->with('success', 'Cotação duplicada com sucesso. Você está a editar a nova cotação.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao duplicar cotação: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'quotation_id' => $quotation->id
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao duplicar a cotação: ' . $e->getMessage());
         }
     }
 
@@ -521,7 +772,6 @@ class QuotationController extends Controller
             $warehouseId = $request->input('warehouse_id');
             $variantId = $request->input('product_variant_id');
 
-            // Buscar inventário com preço específico para este produto/variante/armazém
             $query = Inventory::where('product_id', $productId)
                 ->where('warehouse_id', $warehouseId);
 
@@ -533,7 +783,6 @@ class QuotationController extends Controller
 
             $inventory = $query->first();
 
-            // Se não encontrar inventário, buscar o produto para preço padrão
             if (!$inventory) {
                 $product = Product::find($productId);
 
@@ -595,8 +844,8 @@ class QuotationController extends Controller
     private function getTaxRates()
     {
         return [
-            ['value' => 0, 'label' => 'Isento (0%)'],
-            ['value' => 17, 'label' => 'IVA (17%)'],
+            ['id' => 1, 'value' => 0, 'label' => 'Isento (0%)', 'is_default' => false],
+            ['id' => 2, 'value' => 16, 'label' => 'IVA (16%)', 'is_default' => true],
         ];
     }
 }

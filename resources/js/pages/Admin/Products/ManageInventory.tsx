@@ -612,7 +612,8 @@ const ManageInventory = ({ product, productInventory, warehouses }: Props) => {
                                                 <SelectValue placeholder="Selecione um estado" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="active">Ativo</SelectItem>
+                                                <SelectItem value="active">Activo</SelectItem>
+                                                <SelectItem value="inactive">Inativo</SelectItem>
                                                 <SelectItem value="reserved">Reservado</SelectItem>
                                                 <SelectItem value="damaged">Danificado</SelectItem>
                                                 <SelectItem value="expired">Expirado</SelectItem>

@@ -5,10 +5,12 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CurrencyController;
 use App\Http\Controllers\Admin\InventoryAdjustmentController;
 use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\PaymentMethodController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserRoleController;
@@ -30,6 +32,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('inventories', InventoryController::class);
     Route::get('api/products/{product_id}/variants', [InventoryController::class, 'getVariants'])->name('api.products.variants');
 
+    // APIs para PDV e gestão de vendas/cotações
+    Route::get('api/product-inventory', [QuotationController::class, 'getProductInventory'])->name('api.product-inventory');
+    Route::get('api/inventory-status', [SaleController::class, 'getInventoryStatus'])->name('api.inventory-status');
+
     // Rotas para ajustes de inventário
     Route::get('inventories/{inventory}/adjustments', [InventoryAdjustmentController::class, 'index'])->name('inventories.adjustments.index');
     Route::get('inventories/{inventory}/adjustments/create', [InventoryAdjustmentController::class, 'create'])->name('inventories.adjustments.create');
@@ -44,6 +50,26 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.status');
     Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'generatePdf'])->name('quotations.pdf');
     Route::get('api/product-inventory', [QuotationController::class, 'getProductInventory'])->name('api.product.inventory');
+    Route::post('quotations/{quotation}/send-email', [QuotationController::class, 'sendEmail'])->name('quotations.send-email');
+    Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
+    Route::post('quotations/{quotation}/convert-to-sale', [SaleController::class, 'convertFromQuotation'])->name('quotations.convert-to-sale');
+
+    // Rotas para vendas
+    Route::resource('sales', SaleController::class);
+    Route::post('sales/{sale}/status', [SaleController::class, 'updateStatus'])->name('sales.status');
+    Route::post('sales/{sale}/payment', [SaleController::class, 'registerPayment'])->name('sales.payment');
+    Route::get('sales/{sale}/pdf', [SaleController::class, 'generatePdf'])->name('sales.pdf');
+    Route::post('sales/{sale}/send-email', [SaleController::class, 'sendEmail'])->name('sales.send-email');
+    Route::post('sales/{sale}/duplicate', [SaleController::class, 'duplicate'])->name('sales.duplicate');
+
+    // Rotas para métodos de pagamento
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::resource('payment-methods', PaymentMethodController::class);
+        Route::post('payment-methods/{paymentMethod}/status', [PaymentMethodController::class, 'updateStatus'])
+             ->name('payment-methods.status');
+        Route::post('payment-methods/{paymentMethod}/set-default', [PaymentMethodController::class, 'setDefault'])
+             ->name('payment-methods.set-default');
+    });
 
     // Rotas para gestão de clientes
     Route::resource('customers', CustomerController::class);

@@ -43,15 +43,17 @@ interface BasicInfoTabProps {
         brand: string;
         origin_country: string;
         currency: string;
+        unit: string; // Adicionado campo unit
     };
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     categories: Category[];
+    units: { value: string; label: string }[]; // Adicionado array de unidades
     isEditing?: boolean;
     productId?: number;
 }
 
-export default function BasicInfoTab({ data, setData, errors, categories, isEditing = false, productId }: BasicInfoTabProps) {
+export default function BasicInfoTab({ data, setData, errors, categories, units, isEditing = false, productId }: BasicInfoTabProps) {
     // Efeito para formatar o slug quando o nome mudar
     useEffect(() => {
         if (data.name && (!data.slug || data.slug === '')) {
@@ -257,6 +259,28 @@ export default function BasicInfoTab({ data, setData, errors, categories, isEdit
                         onChange={(e) => setData('weight', e.target.value)}
                         placeholder="Ex: 0.5"
                     />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="unit">Unidade</Label>
+                    <Select
+                        value={data.unit}
+                        onValueChange={(value) => setData('unit', value)}
+                    >
+                        <SelectTrigger className={errors.unit ? "border-destructive" : ""}>
+                            <SelectValue placeholder="Selecione a unidade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {units.map((unit) => (
+                                <SelectItem key={unit.value} value={unit.value}>
+                                    {unit.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    {errors.unit && (
+                        <p className="text-destructive text-sm">{errors.unit}</p>
+                    )}
                 </div>
 
                 <div className="space-y-2">

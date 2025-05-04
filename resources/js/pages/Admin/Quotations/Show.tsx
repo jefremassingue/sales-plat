@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { AlertCircle, ArrowLeft, Calendar, Copy, CreditCard, Download, Edit, FilePdf, Mail, Package, Send, Star, Trash, User } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Calendar, Copy, CreditCard, Download, Edit, Printer, Mail, Package, Send, Star, Trash, User, ArrowRightIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
@@ -121,6 +121,28 @@ export default function Show({ quotation, statuses }: Props) {
     return item.available_quantity < item.quantity;
   };
 
+  // Função para converter cotação em venda
+  const handleConvertToSale = () => {
+    router.post(`/admin/quotations/${quotation.id}/convert-to-sale`, {}, {
+      onBefore: () => confirm('Tem certeza que deseja converter esta cotação em venda?'),
+      onSuccess: () => {
+        toast({
+          title: 'Cotação convertida',
+          description: 'A cotação foi convertida em venda com sucesso!',
+          variant: 'success',
+        });
+        router.visit('/admin/sales'); // Redirecionar para a lista de vendas após a conversão
+      },
+      onError: (errors) => {
+        toast({
+          title: 'Erro',
+          description: errors.message || 'Ocorreu um erro ao converter a cotação em venda',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title={`Cotação ${quotation.quotation_number}`} />
@@ -168,10 +190,10 @@ export default function Show({ quotation, statuses }: Props) {
             </Select>
 
             <Button variant="outline" asChild>
-              <Link href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
-                <FilePdf className="mr-2 h-4 w-4" />
+              <a href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
+                <Printer className="mr-2 h-4 w-4" />
                 PDF
-              </Link>
+              </a>
             </Button>
 
             {isEditable() && (
@@ -473,26 +495,42 @@ export default function Show({ quotation, statuses }: Props) {
               </CardHeader>
               <CardContent className="space-y-2">
                 <Button className="w-full justify-start" asChild>
-                  <Link href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
+                  <a href={`/admin/quotations/${quotation.id}/pdf?download=true`} target="_blank">
                     <Download className="mr-2 h-4 w-4" />
                     Descarregar PDF
-                  </Link>
+                  </a>
                 </Button>
 
-                <Button variant="outline" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  disabled={!quotation.customer || !quotation.customer.email}
+                  onClick={() => router.post(`/admin/quotations/${quotation.id}/send-email`)}
+                >
                   <Send className="mr-2 h-4 w-4" />
                   Enviar por Email
+                  {(!quotation.customer || !quotation.customer.email) && (
+                    <span className="ml-1 text-xs text-destructive">(Sem email)</span>
+                  )}
                 </Button>
 
-                <Button variant="outline" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => router.post(`/admin/quotations/${quotation.id}/duplicate`)}
+                >
                   <Copy className="mr-2 h-4 w-4" />
                   Duplicar Cotação
                 </Button>
 
                 {quotation.status === 'approved' && (
-                  <Button variant="outline" className="w-full justify-start">
-                    <Star className="mr-2 h-4 w-4" />
-                    Converter em Encomenda
+                  <Button
+                    variant="default"
+                    className="w-full justify-start"
+                    onClick={handleConvertToSale}
+                  >
+                    <ArrowRightIcon className="mr-2 h-4 w-4" />
+                    Converter em Venda
                   </Button>
                 )}
 

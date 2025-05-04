@@ -3,6 +3,9 @@ export interface Product {
     id: number;
     name: string;
     sku: string;
+    price: number;
+    unit?: string;
+    unit_label?: string;
     variants?: ProductVariant[];
 }
 

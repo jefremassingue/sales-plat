@@ -28,6 +28,7 @@ class Quotation extends Model
         'terms',
         'include_tax',
         'converted_to_order_id',
+        'converted_to_sale_id',
     ];
 
     protected $casts = [
@@ -83,6 +84,14 @@ class Quotation extends Model
     public function order()
     {
         return $this->belongsTo(Order::class, 'converted_to_order_id');
+    }
+
+    /**
+     * Relação com a venda, caso a cotação tenha sido convertida
+     */
+    public function sale()
+    {
+        return $this->belongsTo(Sale::class, 'converted_to_sale_id');
     }
 
     /**

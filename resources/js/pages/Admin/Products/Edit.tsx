@@ -46,6 +46,7 @@ interface Product {
     id: number;
     name: string;
     slug: string;
+    unit: string;
     description: string | null;
     technical_details: string | null;
     features: string | null;
@@ -73,6 +74,7 @@ interface Product {
 interface Props {
     product: Product;
     categories: Category[];
+    units: { value: string; label: string }[]; // Adicionado array de unidades
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -90,7 +92,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Edit({ product, categories }: Props) {
+export default function Edit({ product, categories, units }: Props) {
     const [activeTab, setActiveTab] = useState('basic');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [description, setDescription] = useState(product.description || '');
@@ -165,9 +167,9 @@ export default function Edit({ product, categories }: Props) {
         sku: product.sku || '',
         barcode: product.barcode || '',
         weight: product.weight?.toString() || '',
-        stock: product.stock.toString(),
         category_id: product.category_id.toString(),
         active: product.active,
+        unit: product.unit,
         featured: product.featured,
         certification: product.certification || '',
         warranty: product.warranty || '',
@@ -760,6 +762,9 @@ export default function Edit({ product, categories }: Props) {
                                             setData={handleSetData}
                                             errors={errors}
                                             categories={categories}
+                                            units={units}
+                                            isEditing={true}
+                                            productId={product.id}
                                         />
                                     </TabsContent>
 

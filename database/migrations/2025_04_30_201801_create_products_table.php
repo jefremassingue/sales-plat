@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Enums\UnitEnum;
 
 return new class extends Migration
 {
@@ -33,6 +34,7 @@ return new class extends Migration
             $table->string('brand')->nullable();
             $table->string('origin_country')->nullable()->default('Mozambique');
             $table->string('currency')->default('MZN');
+            $table->enum('unit', array_column(UnitEnum::cases(), 'value'))->default(UnitEnum::UNIT->value)->comment('Unidade de medida do produto');
             $table->timestamps();
             $table->softDeletes(); // Soft delete para manter histórico
         });

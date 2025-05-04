@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\UnitEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductColor;
@@ -28,46 +29,46 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-            $query = Product::query()
-                ->with('mainImage.versions', 'category');
+        $query = Product::query()
+            ->with('mainImage.versions', 'category');
 
-            // Filtros
-            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
-                $search = trim($request->search);
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('sku', 'like', '%' . $search . '%')
-                      ->orWhere('description', 'like', '%' . $search . '%')
-                      ->orWhere('barcode', 'like', '%' . $search . '%')
-                      ->orWhere('brand', 'like', '%' . $search . '%');
-                });
-            }
+        // Filtros
+        if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('sku', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%')
+                    ->orWhere('barcode', 'like', '%' . $search . '%')
+                    ->orWhere('brand', 'like', '%' . $search . '%');
+            });
+        }
 
-            if ($request->has('category_id') && $request->category_id) {
-                $query->where('category_id', $request->category_id);
-            }
+        if ($request->has('category_id') && $request->category_id) {
+            $query->where('category_id', $request->category_id);
+        }
 
-            if ($request->has('active') && $request->active !== null) {
-                $query->where('active', $request->active == 'true');
-            }
+        if ($request->has('active') && $request->active !== null) {
+            $query->where('active', $request->active == 'true');
+        }
 
-            // Ordenação
-            $sortField = $request->input('sort_field', 'created_at');
-            $sortOrder = $request->input('sort_order', 'desc');
+        // Ordenação
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortOrder = $request->input('sort_order', 'desc');
 
-            $allowedSortFields = ['name', 'sku', 'price', 'stock', 'created_at'];
-            if (in_array($sortField, $allowedSortFields)) {
-                $query->orderBy($sortField, $sortOrder);
-            }
+        $allowedSortFields = ['name', 'sku', 'price', 'stock', 'created_at'];
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortOrder);
+        }
+        
+        $products = $query->paginate(15)->withQueryString();
+        $categories = Category::all();
 
-           $products = $query->paginate(15)->withQueryString();
-            $categories = Category::all();
-
-            return Inertia::render('Admin/Products/Index', [
-                'products' => $products,
-                'categories' => $categories,
-                'filters' => $request->only(['search', 'category_id', 'active', 'sort_field', 'sort_order'])
-            ]);
+        return Inertia::render('Admin/Products/Index', [
+            'products' => $products,
+            'categories' => $categories,
+            'filters' => $request->only(['search', 'category_id', 'active', 'sort_field', 'sort_order'])
+        ]);
     }
 
     /**
@@ -75,12 +76,13 @@ class ProductController extends Controller
      */
     public function create()
     {
-            $categories = Category::whereNull('parent_id')->with('subcategories')->get();
+        $categories = Category::whereNull('parent_id')->with('subcategories')->get();
+        $units = UnitEnum::toArray();
 
-            return Inertia::render('Admin/Products/Create', [
-                'categories' => $categories
-            ]);
-
+        return Inertia::render('Admin/Products/Create', [
+            'categories' => $categories,
+            'units' => $units
+        ]);
     }
 
     /**
@@ -356,22 +358,21 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-            $product->load([
-                'category',
-                'images',
-                'colors',
-                'sizes',
-                'attributes',
-                'variants',
-                'variants.color',
-                'variants.size',
-        'inventories.warehouse' // Adicionar esta linha
-            ]);
+        $product->load([
+            'category',
+            'images',
+            'colors',
+            'sizes',
+            'attributes',
+            'variants',
+            'variants.color',
+            'variants.size',
+            'inventories.warehouse' // Adicionar esta linha
+        ]);
 
-            return Inertia::render('Admin/Products/Show', [
-                'product' => $product,
-            ]);
-
+        return Inertia::render('Admin/Products/Show', [
+            'product' => $product,
+        ]);
     }
 
     /**
@@ -379,23 +380,25 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-            $product->load([
-                'category',
-                'images',
-                'colors',
-                'sizes',
-                'attributes',
-                'variants',
-                'variants.color',
-                'variants.size'
-            ]);
+        $product->load([
+            'category',
+            'images',
+            'colors',
+            'sizes',
+            'attributes',
+            'variants',
+            'variants.color',
+            'variants.size'
+        ]);
 
-            $categories = Category::whereNull('parent_id')->with('subcategories')->get();
+        $categories = Category::whereNull('parent_id')->with('subcategories')->get();
+        $units = UnitEnum::toArray();
 
-            return Inertia::render('Admin/Products/Edit', [
-                'product' => $product,
-                'categories' => $categories
-            ]);
+        return Inertia::render('Admin/Products/Edit', [
+            'units' => $units,
+            'product' => $product,
+            'categories' => $categories
+        ]);
     }
 
     /**
@@ -700,9 +703,11 @@ class ProductController extends Controller
                     foreach ($request->delete_image_ids as $imageId) {
                         try {
                             $image = Image::find($imageId);
-                            if ($image &&
+                            if (
+                                $image &&
                                 (($image->typeable_type == Product::class && $image->typeable_id == $product->id) ||
-                                ($image->typeable_type == ProductColor::class && in_array($image->typeable_id, $product->colors->pluck('id')->toArray())))) {
+                                    ($image->typeable_type == ProductColor::class && in_array($image->typeable_id, $product->colors->pluck('id')->toArray())))
+                            ) {
 
                                 // Excluir arquivo fisicamente
                                 if ($image->storage == 'public' && $image->path) {
@@ -884,10 +889,10 @@ class ProductController extends Controller
             $productIds = [$product->id];
             $variantIds = $product->variants->pluck('id')->toArray();
 
-            $inventories = Inventory::where(function($query) use ($product, $variantIds) {
+            $inventories = Inventory::where(function ($query) use ($product, $variantIds) {
                 $query->where('product_id', $product->id)
-                      ->whereNull('product_variant_id');
-            })->orWhere(function($query) use ($variantIds) {
+                    ->whereNull('product_variant_id');
+            })->orWhere(function ($query) use ($variantIds) {
                 if (!empty($variantIds)) {
                     $query->whereIn('product_variant_id', $variantIds);
                 }
@@ -900,14 +905,14 @@ class ProductController extends Controller
                     'name' => $product->name,
                     'sku' => $product->sku,
                     'inventories' => $inventories->where('product_id', $product->id)
-                                               ->whereNull('product_variant_id')
-                                               ->values()
+                        ->whereNull('product_variant_id')
+                        ->values()
                 ]
             ];
 
             // Adicionar inventário para cada variante
             if ($product->variants->count() > 0) {
-                $productInventory['variants'] = $product->variants->map(function($variant) use ($inventories) {
+                $productInventory['variants'] = $product->variants->map(function ($variant) use ($inventories) {
                     $variantName = '';
                     if ($variant->color) {
                         $variantName .= $variant->color->name;
@@ -1024,7 +1029,7 @@ class ProductController extends Controller
                                 'supplier_id' => null,
                                 'reason' => 'Ajuste automático devido a edição de inventário',
                                 'notes' => 'Este ajuste foi gerado automaticamente pelo sistema quando a quantidade foi alterada de ' .
-                                            $oldQuantity . ' para ' . $newQuantity . ' na gestão de inventário.',
+                                    $oldQuantity . ' para ' . $newQuantity . ' na gestão de inventário.',
                                 'user_id' => auth()->id(),
                             ]);
 
@@ -1070,7 +1075,6 @@ class ProductController extends Controller
 
                 return redirect()->route('admin.products.show', $productId)
                     ->with('success', 'Inventário atualizado com sucesso!');
-
             } catch (\Exception $e) {
                 DB::rollBack();
                 Log::error('Erro ao atualizar inventário: ' . $e->getMessage(), [
@@ -1082,7 +1086,6 @@ class ProductController extends Controller
                     ->withErrors(['error' => 'Ocorreu um erro ao atualizar o inventário: ' . $e->getMessage()])
                     ->withInput();
             }
-
         } catch (\Exception $e) {
             Log::error('Erro na validação do inventário: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()

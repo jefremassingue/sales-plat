@@ -22,11 +22,18 @@ export interface User {
   email: string;
 }
 
+export interface Unit {
+  value: string;
+  label: string;
+
+}
+
 export interface Product {
   id: number;
   name: string;
   sku: string;
   price: number;
+  unit: string;
   variants?: ProductVariant[];
 }
 
@@ -95,9 +102,8 @@ export interface Quotation {
 
 export interface TaxRate {
   id: number;
-  value: string;
-  name: string;
-  percentage: number;
+  value: number;
+  label: string;
   is_default?: boolean;
 }
 

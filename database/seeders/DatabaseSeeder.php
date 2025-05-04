@@ -25,7 +25,9 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ProductSeeder::class,
             UserSeeder::class,
-
+            WarehouseSeeder::class,
+            CompanySettingsSeeder::class,
+            BankSettingsSeeder::class,
         ]);
     }
 }
