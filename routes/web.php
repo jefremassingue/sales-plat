@@ -1,8 +1,6 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\QuotationController;
-use Illuminate\Support\Facades\Route;
+    use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
