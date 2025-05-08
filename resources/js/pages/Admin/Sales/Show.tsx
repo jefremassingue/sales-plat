@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -494,11 +494,11 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                           <TableRow key={item.id || index}>
                             <TableCell>
                               <div className="font-medium">{item.name}</div>
-                              {item.description && (
+                              {(item.description) && (
                                 <div className="text-sm text-muted-foreground">
-                                  {item.description.length > 50
-                                    ? `${item.description.substring(0, 50)}...`
-                                    : item.description}
+                                  {(item.description.replace(/<[^>]*>/g, '')).length > 50
+                                    ? `${(item.description.replace(/<[^>]*>/g, '')).substring(0, 50)}...`
+                                    : (item.description.replace(/<[^>]*>/g, ''))}
                                 </div>
                               )}
                               {item.warehouse && (

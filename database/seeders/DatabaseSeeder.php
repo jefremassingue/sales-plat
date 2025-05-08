@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             WarehouseSeeder::class,
             CompanySettingsSeeder::class,
             BankSettingsSeeder::class,
+            CustomerSeeder::class,
         ]);
     }
 }

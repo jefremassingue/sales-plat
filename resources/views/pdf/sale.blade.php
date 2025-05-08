@@ -333,7 +333,7 @@
         }
 
         .payment-table {
-            width: 100%;
+            width: 120%;
             border-collapse: collapse;
         }
 
@@ -369,48 +369,32 @@
 
         <div class="company-info" style="margin-top: 120px">
             <div class="company-details">{{ $company['company_address']->value ?? 'Endereço da Empresa' }}</div>
-            <div class="company-details">{{ $company['company_city']->value ?? 'Cidade' }},
-                {{ $company['company_province']->value ?? 'Província' }}</div>
+            {{-- <div class="company-details">{{ $company['company_city']->value ?? 'Cidade' }},
+                {{ $company['company_province']->value ?? 'Província' }}</div> --}}
             <div class="company-details">Tel: {{ $company['company_phone']->value ?? 'Telefone' }}</div>
             <div class="company-details">{{ $company['company_email']->value ?? 'Email' }}</div>
             <div class="company-details">NUIT: {{ $company['company_tax_number']->value ?? 'NUIT' }}</div>
         </div>
 
         <div class="sale-info">
-            <div class="document-title">FATURA</div>
+            <div class="document-title">{{ $documentTitle }}</div>
             <br>
             <br>
             <br>
-            <div class="sale-number">#{{ $sale->sale_number }}</div>
-            <div class="sale-date">Data: {{ \Carbon\Carbon::parse($sale->issue_date)->format('d/m/Y') }}
+            @if ($documentSufix == 'P')
+                <div class="sale-number">PAGAMENTO PARCIAL</div>
+            @endif
+            <div class="sale-number">#{{ $documentNumber }}</div>
+            <div class="sale-date">
+                Data:
+                {{ isset($payment) ? \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') : \Carbon\Carbon::parse($sale->issue_date)->format('d/m/Y') }}
             </div>
-            <div class="due-date">Vencimento:
-                {{ $sale->due_date ? \Carbon\Carbon::parse($sale->due_date)->format('d/m/Y') : 'N/A' }}
-            </div>
-            <div class="status status-{{ $sale->status }}">
-                @switch($sale->status)
-                    @case('draft')
-                        Rascunho
-                        @break
-                    @case('pending')
-                        Pendente
-                        @break
-                    @case('paid')
-                        Pago
-                        @break
-                    @case('partial')
-                        Pago Parcialmente
-                        @break
-                    @case('overdue')
-                        Vencido
-                        @break
-                    @case('canceled')
-                        Cancelado
-                        @break
-                    @default
-                        {{ $sale->status }}
-                @endswitch
-            </div>
+
+            @if ($documentTitle === 'FATURA')
+                <div class="due-date">
+                    Vencimento: {{ $sale->due_date ? \Carbon\Carbon::parse($sale->due_date)->format('d/m/Y') : 'N/A' }}
+                </div>
+            @endif
         </div>
     </div>
 
@@ -433,9 +417,9 @@
 
     <div class="container">
         <main class="main">
-            <div class="customer-info">
-                <div class="section-title">CLIENTE</div>
-                @if ($sale->customer)
+            @if ($sale->customer)
+                <div class="customer-info" style="width: 70%;">
+                    <div class="section-title">CLIENTE</div>
                     <div class="customer-name">{{ $sale->customer->name }}</div>
                     @if ($sale->customer->address)
                         <div>{{ $sale->customer->address }}</div>
@@ -452,19 +436,12 @@
                     @if ($sale->customer->email)
                         <div>Email: {{ $sale->customer->email }}</div>
                     @endif
-                @else
-                    <div>Cliente não especificado</div>
-                @endif
-            </div>
 
-            @if($sale->quotation)
-            <div class="quotation-info" style="margin-bottom: 20px">
-                <div class="section-title">COTAÇÃO ORIGINAL</div>
-                <div>Cotação: <strong>{{ $sale->quotation->quotation_number }}</strong></div>
-                <div>Data: {{ \Carbon\Carbon::parse($sale->quotation->issue_date)->format('d/m/Y') }}</div>
-            </div>
+                </div>
             @endif
 
+
+            <div class="section-title">ITENS</div>
             <table class="table">
                 <thead>
                     <tr>
@@ -483,16 +460,14 @@
                             <td>{{ $index + 1 }}</td>
                             <td>
                                 <strong>{{ $item->name }}</strong>
-                                @if ($item->description)
-                                    <div class="item-description">{{ $item->description }}</div>
-                                @endif
+
                             </td>
                             <td>{{ number_format($item->quantity, 2) }} {{ $item->unit == 'unit' ? '' : $item->unit }}
                             </td>
                             <td>
-                                @if ($currency)
-                                    {{ $currency->symbol }}
-                                    {{ number_format($item->unit_price, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
+                                @if ($item->currency)
+                                    {{ $item->currency->symbol }}
+                                    {{ number_format($item->unit_price, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
                                 @else
                                     {{ number_format($item->unit_price, 2, ',', '.') }} MT
                                 @endif
@@ -512,9 +487,9 @@
                                 @endif
                             </td>
                             <td class="text-right" style="white-space: nowrap;">
-                                @if ($currency)
-                                    {{ $currency->symbol }}
-                                    {{ number_format($item->total, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
+                                @if ($item->currency)
+                                    {{ $item->currency->symbol }}
+                                    {{ number_format($item->total, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
                                 @else
                                     {{ number_format($item->total, 2, ',', '.') }} MT
                                 @endif
@@ -542,13 +517,14 @@
                                     </tr>
                                     <tr>
 
-                                        <td style=" width: 30%;"><span
-                                                style="font-weight: bold; color: #313131;">Número De Conta:</span></td>
-                                        <td style="padding-left: 16px">{{ $bank['account_number']->value ?? '1231881377' }}</td>
+                                        <td style=" width: 30%;"><span style="font-weight: bold; color: #313131;">Número
+                                                De Conta:</span></td>
+                                        <td style="padding-left: 16px">
+                                            {{ $bank['account_number']->value ?? '1231881377' }}</td>
                                     </tr>
                                     <tr>
-                                        <td style=""><span
-                                                style="font-weight: bold; color: #313131;">NIB:</span></td>
+                                        <td style=""><span style="font-weight: bold; color: #313131;">NIB:</span>
+                                        </td>
                                         <td style="padding-left: 16px" colspan="3">
                                             {{ $bank['nib']->value ?? '0001 0000 01231881377 57' }}</td>
                                     </tr>
@@ -556,59 +532,66 @@
                             </div>
 
                             <!-- Informações de pagamento -->
-                            @if($sale->payments && count($sale->payments) > 0)
-                            <div class="payment-info">
-                                <div style="font-weight: bold; font-size: 13px; margin-bottom: 8px; margin-top: 20px">
-                                    Histórico de Pagamentos
+                            @if (($sale->payments && count($sale->payments) > 0 && $documentSufix != 'R') || ($documentSufix == 'R' && count($sale->payments) > 1))
+                                <div class="payment-info">
+                                    <div
+                                        style="font-weight: bold; font-size: 13px; margin-bottom: 8px; margin-top: 20px">
+                                        Histórico de Pagamentos
+                                    </div>
+                                    <table class="payment-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Método</th>
+                                                <th>Referência</th>
+                                                <th style="text-align: right">Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($sale->payments as $payment)
+                                                <tr>
+                                                    <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}
+                                                    </td>
+                                                    <td>
+                                                        @switch($payment->payment_method)
+                                                            @case('cash')
+                                                                Dinheiro
+                                                            @break
+
+                                                            @case('bank_transfer')
+                                                                Transferência Bancária
+                                                            @break
+
+                                                            @case('mpesa')
+                                                                M-Pesa
+                                                            @break
+
+                                                            @case('credit_card')
+                                                                Cartão de Crédito
+                                                            @break
+
+                                                            @case('cheque')
+                                                                Cheque
+                                                            @break
+
+                                                            @default
+                                                                {{ $payment->payment_method }}
+                                                        @endswitch
+                                                    </td>
+                                                    <td>{{ $payment->reference ?? '-' }}</td>
+                                                    <td style="text-align: right">
+                                                        @if ($item->currency)
+                                                            {{ $item->currency->symbol }}
+                                                            {{ number_format($payment->amount, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
+                                                        @else
+                                                            {{ number_format($payment->amount, 2, ',', '.') }} MT
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
-                                <table class="payment-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Data</th>
-                                            <th>Método</th>
-                                            <th>Referência</th>
-                                            <th style="text-align: right">Valor</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($sale->payments as $payment)
-                                        <tr>
-                                            <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}</td>
-                                            <td>
-                                                @switch($payment->payment_method)
-                                                    @case('cash')
-                                                        Dinheiro
-                                                        @break
-                                                    @case('bank_transfer')
-                                                        Transferência Bancária
-                                                        @break
-                                                    @case('mpesa')
-                                                        M-Pesa
-                                                        @break
-                                                    @case('credit_card')
-                                                        Cartão de Crédito
-                                                        @break
-                                                    @case('cheque')
-                                                        Cheque
-                                                        @break
-                                                    @default
-                                                        {{ $payment->payment_method }}
-                                                @endswitch
-                                            </td>
-                                            <td>{{ $payment->reference ?? '-' }}</td>
-                                            <td style="text-align: right">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($payment->amount, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
-                                                @else
-                                                    {{ number_format($payment->amount, 2, ',', '.') }} MT
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
                             @endif
                         </td>
                         <td style="width: 50%; vertical-align: top;">
@@ -616,62 +599,73 @@
                                 <div class="section-title" style="text-align: right;">
                                     RESUMO
                                 </div>
-                                <div class="notes-content" style="background-color: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; padding: 15px; text-align: right;">
+                                <div class="notes-content"
+                                    style="background-color: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; padding: 15px; text-align: right;">
                                     <table style="width: 100%; border-collapse: collapse; margin-left: auto;">
                                         <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">Subtotal:</span></td>
+                                            <td style="width: 50%; text-align: right;"><span
+                                                    style="font-weight: bold; color: #313131;">Subtotal:</span></td>
                                             <td style="padding-left: 16px; text-align: right;">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($sale->subtotal, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
+                                                @if ($item->currency)
+                                                    {{ $item->currency->symbol }}
+                                                    {{ number_format($sale->subtotal, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
                                                 @else
                                                     {{ number_format($sale->subtotal, 2, ',', '.') }} MT
                                                 @endif
                                             </td>
                                         </tr>
                                         @if ($sale->discount_amount > 0)
-                                        <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">Desconto:</span></td>
-                                            <td style="padding-left: 16px; text-align: right;">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($sale->discount_amount, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
-                                                @else
-                                                    {{ number_format($sale->discount_amount, 2, ',', '.') }} MT
-                                                @endif
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td style="width: 50%; text-align: right;"><span
+                                                        style="font-weight: bold; color: #313131;">Desconto:</span></td>
+                                                <td style="padding-left: 16px; text-align: right;">
+                                                    @if ($item->currency)
+                                                        {{ $item->currency->symbol }}
+                                                        {{ number_format($sale->discount_amount, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
+                                                    @else
+                                                        {{ number_format($sale->discount_amount, 2, ',', '.') }} MT
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         @endif
                                         <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">IVA {{ $sale->include_tax ? '(incluído)' : '' }}:</span></td>
+                                            <td style="width: 50%; text-align: right;"><span
+                                                    style="font-weight: bold; color: #313131;">IVA
+                                                    {{ $sale->include_tax ? '(incluído)' : '' }}:</span></td>
                                             <td style="padding-left: 16px; text-align: right;">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($sale->tax_amount, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
+                                                @if ($item->currency)
+                                                    {{ $item->currency->symbol }}
+                                                    {{ number_format($sale->tax_amount, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
                                                 @else
                                                     {{ number_format($sale->tax_amount, 2, ',', '.') }} MT
                                                 @endif
                                             </td>
                                         </tr>
                                         @if ($sale->shipping_amount > 0)
-                                        <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">Transporte:</span></td>
-                                            <td style="padding-left: 16px; text-align: right;">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($sale->shipping_amount, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
-                                                @else
-                                                    {{ number_format($sale->shipping_amount, 2, ',', '.') }} MT
-                                                @endif
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td style="width: 50%; text-align: right;"><span
+                                                        style="font-weight: bold; color: #313131;">Transporte:</span>
+                                                </td>
+                                                <td style="padding-left: 16px; text-align: right;">
+                                                    @if ($item->currency)
+                                                        {{ $item->currency->symbol }}
+                                                        {{ number_format($sale->shipping_amount, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
+                                                    @else
+                                                        {{ number_format($sale->shipping_amount, 2, ',', '.') }} MT
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         @endif
                                         <tr>
-                                            <td style="width: 50%; border-top: 1px solid #f47d15; padding-top: 5px; text-align: right;"><span style="font-weight: bold; color: #f47d15;">Total:</span></td>
-                                            <td style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 5px; font-weight: bold; color: #f47d15; text-align: right;">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($sale->total, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
+                                            <td
+                                                style="width: 50%; border-top: 1px solid #f47d15; padding-top: 5px; text-align: right;">
+                                                <span style="font-weight: bold; color: #f47d15;">Total:</span>
+                                            </td>
+                                            <td
+                                                style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 5px; font-weight: bold; color: #f47d15; text-align: right;">
+                                                @if ($item->currency)
+                                                    {{ $item->currency->symbol }}
+                                                    {{ number_format($sale->total, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
                                                 @else
                                                     {{ number_format($sale->total, 2, ',', '.') }} MT
                                                 @endif
@@ -679,32 +673,43 @@
                                         </tr>
 
                                         <!-- Linha para valor pago e valor em dívida -->
-                                        @if($sale->amount_paid > 0 || $sale->amount_due > 0)
-                                        <tr>
-                                            <td colspan="2" style="height: 10px"></td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">Valor Pago:</span></td>
-                                            <td style="padding-left: 16px; text-align: right; color: #16a34a;">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($sale->amount_paid, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
-                                                @else
-                                                    {{ number_format($sale->amount_paid, 2, ',', '.') }} MT
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="width: 50%; border-top: 1px solid #f47d15; padding-top: 5px; text-align: right;"><span style="font-weight: bold; color: #f47d15;">Valor em Dívida:</span></td>
-                                            <td style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 5px; font-weight: bold; text-align: right; color: {{ $sale->amount_due > 0 ? '#dc2626' : '#16a34a' }};">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($sale->amount_due, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
-                                                @else
-                                                    {{ number_format($sale->amount_due, 2, ',', '.') }} MT
-                                                @endif
-                                            </td>
-                                        </tr>
+                                        @if (($sale->amount_paid > 0 || $sale->amount_due > 0) && $documentSufix != 'R')
+                                            <tr>
+                                                <td colspan="2" style="height: 10px"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width: 50%; text-align: right;"><span
+                                                        style="font-weight: bold; color: #313131;">Valor Pago:</span>
+                                                </td>
+                                                <td style="padding-left: 16px; text-align: right; color: #16a34a;">
+                                                    @if ($item->currency)
+                                                        {{ $item->currency->symbol }}
+                                                        {{ number_format($sale->amount_paid, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
+                                                    @else
+                                                        {{ number_format($sale->amount_paid, 2, ',', '.') }} MT
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @if ($documentSufix != 'R')
+
+                                                <tr>
+                                                    <td
+                                                        style="width: 50%; border-top: 1px solid #f47d15; padding-top: 5px; text-align: right;">
+                                                        <span style="font-weight: bold; color: #f47d15;">Valor em
+                                                            Dívida:</span>
+                                                    </td>
+                                                    <td
+                                                        style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 5px; font-weight: bold; text-align: right; color: {{ $sale->amount_due > 0 ? '#dc2626' : '#16a34a' }};">
+                                                        @if ($item->currency)
+                                                            {{ $item->currency->symbol }}
+                                                            {{ number_format($sale->amount_due, $item->currency->decimal_places, $item->currency->decimal_separator, $item->currency->thousand_separator) }}
+                                                        @else
+                                                            {{ number_format($sale->amount_due, 2, ',', '.') }} MT
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endif
+
                                         @endif
                                     </table>
                                 </div>

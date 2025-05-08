@@ -53,6 +53,11 @@ interface SaleStatus {
   color: string;
 }
 
+interface Warehouse {
+  id: number;
+  name: string;
+}
+
 interface Props {
   sales: {
     data: Sale[];
@@ -72,10 +77,12 @@ interface Props {
     thousand_separator: string;
   };
   customers: Customer[];
+  warehouses: Warehouse[];
   statuses: SaleStatus[];
   filters?: {
     search?: string | null;
     customer_id?: string | null;
+    warehouse_id?: string | null;
     status?: string | null;
     date_from?: string | null;
     date_to?: string | null;
@@ -108,11 +115,12 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-export default function Index({ sales, customers, statuses, currency, filters = {}, stats }: Props) {
+export default function Index({ sales, customers, warehouses, statuses, currency, filters = {}, stats }: Props) {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [saleToDelete, setSaleToDelete] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState(filters.search || '');
   const [customerFilter, setCustomerFilter] = useState(filters.customer_id || '');
+  const [warehouseFilter, setWarehouseFilter] = useState(filters.warehouse_id || 'none');
   const [statusFilter, setStatusFilter] = useState(filters.status || '');
   const [dateFromFilter, setDateFromFilter] = useState<Date | undefined>(
     filters.date_from ? new Date(filters.date_from) : undefined
@@ -159,9 +167,17 @@ export default function Index({ sales, customers, statuses, currency, filters = 
   };
 
   // Função para formatar valores monetários
-  const formatCurrency = (amount: number, currency: { symbol: string; decimal_places: number; decimal_separator: string; thousand_separator: string }) => {
+  const formatCurrency = (amount: number, currency?: any) => {
     try {
-      const formattedValue = new Intl.NumberFormat('pt-PT', {
+      if (!currency) {
+        // Formatação padrão para MZN se não houver moeda especificada
+        return new Intl.NumberFormat('pt-MZ', {
+          style: 'currency',
+          currency: 'MZN'
+        }).format(amount);
+      }
+
+      const formattedValue = new Intl.NumberFormat('pt-MZ', {
         minimumFractionDigits: currency.decimal_places,
         maximumFractionDigits: currency.decimal_places
       }).format(amount)
@@ -170,10 +186,10 @@ export default function Index({ sales, customers, statuses, currency, filters = 
         .replace(/#/g, currency.thousand_separator)
         .replace(/\$/g, currency.decimal_separator);
 
-      return `${currency?.symbol} ${formattedValue}`;
+      return `${currency.symbol} ${formattedValue}`;
     } catch (error) {
-      // Fallback para formatação padrão
-      return `${currency?.symbol} ${amount.toFixed(2)}`;
+      // Fallback para formatação básica em MZN
+      return `MT ${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
     }
   };
 
@@ -189,6 +205,7 @@ export default function Index({ sales, customers, statuses, currency, filters = 
       applyFilters({
         search: value,
         customer_id: customerFilter,
+        warehouse_id: warehouseFilter,
         status: statusFilter,
         date_from: dateFromFilter ? format(dateFromFilter, 'yyyy-MM-dd') : null,
         date_to: dateToFilter ? format(dateToFilter, 'yyyy-MM-dd') : null,
@@ -213,6 +230,7 @@ export default function Index({ sales, customers, statuses, currency, filters = 
   const applyFilters = (filterParams: {
     search?: string | null;
     customer_id?: string | null;
+    warehouse_id?: string | null;
     status?: string | null;
     date_from?: string | null;
     date_to?: string | null;
@@ -224,6 +242,7 @@ export default function Index({ sales, customers, statuses, currency, filters = 
       {
         search: filterParams.search || null,
         customer_id: filterParams.customer_id || null,
+        warehouse_id: filterParams.warehouse_id || null,
         status: filterParams.status || null,
         date_from: filterParams.date_from || null,
         date_to: filterParams.date_to || null,
@@ -246,6 +265,7 @@ export default function Index({ sales, customers, statuses, currency, filters = 
     applyFilters({
       search: searchQuery,
       customer_id: customerFilter,
+      warehouse_id: warehouseFilter,
       status: statusFilter,
       date_from: dateFromFilter ? format(dateFromFilter, 'yyyy-MM-dd') : null,
       date_to: dateToFilter ? format(dateToFilter, 'yyyy-MM-dd') : null,
@@ -376,7 +396,7 @@ export default function Index({ sales, customers, statuses, currency, filters = 
               <CardTitle className="text-sm font-medium text-muted-foreground">Total de Vendas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats?.total || sales.total || 0}</div>
+              <div className="text-2xl font-bold">{stats?.total || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 Valor total: {formatCurrency(stats?.total_value || 0, currency)}
               </p>
@@ -448,6 +468,7 @@ export default function Index({ sales, customers, statuses, currency, filters = 
                     applyFilters({
                       search: searchQuery,
                       customer_id: value,
+                      warehouse_id: warehouseFilter,
                       status: statusFilter,
                       date_from: dateFromFilter ? format(dateFromFilter, 'yyyy-MM-dd') : null,
                       date_to: dateToFilter ? format(dateToFilter, 'yyyy-MM-dd') : null,
@@ -472,12 +493,44 @@ export default function Index({ sales, customers, statuses, currency, filters = 
 
               <div>
                 <Select
+                  value={warehouseFilter}
+                  onValueChange={(value) => {
+                    setWarehouseFilter(value);
+                    applyFilters({
+                      search: searchQuery,
+                      customer_id: customerFilter,
+                      warehouse_id: value,
+                      status: statusFilter,
+                      date_from: dateFromFilter ? format(dateFromFilter, 'yyyy-MM-dd') : null,
+                      date_to: dateToFilter ? format(dateToFilter, 'yyyy-MM-dd') : null,
+                      sort_field: sortField,
+                      sort_order: sortOrder,
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar por armazém" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Todos os armazéns</SelectItem>
+                    {warehouses.map((warehouse) => (
+                      <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
+                        {warehouse.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Select
                   value={statusFilter}
                   onValueChange={(value) => {
                     setStatusFilter(value);
                     applyFilters({
                       search: searchQuery,
                       customer_id: customerFilter,
+                      warehouse_id: warehouseFilter,
                       status: value,
                       date_from: dateFromFilter ? format(dateFromFilter, 'yyyy-MM-dd') : null,
                       date_to: dateToFilter ? format(dateToFilter, 'yyyy-MM-dd') : null,
@@ -525,6 +578,7 @@ export default function Index({ sales, customers, statuses, currency, filters = 
                       applyFilters({
                         search: searchQuery,
                         customer_id: customerFilter,
+                        warehouse_id: warehouseFilter,
                         status: statusFilter,
                         date_from: dateFromFilter ? format(dateFromFilter, 'yyyy-MM-dd') : null,
                         date_to: dateToFilter ? format(dateToFilter, 'yyyy-MM-dd') : null,

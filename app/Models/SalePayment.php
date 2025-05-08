@@ -61,4 +61,17 @@ class SalePayment extends Model
 
         return $methods[$this->payment_method] ?? $this->payment_method;
     }
+
+    // on created check is exist reference if not generate new reference
+    public static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($model) {
+            if (empty($model->reference)) {
+                $model->reference = 'PAY-' . strtoupper(uniqid());
+                $model->save();
+            }
+        });
+    }
 }

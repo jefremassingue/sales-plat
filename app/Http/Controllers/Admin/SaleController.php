@@ -62,6 +62,13 @@ class SaleController extends Controller
                 $query->whereDate('issue_date', '<=', $request->date_to);
             }
 
+            // Filtro de armazém
+            if ($request->has('warehouse_id') && $request->warehouse_id !== 'none') {
+                $query->whereHas('items', function ($q) use ($request) {
+                    $q->where('warehouse_id', $request->warehouse_id);
+                });
+            }
+
             // Ordenação
             $sortField = $request->input('sort_field', 'issue_date');
             $sortOrder = $request->input('sort_order', 'desc');
@@ -75,6 +82,7 @@ class SaleController extends Controller
 
             // Dados para filtros
             $customers = Customer::select('id', 'name', 'email')->orderBy('name')->get();
+            $warehouses = Warehouse::select('id', 'name')->where('active', true)->orderBy('name')->get();
             $statuses = $this->getSaleStatuses();
 
             // Obter a moeda padrão para formatação de valores
@@ -86,10 +94,11 @@ class SaleController extends Controller
             return Inertia::render('Admin/Sales/Index', [
                 'sales' => $sales,
                 'customers' => $customers,
+                'warehouses' => $warehouses, // Add warehouses to the response
                 'statuses' => $statuses,
                 'currency' => $defaultCurrency,
                 'stats' => $stats,
-                'filters' => $request->all(['search', 'customer_id', 'status', 'date_from', 'date_to', 'sort_field', 'sort_order']),
+                'filters' => $request->all(['search', 'customer_id', 'warehouse_id', 'status', 'date_from', 'date_to', 'sort_field', 'sort_order']),
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao listar vendas: ' . $e->getMessage(), [
@@ -106,29 +115,35 @@ class SaleController extends Controller
     private function calculateSalesStats()
     {
         try {
+            $query = Sale::query();
+
+            // Aplicar filtro de armazém se existir
+            if (request()->has('warehouse_id') && request()->warehouse_id !== 'none') {
+                $query->whereHas('items', function ($q) {
+                    $q->where('warehouse_id', request()->warehouse_id);
+                });
+            }
+
             // Obter estatísticas básicas
-            $total = Sale::count();
-            $draftCount = Sale::where('status', 'draft')->count();
-            $pendingCount = Sale::where('status', 'pending')->count();
-            $paidCount = Sale::where('status', 'paid')->count();
-            $partialCount = Sale::where('status', 'partial')->count();
-            $cancelledCount = Sale::where('status', 'cancelled')->count();
+            $total = (clone $query)->count();
+            $draftCount = (clone $query)->where('status', 'draft')->count();
+            $pendingCount = (clone $query)->where('status', 'pending')->count();
+            $paidCount = (clone $query)->where('status', 'paid')->count();
+            $partialCount = (clone $query)->where('status', 'partial')->count();
+            $cancelledCount = (clone $query)->where('status', 'cancelled')->count();
 
-            // Calcular valores financeiros
-            $totalAmount = Sale::sum('total');
-            $paidAmount = Sale::sum('amount_paid');
-            $pendingAmount = Sale::where('status', 'pending')->sum('total');
-            $partialAmount = Sale::where('status', 'partial')->sum('total') - Sale::where('status', 'partial')->sum('amount_paid');
+            // Cálculo de valores financeiros
+            $totalValue = (clone $query)->sum('total');
+            $paidValue = (clone $query)->sum('amount_paid');
+            $dueValue = (clone $query)->whereIn('status', ['pending', 'partial'])->sum('amount_due');
+            $overdueValue = (clone $query)->where('due_date', '<', now())
+                ->whereIn('status', ['pending', 'partial'])
+                ->sum('amount_due');
 
-            // Vendas do mês atual
-            $currentMonthStart = now()->startOfMonth();
-            $currentMonthEnd = now()->endOfMonth();
-            $currentMonthSales = Sale::whereBetween('issue_date', [$currentMonthStart, $currentMonthEnd])->sum('total');
-            $currentMonthCount = Sale::whereBetween('issue_date', [$currentMonthStart, $currentMonthEnd])->count();
-
-            // Média diária
-            $daysSoFar = now()->day;
-            $dailyAverage = $daysSoFar > 0 ? $currentMonthSales / $daysSoFar : 0;
+            // Contar vendas vencidas
+            $overdueCount = (clone $query)->where('due_date', '<', now())
+                ->whereIn('status', ['pending', 'partial'])
+                ->count();
 
             return [
                 'total' => $total,
@@ -137,12 +152,11 @@ class SaleController extends Controller
                 'paid' => $paidCount,
                 'partial' => $partialCount,
                 'cancelled' => $cancelledCount,
-                'total_amount' => $totalAmount,
-                'paid_amount' => $paidAmount,
-                'pending_amount' => $pendingAmount + $partialAmount,
-                'current_month_sales' => $currentMonthSales,
-                'current_month_count' => $currentMonthCount,
-                'daily_average' => $dailyAverage
+                'overdue' => $overdueCount,
+                'total_value' => $totalValue,
+                'paid_value' => $paidValue,
+                'due_value' => $dueValue,
+                'overdue_value' => $overdueValue
             ];
         } catch (\Exception $e) {
             Log::error('Erro ao calcular estatísticas das vendas: ' . $e->getMessage());
@@ -155,12 +169,11 @@ class SaleController extends Controller
                 'paid' => 0,
                 'partial' => 0,
                 'cancelled' => 0,
-                'total_amount' => 0,
-                'paid_amount' => 0,
-                'pending_amount' => 0,
-                'current_month_sales' => 0,
-                'current_month_count' => 0,
-                'daily_average' => 0
+                'overdue' => 0,
+                'total_value' => 0,
+                'paid_value' => 0,
+                'due_value' => 0,
+                'overdue_value' => 0
             ];
         }
     }
@@ -186,8 +199,8 @@ class SaleController extends Controller
             $placeholderNumber = 'AUTO-' . date('Ym');
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit', 'stock_quantity')
-                              ->with('category')
-                              ->get();
+                ->with('category')
+                ->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
             $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency([
@@ -429,6 +442,79 @@ class SaleController extends Controller
     }
 
     /**
+     * Registrar um novo pagamento para a venda
+     */
+    public function registerPayment(Sale $sale, Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'amount' => 'required|numeric|min:0.01|max:' . $sale->amount_due,
+                'payment_date' => 'required|date',
+                'payment_method' => 'required|string',
+                'reference' => 'nullable|string|max:255',
+                'notes' => 'nullable|string|max:1000',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            DB::beginTransaction();
+            try {
+                // Criar o registo de pagamento
+                $payment = SalePayment::create([
+                    'sale_id' => $sale->id,
+                    'amount' => $request->amount,
+                    'payment_method' => $request->payment_method,
+                    'payment_date' => $request->payment_date,
+                    'reference' => $request->reference,
+                    'notes' => $request->notes,
+                    'status' => 'completed',
+                    'user_id' => Auth::id()
+                ]);
+
+                // Atualizar os valores da venda
+                $sale->amount_paid += $request->amount;
+                $sale->amount_due = $sale->total - $sale->amount_paid;
+
+                // Atualizar o status da venda com base no pagamento
+                if ($sale->amount_due <= 0) {
+                    $sale->status = 'paid';
+                } elseif ($sale->amount_paid > 0) {
+                    $sale->status = 'partial';
+                }
+
+                $sale->save();
+
+                DB::commit();
+
+                return redirect()->back()->with('success', 'Pagamento registrado com sucesso!');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Erro ao registrar pagamento: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString(),
+                    'sale_id' => $sale->id,
+                    'request' => $request->all()
+                ]);
+
+                return redirect()->back()
+                    ->withErrors(['error' => 'Ocorreu um erro ao registrar o pagamento: ' . $e->getMessage()])
+                    ->withInput();
+            }
+        } catch (\Exception $e) {
+            Log::error('Erro na validação do pagamento: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Ocorreu um erro ao validar os dados: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
      * Obter informação de inventário para um produto em um armazém específico
      */
     public function getProductInventory(Request $request)
@@ -627,5 +713,254 @@ class SaleController extends Controller
             ['id' => 1, 'value' => 0, 'label' => 'Isento (0%)', 'is_default' => false],
             ['id' => 2, 'value' => 16, 'label' => 'IVA (16%)', 'is_default' => true],
         ];
+    }
+
+    /**
+     * Alterar o status da venda
+     */
+    public function updateStatus(Request $request, Sale $sale)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'status' => 'required|string|in:draft,pending,paid,partial,cancelled',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            DB::beginTransaction();
+
+            $sale->status = $request->status;
+            $sale->save();
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Status da venda atualizado com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao atualizar status da venda: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao atualizar o status da venda: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Gerar PDF da venda
+     */
+    public function generatePdf(Sale $sale, Request $request)
+    {
+        try {
+            // Carregar relações necessárias primeiramente
+            $sale->load(['customer', 'user', 'currency', 'items' => function ($query) {
+                $query->with(['product', 'productVariant', 'warehouse']);
+            }]);
+
+            // Determinar tipo de documento e pagamento
+            $type = $request->input('type', 'invoice');
+
+            $sale->load(['payments' => function ($query) {
+                $query->orderBy('payment_date', 'asc');
+            }]);
+
+            // Obter informações da empresa e dados bancários
+            $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+            $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
+
+            $documentTitle = match (true) {
+                ($sale->status === 'paid' && count($sale->payments) === 1) || ($sale->status === 'paid' && $sale->amount_paid >= $sale->amount_due) => 'RECIBO',
+                $sale->status === 'partial' && count($sale->payments) => 'RECIBO',
+                default => 'FATURA'
+            };
+
+            // Gerar número do documento
+            $sufix = '';
+            $documentNumber = $sale->sale_number;
+            if ($sale->status === 'partial' && count($sale->payments)) {
+                // Se for pagamento parcial, adicionar sufixo P + número do pagamento
+                $documentNumber .= '/P' . count($sale->payments);
+                $sufix = 'P';
+            } elseif ($sale->status === 'paid') {
+                // Se estiver pago, adicionar sufixo R de recibo
+                $documentNumber .= '/R';
+                $sufix = 'R';
+            }
+            // Gerar o PDF
+            $pdf = \PDF::setOptions([
+                'isPhpEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'enable_local_file_access' => true,
+                'chroot' => public_path(),
+            ])->loadView('pdf.sale', [
+                'sale' => $sale,
+                'company' => $company,
+                'bank' => $bank,
+                'documentTitle' => $documentTitle,
+                'documentNumber' => $documentNumber,
+                'documentSufix' => $sufix,
+            ]);
+
+            // Definir nome do arquivo
+            $filename = match (true) {
+                $type === 'receipt' && $sale->status === 'paid' => 'recibo_' . $sale->sale_number . '_R',
+                $type === 'payment_proof' && $payment !== null => 'pagamento_' . $sale->sale_number . '_P' . $payment->id,
+                default => 'fatura_' . $sale->sale_number
+            };
+            $filename .= '.pdf';
+
+            // Retornar o PDF conforme solicitado
+            return $request->boolean('download') ? $pdf->download($filename) : $pdf->stream($filename);
+        } catch (\Exception $e) {
+            Log::error('Erro ao gerar PDF: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'sale_id' => $sale->id,
+                'type' => $type ?? null,
+                'payment_id' => $paymentId ?? null
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao gerar PDF: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao gerar o PDF: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Enviar venda por e-mail para o cliente
+     */
+    public function sendEmail(Sale $sale)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Verificar se o cliente existe e tem email
+            if (!$sale->customer || !$sale->customer->email) {
+                return redirect()->back()->with('error', 'Cliente sem endereço de email válido para envio.');
+            }
+
+            // Carregar relações necessárias
+            $sale->load(['customer', 'currency', 'items' => function ($query) {
+                $query->with(['product', 'productVariant', 'warehouse']);
+            }, 'payments']);
+
+            // Obter informações da empresa e dados bancários
+            $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+            $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
+
+            // Gerar PDF anexo
+            $pdf = \PDF::setOptions([
+                'isPhpEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'enable_local_file_access' => true,
+                'chroot' => public_path(),
+            ])->loadView('pdf.sale', [
+                'sale' => $sale,
+                'company' => $company,
+                'bank' => $bank
+            ]);
+
+            $pdfContent = $pdf->output();
+            $pdfFilename = 'venda_' . $sale->sale_number . '.pdf';
+
+            // Enviar email com o PDF anexo
+            \Mail::send('emails.sale', [
+                'sale' => $sale,
+                'company' => $company,
+            ], function ($message) use ($sale, $pdfContent, $pdfFilename, $company) {
+                $message->to($sale->customer->email, $sale->customer->name)
+                    ->subject('Venda ' . $sale->sale_number)
+                    ->attachData($pdfContent, $pdfFilename, [
+                        'mime' => 'application/pdf',
+                    ]);
+
+                // Adicionar remetente se configurado
+                if (isset($company['email'])) {
+                    $senderName = $company['name'] ?? 'Matony';
+                    $message->from($company['email']->value, $senderName->value);
+                }
+            });
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Venda enviada com sucesso para ' . $sale->customer->email);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao enviar venda por email: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao enviar o email: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Duplicar uma venda existente
+     */
+    public function duplicate(Sale $sale)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Carregar itens da venda
+            $sale->load('items');
+
+            // Criar nova venda com os mesmos dados mas com status rascunho
+            $newSale = $sale->replicate([
+                'sale_number',
+                'status',
+                'amount_paid',
+                'amount_due',
+                'created_at',
+                'updated_at'
+            ]);
+
+            $newSale->sale_number = $this->generateUniqueSaleNumber();
+            $newSale->status = 'draft';
+            $newSale->issue_date = now()->format('Y-m-d');
+            $newSale->amount_paid = 0;
+            $newSale->amount_due = $sale->total;
+
+            // Se a venda original tinha data de vencimento, definir nova data
+            if ($sale->due_date) {
+                $daysValid = now()->diffInDays($sale->due_date);
+                $newSale->due_date = now()->addDays($daysValid)->format('Y-m-d');
+            }
+
+            $newSale->save();
+
+            // Duplicar os itens da venda
+            foreach ($sale->items as $item) {
+                $newItem = $item->replicate(['sale_id', 'created_at', 'updated_at']);
+                $newItem->sale_id = $newSale->id;
+                $newItem->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.sales.edit', $newSale)
+                ->with('success', 'Venda duplicada com sucesso. Você está a editar a nova venda.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao duplicar venda: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao duplicar a venda: ' . $e->getMessage());
+        }
     }
 }

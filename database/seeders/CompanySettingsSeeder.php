@@ -24,7 +24,7 @@ class CompanySettingsSeeder extends Seeder
                 [
                     'group' => 'company',
                     'key' => 'company_name',
-                    'value' => 'Matony, Lda',
+                    'value' => 'Matony Serviços, Lda',
                     'description' => 'Nome da empresa',
                     'type' => 'text',
                     'is_public' => true,
@@ -34,7 +34,7 @@ class CompanySettingsSeeder extends Seeder
                 [
                     'group' => 'company',
                     'key' => 'company_address',
-                    'value' => 'Av. 24 de Julho, 1234',
+                    'value' => 'Av. Ahmed sekou toure n° 3007',
                     'description' => 'Endereço da empresa',
                     'type' => 'text',
                     'is_public' => true,
@@ -64,7 +64,7 @@ class CompanySettingsSeeder extends Seeder
                 [
                     'group' => 'company',
                     'key' => 'company_postal_code',
-                    'value' => '1100',
+                    'value' => '1105',
                     'description' => 'Código postal da empresa',
                     'type' => 'text',
                     'is_public' => true,
@@ -84,7 +84,7 @@ class CompanySettingsSeeder extends Seeder
                 [
                     'group' => 'company',
                     'key' => 'company_phone',
-                    'value' => '+258 84 123 4567',
+                    'value' => '+258 87 115 4336',
                     'description' => 'Telefone principal da empresa',
                     'type' => 'text',
                     'is_public' => true,
@@ -94,7 +94,7 @@ class CompanySettingsSeeder extends Seeder
                 [
                     'group' => 'company',
                     'key' => 'company_email',
-                    'value' => 'info@matony.co.mz',
+                    'value' => 'geral@matonyservicos.com',
                     'description' => 'Email principal da empresa',
                     'type' => 'text',
                     'is_public' => true,
@@ -104,7 +104,7 @@ class CompanySettingsSeeder extends Seeder
                 [
                     'group' => 'company',
                     'key' => 'company_website',
-                    'value' => 'https://www.matony.co.mz',
+                    'value' => 'https://www.matonyservicos.com',
                     'description' => 'Website da empresa',
                     'type' => 'text',
                     'is_public' => true,

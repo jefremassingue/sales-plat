@@ -65,17 +65,17 @@ const mainNavItems = [
     {
         group: 'Vendas',
         items: [
-            {
-                title: "Encomendas (Online)",
-                href: '/admin/orders',
-                icon: ShoppingBag,
-                activeRoutes: [
-                    'admin.orders.index',
-                    'admin.orders.create',
-                    'admin.orders.edit',
-                    'admin.orders.show'
-                ]
-            },
+            // {
+            //     title: "Encomendas (Online)",
+            //     href: '/admin/orders',
+            //     icon: ShoppingBag,
+            //     activeRoutes: [
+            //         'admin.orders.index',
+            //         'admin.orders.create',
+            //         'admin.orders.edit',
+            //         'admin.orders.show'
+            //     ]
+            // },
             {
                 title: 'Cotações',
                 href: '/admin/quotations',

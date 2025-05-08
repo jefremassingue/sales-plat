@@ -347,8 +347,8 @@
 
         <div class="company-info" style="margin-top: 120px">
             <div class="company-details">{{ $company['company_address']->value ?? 'Endereço da Empresa' }}</div>
-            <div class="company-details">{{ $company['company_city']->value ?? 'Cidade' }},
-                {{ $company['company_province']->value ?? 'Província' }}</div>
+            {{-- <div class="company-details">{{ $company['company_city']->value ?? 'Cidade' }},
+                {{ $company['company_province']->value ?? 'Província' }}</div> --}}
             <div class="company-details">Tel: {{ $company['company_phone']->value ?? 'Telefone' }}</div>
             <div class="company-details">{{ $company['company_email']->value ?? 'Email' }}</div>
             <div class="company-details">NUIT: {{ $company['company_tax_number']->value ?? 'NUIT' }}</div>
@@ -387,9 +387,9 @@
 
     <div class="container">
         <main class="main">
-            <div class="customer-info">
-                <div class="section-title">CLIENTE</div>
-                @if ($quotation->customer)
+            @if ($quotation->customer)
+                <div class="customer-info" style="margin-top: 120px">
+                    <div class="section-title">CLIENTE</div>
                     <div class="customer-name">{{ $quotation->customer->name }}</div>
                     @if ($quotation->customer->address)
                         <div>{{ $quotation->customer->address }}</div>
@@ -406,10 +406,8 @@
                     @if ($quotation->customer->email)
                         <div>Email: {{ $quotation->customer->email }}</div>
                     @endif
-                @else
-                    <div>Cliente não especificado</div>
-                @endif
-            </div>
+                </div>
+            @endif
 
             <table class="table">
                 <thead>
@@ -469,7 +467,7 @@
             </table>
 
             <div class="">
-                    <table style="width: 100%;">
+                <table style="width: 100%;">
                     <tr>
                         <td style="width: 50%; vertical-align: top;">
                             <br>
@@ -486,13 +484,14 @@
                                     </tr>
                                     <tr>
 
-                                        <td style=" width: 30%;"><span
-                                                style="font-weight: bold; color: #313131;">Número De Conta:</span></td>
-                                        <td style="padding-left: 16px">{{ $bank['account_number']->value ?? '1231881377' }}</td>
+                                        <td style=" width: 30%;"><span style="font-weight: bold; color: #313131;">Número
+                                                De Conta:</span></td>
+                                        <td style="padding-left: 16px">
+                                            {{ $bank['account_number']->value ?? '1231881377' }}</td>
                                     </tr>
                                     <tr>
-                                        <td style=""><span
-                                                style="font-weight: bold; color: #313131;">NIB:</span></td>
+                                        <td style=""><span style="font-weight: bold; color: #313131;">NIB:</span>
+                                        </td>
                                         <td style="padding-left: 16px" colspan="3">
                                             {{ $bank['nib']->value ?? '0001 0000 01231881377 57' }}</td>
                                     </tr>
@@ -506,10 +505,12 @@
                                 <div class="section-title" style="text-align: right;">
                                     RESUMO
                                 </div>
-                                <div class="notes-content" style="background-color: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; padding: 15px; text-align: right;">
+                                <div class="notes-content"
+                                    style="background-color: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; padding: 15px; text-align: right;">
                                     <table style="width: 100%; border-collapse: collapse; margin-left: auto;">
                                         <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">Subtotal:</span></td>
+                                            <td style="width: 50%; text-align: right;"><span
+                                                    style="font-weight: bold; color: #313131;">Subtotal:</span></td>
                                             <td style="padding-left: 16px; text-align: right;">
                                                 @if ($currency)
                                                     {{ $currency->symbol }}
@@ -520,20 +521,24 @@
                                             </td>
                                         </tr>
                                         @if ($quotation->discount_amount > 0)
-                                        <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">Desconto:</span></td>
-                                            <td style="padding-left: 16px; text-align: right;">
-                                                @if ($currency)
-                                                    {{ $currency->symbol }}
-                                                    {{ number_format($quotation->discount_amount, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
-                                                @else
-                                                    {{ number_format($quotation->discount_amount, 2, ',', '.') }} MT
-                                                @endif
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td style="width: 50%; text-align: right;"><span
+                                                        style="font-weight: bold; color: #313131;">Desconto:</span></td>
+                                                <td style="padding-left: 16px; text-align: right;">
+                                                    @if ($currency)
+                                                        {{ $currency->symbol }}
+                                                        {{ number_format($quotation->discount_amount, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}
+                                                    @else
+                                                        {{ number_format($quotation->discount_amount, 2, ',', '.') }}
+                                                        MT
+                                                    @endif
+                                                </td>
+                                            </tr>
                                         @endif
                                         <tr>
-                                            <td style="width: 50%; text-align: right;"><span style="font-weight: bold; color: #313131;">IVA {{ $quotation->include_tax ? '(incluído)' : '' }}:</span></td>
+                                            <td style="width: 50%; text-align: right;"><span
+                                                    style="font-weight: bold; color: #313131;">IVA
+                                                    {{ $quotation->include_tax ? '(incluído)' : '' }}:</span></td>
                                             <td style="padding-left: 16px; text-align: right;">
                                                 @if ($currency)
                                                     {{ $currency->symbol }}
@@ -544,8 +549,11 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td style="width: 50%; border-top: 1px solid #f47d15; padding-top: 5px; text-align: right;"><span style="font-weight: bold; color: #f47d15;">Total:</span></td>
-                                            <td style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 5px; font-weight: bold; color: #f47d15; text-align: right;">
+                                            <td
+                                                style="width: 50%; border-top: 1px solid #f47d15; padding-top: 5px; text-align: right;">
+                                                <span style="font-weight: bold; color: #f47d15;">Total:</span></td>
+                                            <td
+                                                style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 5px; font-weight: bold; color: #f47d15; text-align: right;">
                                                 @if ($currency)
                                                     {{ $currency->symbol }}
                                                     {{ number_format($quotation->total, $currency->decimal_places, $currency->decimal_separator, $currency->thousand_separator) }}

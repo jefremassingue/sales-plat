@@ -99,6 +99,15 @@ class Sale extends Model
     }
 
     /**
+     * Get all warehouses associated with this sale through items
+     */
+    public function warehouses()
+    {
+        return $this->belongsToMany(Warehouse::class, 'sale_items')
+                    ->distinct();
+    }
+
+    /**
      * Verificar se a venda está vencida
      */
     public function isOverdue(): bool
