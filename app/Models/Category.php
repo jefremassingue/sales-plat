@@ -150,4 +150,8 @@ class Category extends Model
             ->orderBy('order')
             ->get();
     }
+
+    public function products() {
+        return $this->hasMany(Product::class);
+    }
 }

@@ -115,7 +115,6 @@ function PaginationEllipsis({
     </span>
   )
 }
-
 export {
   Pagination,
   PaginationContent,
@@ -125,3 +124,4 @@ export {
   PaginationNext,
   PaginationEllipsis,
 }
+

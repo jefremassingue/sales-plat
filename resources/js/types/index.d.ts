@@ -1,5 +1,6 @@
 import { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
+import { Page } from '@inertiajs/core';
 
 export interface Auth {
     user: User;
@@ -40,4 +41,38 @@ export interface User {
     created_at: string;
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+export interface PageProps {
+  auth: {
+    user: {
+      id: number;
+      name: string;
+      email: string;
+    } | null;
+  };
+  categories: {
+    id: number;
+    name: string;
+    href: string;
+  }[] | null;
+  currency: {
+    code: string;
+    name: string;
+    symbol: string;
+    exchange_rate: number;
+    decimal_separator: string;
+    thousand_separator: string;
+    decimal_places: number;
+  };
+  flash: {
+    success: string | null;
+    error: string | null;
+  };
+}
+
+declare module '@inertiajs/core' {
+  interface Page {
+    props: PageProps;
+  }
 }

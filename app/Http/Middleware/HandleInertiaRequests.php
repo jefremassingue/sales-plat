@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Currency;
+use App\Models\Category;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -78,6 +79,28 @@ class HandleInertiaRequests extends Middleware
             ];
         }
 
+
+        // Carregar categorias apenas se necessário
+        $categories = Category::whereNull('parent_id')
+            ->with('subcategories')
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'href' => "/category/{$category->slug}",
+                    'subcategories' => $category->subcategories->map(function ($subcategory) {
+                        return [
+                            'id' => $subcategory->id,
+                            'name' => $subcategory->name,
+                            'href' => "/category/{$subcategory->slug}"
+                        ];
+                    })
+                ];
+            });
+
+        // dd(json_encode($categories));
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -85,7 +108,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'ziggy' => fn (): array => [
+            'ziggy' => fn(): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
@@ -94,9 +117,12 @@ class HandleInertiaRequests extends Middleware
             // Adicionando a moeda padrão aos dados compartilhados globalmente
             'currency' => $defaultCurrency,
 
+            // Adicionando categorias apenas quando necessário
+            'categories' => $categories,
+
             'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
+                'success' => fn() => $request->session()->get('success'),
+                'error' => fn() => $request->session()->get('error'),
             ],
         ];
     }
