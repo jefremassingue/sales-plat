@@ -58,19 +58,19 @@ const contactInfoData: ContactInfoItemData[] = [
     {
         icon: <Building size={22} className="text-orange-600" />,
         title: "Nosso Escritório",
-        details: ["Av. Julius Nyerere, 1230", "Maputo, Moçambique"]
+        details: ["Av. Ahmed sekou toure n° 3007", "Maputo, Moçambique"]
     },
     {
         icon: <Phone size={22} className="text-orange-600" />,
         title: "Ligue para Nós",
-        details: ["+258 84 123 4567", "+258 82 987 6543"],
-        href: "tel:+258841234567"
+        details: ["+258 87 115 4336", "+258 87 0884 336"],
+        href: "tel:+258871154336"
     },
     {
         icon: <Mail size={22} className="text-orange-600" />,
         title: "Envie um Email",
-        details: ["contato@matony.co.mz", "vendas@matony.co.mz"],
-        href: "mailto:contato@matony.co.mz"
+        details: ["geral@matonyservicos.com", "suporte@matonyservicos.com"],
+        href: "mailto:geral@matonyservicos.com"
     },
     {
         icon: <Clock size={22} className="text-orange-600" />,
@@ -226,7 +226,7 @@ const FormInputGroup: React.FC<{
                     placeholder={placeholder}
                     rows={5}
                     required={required}
-                    className={`bg-slate-50 border-slate-300 focus:bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    className={`!bg-slate-50 border-slate-300 focus:bg-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
                 />
             ) : (
                 <Input
@@ -257,7 +257,7 @@ const ContactFormRender: React.FC<ContactFormFieldsProps> = ({ form: inertiaForm
                 subtitleClassName="text-base text-slate-500"
                 as="h3"
             />
-            <form onSubmit={onSubmit} className="space-y-5">
+            <form onSubmit={onSubmit} className="space-y-5 dark:!text-zinc-800">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <FormInputGroup id="name" label="Nome Completo" placeholder="Seu nome" form={inertiaForm} frontendErrors={frontendErrors} required />
                     <FormInputGroup id="email" label="Seu Email" placeholder="voce@exemplo.com" type="email" form={inertiaForm} frontendErrors={frontendErrors} required />
@@ -394,8 +394,9 @@ export default function Contact() {
 
                             {/* Map */}
                             <div className="rounded-xl overflow-hidden shadow-lg h-[350px] md:h-[400px] border border-slate-200/70">
+
                                 <iframe
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3585.8848535700286!2d32.5742!3d-25.9692!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDU4JzA5LjEiUyAzMsKwMzQnMjcuMSJF!5e0!3m2!1spt-PT!2smz!4v1627309846729!5m2!1spt-PT!2smz"
+                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3587.2091498295754!2d32.56538527615271!3d-25.961180177227092!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1ee69ae3bae04f15%3A0x768945d8fbbe1403!2s3007%20Av.%20Ahmed%20Sekou%20Tour%C3%A9%2C%20Maputo!5e0!3m2!1spt-PT!2smz!4v1746789506129!5m2!1spt-PT!2smz"
                                     width="100%"
                                     height="100%"
                                     style={{ border: 0 }}

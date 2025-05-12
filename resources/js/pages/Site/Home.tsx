@@ -6,6 +6,7 @@ import {
 import React, { useState, useEffect } from 'react';
 import ProductSection from './_components/ProductSection';
 import CategorySection from './_components/CategorySection';
+import { Head } from '@inertiajs/react';
 
 // Types
 interface Product {
@@ -93,6 +94,8 @@ export default function Home({ featuredProducts, popularProducts, newProducts, _
 
     return (
         <SiteLayout>
+            <Head title="Venda e Consultoria de EPI's" />
+
             {/* Hero Section with improved spacing */}
             <div className="bg-gradient-to-b  py-6 md:py-8">
                 <div className="container mx-auto px-4">

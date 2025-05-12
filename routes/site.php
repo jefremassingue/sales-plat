@@ -15,3 +15,5 @@ Route::resource('products', ProductController::class)->only(['index', 'show']);
 // Rotas para a página de contato
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+
+Route::get('/about', [HomeController::class, 'about'])->name('about');

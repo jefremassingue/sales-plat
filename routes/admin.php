@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\CurrencyController;
@@ -66,9 +67,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::resource('payment-methods', PaymentMethodController::class);
         Route::post('payment-methods/{paymentMethod}/status', [PaymentMethodController::class, 'updateStatus'])
-             ->name('payment-methods.status');
+            ->name('payment-methods.status');
         Route::post('payment-methods/{paymentMethod}/set-default', [PaymentMethodController::class, 'setDefault'])
-             ->name('payment-methods.set-default');
+            ->name('payment-methods.set-default');
     });
 
     // Rotas para gestão de clientes
@@ -84,6 +85,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('currencies', CurrencyController::class);
     Route::post('currencies/{currency}/set-default', [CurrencyController::class, 'setDefault'])
         ->name('currencies.set-default');
+
+    // Rotas para gestão do blog
+    Route::resource('blogs', BlogController::class);
 
     // Rotas para API de utilizadores (para o formulário de cliente e fornecedor)
     Route::prefix('api')->group(function () {

@@ -80,4 +80,9 @@ class HomeController extends Controller
             '_categories' => $categories,
         ]);
     }
+
+    public function about()
+    {
+        return Inertia::render('Site/About');
+    }
 }
