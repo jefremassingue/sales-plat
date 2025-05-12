@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
@@ -23,6 +24,7 @@ use Inertia\Inertia;
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('categories/tree', [CategoryController::class, 'tree'])->name('categories.tree');
     Route::resource('categories', CategoryController::class);
+    Route::resource('blog-categories', BlogCategoryController::class);
 
     // Rotas para produtos
     Route::resource('products', ProductController::class);
@@ -87,7 +89,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('currencies.set-default');
 
     // Rotas para gestão do blog
-    Route::resource('blogs', BlogController::class);
+    Route::resource('blog', BlogController::class);
 
     // Rotas para API de utilizadores (para o formulário de cliente e fornecedor)
     Route::prefix('api')->group(function () {
@@ -96,18 +98,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
 
     // Rotas para gestão de funções e permissões (Spatie)
-    Route::group(['middleware' => ['auth']], function () {
-        // Funções (Roles)
-        Route::resource('roles', RoleController::class);
+    // Funções (Roles)
+    Route::resource('roles', RoleController::class);
 
-        // Permissões
-        Route::resource('permissions', PermissionController::class);
-        Route::post('permissions/generate', [PermissionController::class, 'generatePermissions'])->name('permissions.generate');
+    // Permissões
+    Route::resource('permissions', PermissionController::class);
+    Route::post('permissions/generate', [PermissionController::class, 'generatePermissions'])->name('permissions.generate');
 
-        // Gerir funções de utilizadores
-        Route::resource('user-roles', UserRoleController::class)->only(['index', 'edit', 'update', 'show']);
+    // Gerir funções de utilizadores
+    Route::resource('user-roles', UserRoleController::class)->only(['index', 'edit', 'update', 'show']);
 
-        // Utilizadores com funções
-        Route::resource('users', UserController::class);
-    });
+    // Utilizadores com funções
+    Route::resource('users', UserController::class);
 });

@@ -19,13 +19,19 @@ class Blog extends Model
         'status',
         'published_at',
         'user_id',
-        'category_id'
+        'blog_category_id'
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'status' => 'boolean'
     ];
+
+    public function image()
+    {
+        return $this->morphOne(Image::class, 'typeable');
+    }
+
 
     /**
      * Relacionamento com o usuário autor do post
@@ -40,6 +46,6 @@ class Blog extends Model
      */
     public function category()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(BlogCategory::class);
     }
 }

@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             CompanySettingsSeeder::class,
             BankSettingsSeeder::class,
             CustomerSeeder::class,
+            BlogCategoriesSeeder::class,
         ]);
     }
 }

@@ -63,6 +63,33 @@ const mainNavItems = [
         ]
     },
     {
+        group: 'Blog',
+        items: [
+            {
+                title: 'Categorias',
+                href: '/admin/categories',
+                icon: ListTree,
+                activeRoutes: [
+                    'admin.blog-categories.index',
+                    'admin.blog-categories.create',
+                    'admin.blog-categories.edit',
+                    'admin.blog-categories.show'
+                ]
+            },
+            {
+                title: 'Blog',
+                href: '/admin/blog',
+                icon: Tag,
+                activeRoutes: [
+                    'admin.blog.index',
+                    'admin.blog.create',
+                    'admin.blog.edit',
+                    'admin.blog.show'
+                ]
+            },
+        ]
+    },
+    {
         group: 'Vendas',
         items: [
             // {

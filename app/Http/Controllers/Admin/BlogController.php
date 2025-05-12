@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Blog;
-use App\Models\Category;
+use App\Models\BlogCategory;
+use App\Models\Image;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -48,9 +50,9 @@ class BlogController extends Controller
         $blogs = $query->paginate(10)->withQueryString();
 
         // Carregar categorias para o filtro
-        $categories = Category::orderBy('name')->get();
+        $categories = BlogCategory::orderBy('name')->get();
 
-        return Inertia::render('Admin/Blogs/Index', [
+        return Inertia::render('Admin/Blog/Index', [
             'blogs' => $blogs,
             'categories' => $categories,
             'filters' => $request->only(['search', 'status', 'category_id']),
@@ -62,9 +64,9 @@ class BlogController extends Controller
      */
     public function create()
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = BlogCategory::orderBy('name')->get();
 
-        return Inertia::render('Admin/Blogs/Create', [
+        return Inertia::render('Admin/Blog/Create', [
             'categories' => $categories
         ]);
     }
@@ -85,13 +87,16 @@ class BlogController extends Controller
             ],
             'content' => 'required|string',
             'excerpt' => 'nullable|string',
-            'featured_image' => 'nullable|string',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Alterado para aceitar upload de imagem
             'status' => 'boolean',
             'published_at' => 'nullable|date',
             'category_id' => 'nullable|exists:categories,id',
         ], [
             'slug.regex' => 'O slug deve conter apenas letras minúsculas, números e hífens.',
-            'slug.unique' => 'Este slug já está a ser utilizado por outro post.'
+            'slug.unique' => 'Este slug já está a ser utilizado por outro post.',
+            'featured_image.image' => 'O arquivo deve ser uma imagem.',
+            'featured_image.mimes' => 'A imagem deve ser do tipo: jpeg, png, jpg ou gif.',
+            'featured_image.max' => 'A imagem não pode ter mais de 2MB.'
         ]);
 
         if ($validator->fails()) {
@@ -116,15 +121,42 @@ class BlogController extends Controller
             }
 
             // Se a data de publicação não foi fornecida, usar a data atual
-            if (empty($data['published_at']) && $data['status']) {
+            if (empty($data['published_at'])) {
                 $data['published_at'] = now();
+            }
+
+            // Processar o upload da imagem, se fornecida
+            if ($request->hasFile('featured_image')) {
+                $image = $request->file('featured_image');
+                // dd($image);
+                // $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
+                // $image->storeAs('public/blogs', $imageName);
+                $path = $image->store('blog', 'public');
+
+
+                $data['featured_image'] = basename($path);
             }
 
             $blog = Blog::create($data);
 
+            if ($blog->featured_image) {
+                $image = new Image([
+                    'version' => 'original',
+                    'storage' => 'public',
+                    'path' => $path,
+                    'name' => basename($path),
+                    'original_name' => $image->getClientOriginalName(),
+                    'size' => $image->getSize(),
+                    'extension' => $image->extension(),
+                    'is_main' => true,
+                    'typeable_type' => Blog::class,
+                    'typeable_id' => $blog->id,
+                ]);
+            }
+
             DB::commit();
 
-            return redirect()->route('admin.blogs.index')
+            return redirect()->route('admin.blog.index')
                 ->with('success', 'Post criado com sucesso!');
         } catch (\Exception $e) {
             DB::rollback();
@@ -137,17 +169,16 @@ class BlogController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Blog $blog)
+    public function show($id)
     {
-        try {
-            $blog->load('user', 'category');
+        $blog = Blog::where('slug', $id)->firstOrFail();
 
-            return Inertia::render('Admin/Blogs/Show', [
-                'blog' => $blog,
-            ]);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocorreu um erro ao apresentar o post: ' . $e->getMessage());
-        }
+        $blog->load('user', 'category', 'image.versions');
+
+        // return $blog;
+        return Inertia::render('Admin/Blog/Show', [
+            'blog' => $blog,
+        ]);
     }
 
     /**
@@ -155,9 +186,9 @@ class BlogController extends Controller
      */
     public function edit(Blog $blog)
     {
-        $categories = Category::orderBy('name')->get();
+        $categories = BlogCategory::orderBy('name')->get();
 
-        return Inertia::render('Admin/Blogs/Edit', [
+        return Inertia::render('Admin/Blog/Edit', [
             'blog' => $blog,
             'categories' => $categories
         ]);
@@ -179,13 +210,16 @@ class BlogController extends Controller
             ],
             'content' => 'required|string',
             'excerpt' => 'nullable|string',
-            'featured_image' => 'nullable|string',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Alterado para aceitar upload de imagem
             'status' => 'boolean',
             'published_at' => 'nullable|date',
             'category_id' => 'nullable|exists:categories,id',
         ], [
             'slug.regex' => 'O slug deve conter apenas letras minúsculas, números e hífens.',
-            'slug.unique' => 'Este slug já está a ser utilizado por outro post.'
+            'slug.unique' => 'Este slug já está a ser utilizado por outro post.',
+            'featured_image.image' => 'O arquivo deve ser uma imagem.',
+            'featured_image.mimes' => 'A imagem deve ser do tipo: jpeg, png, jpg ou gif.',
+            'featured_image.max' => 'A imagem não pode ter mais de 2MB.'
         ]);
 
         if ($validator->fails()) {
@@ -210,11 +244,24 @@ class BlogController extends Controller
                 $data['published_at'] = now();
             }
 
+            // Processar o upload da imagem, se fornecida
+            if ($request->hasFile('featured_image')) {
+                // Remover imagem antiga se existir
+                if ($blog->featured_image) {
+                    Storage::delete('public/' . $blog->featured_image);
+                }
+
+                $image = $request->file('featured_image');
+                $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
+                $image->storeAs('public/blogs', $imageName);
+                $data['featured_image'] = 'blogs/' . $imageName;
+            }
+
             $blog->update($data);
 
             DB::commit();
 
-            return redirect()->route('admin.blogs.index')
+            return redirect()->route('admin.blog.index')
                 ->with('success', 'Post atualizado com sucesso!');
         } catch (\Exception $e) {
             DB::rollback();

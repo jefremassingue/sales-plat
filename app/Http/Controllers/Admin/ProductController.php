@@ -60,7 +60,7 @@ class ProductController extends Controller
         if (in_array($sortField, $allowedSortFields)) {
             $query->orderBy($sortField, $sortOrder);
         }
-        
+
         $products = $query->paginate(15)->withQueryString();
         $categories = Category::all();
 
@@ -763,7 +763,9 @@ class ProductController extends Controller
                                 'original_name' => $imageFile->getClientOriginalName(),
                                 'size' => $imageFile->getSize(),
                                 'extension' => $imageFile->extension(),
-                                'is_main' => $isMain
+                                'is_main' => $isMain,
+                                'typeable_type' => Product::class,
+                                'typeable_id' => $product->id
                             ]);
 
                             // Se houver um color_id associado à imagem
