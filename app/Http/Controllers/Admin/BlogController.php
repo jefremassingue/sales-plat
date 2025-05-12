@@ -139,7 +139,8 @@ class BlogController extends Controller
 
             $blog = Blog::create($data);
 
-            if ($blog->featured_image) {
+            if ($request->hasFile('featured_image')) {
+
                 $image = new Image([
                     'version' => 'original',
                     'storage' => 'public',
@@ -152,6 +153,9 @@ class BlogController extends Controller
                     'typeable_type' => Blog::class,
                     'typeable_id' => $blog->id,
                 ]);
+
+                // dd($image);
+                $image->save();
             }
 
             DB::commit();

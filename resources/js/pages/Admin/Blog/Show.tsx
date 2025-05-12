@@ -173,7 +173,6 @@ export default function Show({ blog }: Props) {
                                     alt={blog.title}
                                     className="w-full h-auto rounded-lg object-cover max-h-96"
                                 />
-                                {JSON.stringify(blog)}
                             </div>
                         )}
                         <div className="prose max-w-none">
