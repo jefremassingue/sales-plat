@@ -34,7 +34,7 @@ class ProductColor extends Model
      */
     public function images()
     {
-        return $this->morphMany(Image::class, 'typeable');
+        return $this->belongsToMany(Image::class, 'color_images', 'product_color_id', 'image_id');
     }
 
     /**

@@ -30,6 +30,10 @@ class Image extends Model
     protected $hidden = ['typeable_type', 'storage', 'typeable_id', 'path'];
     public $appends = ['url'];
 
+    public function colors()
+    {
+        return $this->belongsToMany(ProductColor::class, 'color_images', 'image_id', 'product_color_id');
+    }
     public function getUrlAttribute()
     {
         return url('storage/' . $this->path);

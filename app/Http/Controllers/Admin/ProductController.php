@@ -217,8 +217,8 @@ class ProductController extends Controller
                 }
 
                 // Processar atributos
-                if ($request->has('attributes') && is_array($request->attributes)) {
-                    foreach ($request->attributes as $index => $attrData) {
+                if ($request->has('attributes') && is_array($request->get('attributes'))) {
+                    foreach ($request->get('attributes') as $index => $attrData) {
                         try {
                             $product->attributes()->create([
                                 'name' => $attrData['name'],
@@ -594,11 +594,12 @@ class ProductController extends Controller
                         ->delete();
                 }
 
+                // dd($request->get('attributes'));
                 // Processar atributos
-                if ($request->has('attributes') && is_array($request->attributes)) {
+                if ($request->has('attributes') && is_array($request->get('attributes'))) {
                     $keepAttributeIds = [];
 
-                    foreach ($request->attributes as $index => $attrData) {
+                    foreach ($request->get('attributes') as $index => $attrData) {
                         try {
                             if (isset($attrData['id'])) {
                                 // Atualizar atributo existente

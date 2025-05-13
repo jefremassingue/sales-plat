@@ -1,1668 +1,1668 @@
 [
     {
-      "sku": "CH000GH1",
-      "name": "Farda De Trabalho Azul Com Timbre",
-      "price": 960,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme de trabalho completo (duas peças) na cor azul, confeccionado para uso profissional. Inclui personalização com timbre.</p>"
+        "sku": "CH000GH1",
+        "name": "Farda De Trabalho Azul Com Timbre",
+        "price": 960,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Farda de trabalho azul com timbre bordado, ideal para uso em ambientes industriais, de construção civil ou prestação de serviços. Confortável, resistente e com visual profissional que reforça a identidade da empresa..</p>"
     },
     {
-      "sku": "CH000GH2",
-      "name": "Colete Refletor",
-      "price": 250,
-      "category_slug": "vestuario-alta-visibilidade",
-      "description": "<p>Colete de alta visibilidade com faixas refletoras, ideal para trabalhos noturnos ou em ambientes com baixa luminosidade.</p>"
+        "sku": "CH000GH2",
+        "name": "Colete Refletor",
+        "price": 250,
+        "category_slug": "vestuario-alta-visibilidade",
+        "description": "<p>Colete de alta visibilidade com faixas refletoras, ideal para trabalhos noturnos ou em ambientes com baixa luminosidade.</p>"
     },
     {
-      "sku": "CH000GH3",
-      "name": "Mascaras Descartaveis",
-      "price": 35,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, de uso único, para proteção contra partículas.</p>"
+        "sku": "CH000GH3",
+        "name": "Mascaras Descartaveis",
+        "price": 35,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, de uso único, para proteção contra partículas.</p>"
     },
     {
-      "sku": "CH000GH4",
-      "name": "Luvas Flexinites Latex Dromex",
-      "price": 85,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas modelo Flexinites da marca Dromex, fabricadas em látex, oferecendo flexibilidade e proteção química.</p>"
+        "sku": "CH000GH4",
+        "name": "Luvas Flexinites Latex Dromex",
+        "price": 85,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas modelo Flexinites da marca Dromex, fabricadas em látex, oferecendo flexibilidade e proteção química.</p>"
     },
     {
-      "sku": "CH000GH5",
-      "name": "Luvas Cabedal Cano Curta",
-      "price": 173,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro), com cano curto, para proteção mecânica das mãos.</p>"
+        "sku": "CH000GH5",
+        "name": "Luvas Cabedal Cano Curta",
+        "price": 173,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro), com cano curto, para proteção mecânica das mãos.</p>"
     },
     {
-      "sku": "CH000GH6",
-      "name": "Oculos Escuros De Protecao",
-      "price": 73,
-      "category_slug": "protetores-faciais-oculos",
-      "description": "<p>Óculos de proteção com lentes escuras para proteger os olhos contra luminosidade excessiva e impactos leves.</p>"
+        "sku": "CH000GH6",
+        "name": "Oculos Escuros De Protecao",
+        "price": 73,
+        "category_slug": "protetores-faciais-oculos",
+        "description": "<p>Óculos de proteção com lentes escuras para proteger os olhos contra luminosidade excessiva e impactos leves.</p>"
     },
     {
-      "sku": "CH000GH7",
-      "name": "Uniforme Azul 2 Peças Com Bordado",
-      "price": 750,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme profissional composto por duas peças na cor azul. Inclui serviço de bordado para personalização.</p>"
+        "sku": "CH000GH7",
+        "name": "Uniforme Azul 2 Peças Com Bordado",
+        "price": 750,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme profissional composto por duas peças na cor azul. Inclui serviço de bordado para personalização.</p>"
     },
     {
-      "sku": "CH000GH8",
-      "name": "Camisete Com Bordado Em Frente",
-      "price": 245,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisete (camiseta) profissional com serviço de bordado na parte frontal incluído.</p>"
+        "sku": "CH000GH8",
+        "name": "Camisete Com Bordado Em Frente",
+        "price": 245,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisete (camiseta) profissional com serviço de bordado na parte frontal incluído.</p>"
     },
     {
-      "sku": "CH000GH9",
-      "name": "Boné Com Bordado Em Frente",
-      "price": 135,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Boné para uso profissional ou promocional, com serviço de bordado na parte frontal incluído.</p>"
+        "sku": "CH000GH9",
+        "name": "Boné Com Bordado Em Frente",
+        "price": 135,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Boné para uso profissional ou promocional, com serviço de bordado na parte frontal incluído.</p>"
     },
     {
-      "sku": "CH000GH10",
-      "name": "Par De Luvas Isoladas",
-      "price": 95,
-      "category_slug": "luvas-protecao-termica",
-      "description": "<p>Par de luvas com propriedades isolantes, adequadas para proteção contra riscos térmicos ou elétricos (verificar especificação).</p>"
+        "sku": "CH000GH10",
+        "name": "Par De Luvas Isoladas",
+        "price": 95,
+        "category_slug": "luvas-protecao-termica",
+        "description": "<p>Par de luvas com propriedades isolantes, adequadas para proteção contra riscos térmicos ou elétricos (verificar especificação).</p>"
     },
     {
-      "sku": "CH000GH11",
-      "name": "Tapete Isoladas",
-      "price": 13550.90,
-      "category_slug": "tapetes-pisos-seguranca",
-      "description": "<p>Tapete de segurança com propriedades isolantes elétricas, para proteção em áreas de risco.</p>"
+        "sku": "CH000GH11",
+        "name": "Tapete Isoladas",
+        "price": 13550.90,
+        "category_slug": "tapetes-pisos-seguranca",
+        "description": "<p>Tapete de segurança com propriedades isolantes elétricas, para proteção em áreas de risco.</p>"
     },
     {
-      "sku": "CH000GH12",
-      "name": "Quadro De Instruções Primeiros Socorros",
-      "price": 5534.90,
-      "category_slug": "sinalizacao-visual-barreiras",
-      "description": "<p>Quadro informativo com instruções visuais e textuais sobre procedimentos de primeiros socorros.</p>"
+        "sku": "CH000GH12",
+        "name": "Quadro De Instruções Primeiros Socorros",
+        "price": 5534.90,
+        "category_slug": "sinalizacao-visual-barreiras",
+        "description": "<p>Quadro informativo com instruções visuais e textuais sobre procedimentos de primeiros socorros.</p>"
     },
     {
-      "sku": "CH000GH13",
-      "name": "Chapa De Aviso De 'Perigo De Morte'",
-      "price": 2500.00,
-      "category_slug": "sinalizacao-visual-barreiras",
-      "description": "<p>Placa (chapa) de sinalização de segurança com aviso explícito de 'Perigo de Morte', para áreas de alto risco.</p>"
+        "sku": "CH000GH13",
+        "name": "Chapa De Aviso De 'Perigo De Morte'",
+        "price": 2500.00,
+        "category_slug": "sinalizacao-visual-barreiras",
+        "description": "<p>Placa (chapa) de sinalização de segurança com aviso explícito de 'Perigo de Morte', para áreas de alto risco.</p>"
     },
     {
-      "sku": "CH000GH14",
-      "name": "Capas De Chuva Com Logo",
-      "price": 895,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Capa de chuva impermeável, com possibilidade de personalização com logotipo.</p>"
+        "sku": "CH000GH14",
+        "name": "Capas De Chuva Com Logo",
+        "price": 895,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Capa de chuva impermeável, com possibilidade de personalização com logotipo.</p>"
     },
     {
-      "sku": "CH000GH15",
-      "name": "Vassoura Industrial",
-      "price": 1325.00,
-      "category_slug": "ferramentas-limpeza",
-      "description": "<p>Vassoura robusta projetada para uso industrial e limpeza de grandes áreas ou resíduos pesados.</p>"
+        "sku": "CH000GH15",
+        "name": "Vassoura Industrial",
+        "price": 1325.00,
+        "category_slug": "ferramentas-limpeza",
+        "description": "<p>Vassoura robusta projetada para uso industrial e limpeza de grandes áreas ou resíduos pesados.</p>"
     },
     {
-      "sku": "CH000GH16",
-      "name": "Óculos Duplos Para Soldadura",
-      "price": 525,
-      "category_slug": "protetores-faciais-oculos",
-      "description": "<p>Óculos de proteção específicos para atividades de soldadura, com sistema de lentes duplas para proteção contra radiação e faíscas.</p>"
+        "sku": "CH000GH16",
+        "name": "Óculos Duplos Para Soldadura",
+        "price": 525,
+        "category_slug": "protetores-faciais-oculos",
+        "description": "<p>Óculos de proteção específicos para atividades de soldadura, com sistema de lentes duplas para proteção contra radiação e faíscas.</p>"
     },
     {
-      "sku": "CH000GH17",
-      "name": "Botas Leopard",
-      "price": 1500.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Leopard, oferecendo proteção para os pés em ambiente de trabalho.</p>"
+        "sku": "CH000GH17",
+        "name": "Botas Leopard",
+        "price": 1500.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Leopard, oferecendo proteção para os pés em ambiente de trabalho.</p>"
     },
     {
-      "sku": "CH000GH18",
-      "name": "Bota Rebel",
-      "price": 1905.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Rebel, projetadas para conforto e proteção no trabalho.</p>"
+        "sku": "CH000GH18",
+        "name": "Bota Rebel",
+        "price": 1905.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Rebel, projetadas para conforto e proteção no trabalho.</p>"
     },
     {
-      "sku": "CH000GH19",
-      "name": "Bota Frems",
-      "price": 1673.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Frems, para proteção dos pés contra riscos ocupacionais.</p>"
+        "sku": "CH000GH19",
+        "name": "Bota Frems",
+        "price": 1673.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Frems, para proteção dos pés contra riscos ocupacionais.</p>"
     },
     {
-      "sku": "CH000GH20",
-      "name": "Camisetes",
-      "price": 180,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisetes (camisetas) básicas para composição de uniformes ou uso geral no trabalho.</p>"
+        "sku": "CH000GH20",
+        "name": "Camisetes",
+        "price": 180,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisetes (camisetas) básicas para composição de uniformes ou uso geral no trabalho.</p>"
     },
     {
-      "sku": "CH000GH21",
-      "name": "Bordado Afrente",
-      "price": 150,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização através de bordado aplicado na parte frontal de peças de vestuário.</p>"
+        "sku": "CH000GH21",
+        "name": "Bordado Afrente",
+        "price": 150,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização através de bordado aplicado na parte frontal de peças de vestuário.</p>"
     },
     {
-      "sku": "CH000GH22",
-      "name": "Bordado Nas Costas",
-      "price": 180,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização através de bordado aplicado na parte traseira (costas) de peças de vestuário.</p>"
+        "sku": "CH000GH22",
+        "name": "Bordado Nas Costas",
+        "price": 180,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização através de bordado aplicado na parte traseira (costas) de peças de vestuário.</p>"
     },
     {
-      "sku": "CH000GH23",
-      "name": "Fardas Laranja",
-      "price": 950,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme de trabalho completo (duas peças) na cor laranja, proporcionando alta visibilidade.</p>"
+        "sku": "CH000GH23",
+        "name": "Fardas Laranja",
+        "price": 950,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme de trabalho completo (duas peças) na cor laranja, proporcionando alta visibilidade.</p>"
     },
     {
-      "sku": "CH000GH24",
-      "name": "Coletes",
-      "price": 295,
-      "category_slug": "vestuario-alta-visibilidade",
-      "description": "<p>Coletes de sinalização ou trabalho, possivelmente com características refletoras (verificar detalhes do modelo).</p>"
+        "sku": "CH000GH24",
+        "name": "Coletes",
+        "price": 295,
+        "category_slug": "vestuario-alta-visibilidade",
+        "description": "<p>Coletes de sinalização ou trabalho, possivelmente com características refletoras (verificar detalhes do modelo).</p>"
     },
     {
-      "sku": "CH000GH25",
-      "name": "Camiseta Sem Gola Com Estampagem",
-      "price": 250,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta de gola redonda (sem gola tipo polo) com serviço de estampagem incluído para personalização.</p>"
+        "sku": "CH000GH25",
+        "name": "Camiseta Sem Gola Com Estampagem",
+        "price": 250,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta de gola redonda (sem gola tipo polo) com serviço de estampagem incluído para personalização.</p>"
     },
     {
-      "sku": "CH000GH26",
-      "name": "Luvas De Oleo, Compridas",
-      "price": 180,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas de cano longo, projetadas para proteção das mãos e antebraços contra óleos e outros produtos químicos.</p>"
+        "sku": "CH000GH26",
+        "name": "Luvas De Oleo, Compridas",
+        "price": 180,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas de cano longo, projetadas para proteção das mãos e antebraços contra óleos e outros produtos químicos.</p>"
     },
     {
-      "sku": "CH000GH27",
-      "name": "Camisetas Polo Royal Queen Bordada Afrente",
-      "price": 450,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, com serviço de bordado na parte frontal incluído.</p>"
+        "sku": "CH000GH27",
+        "name": "Camisetas Polo Royal Queen Bordada Afrente",
+        "price": 450,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, com serviço de bordado na parte frontal incluído.</p>"
     },
     {
-      "sku": "CH000GH28",
-      "name": "Luvas De Borracha Para Limpeza",
-      "price": 102,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas de borracha, ideais para tarefas de limpeza e manuseio de produtos químicos leves.</p>"
+        "sku": "CH000GH28",
+        "name": "Luvas De Borracha Para Limpeza",
+        "price": 102,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas de borracha, ideais para tarefas de limpeza e manuseio de produtos químicos leves.</p>"
     },
     {
-      "sku": "CH000GH29",
-      "name": "Farda Laranja Duas Peçcas C/Refletor",
-      "price": 1050.00,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor laranja, com faixas refletoras para alta visibilidade.</p>"
+        "sku": "CH000GH29",
+        "name": "Farda Laranja Duas Peçcas C/Refletor",
+        "price": 1050.00,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor laranja, com faixas refletoras para alta visibilidade.</p>"
     },
     {
-      "sku": "CH000GH30",
-      "name": "Colete Refletor",
-      "price": 265,
-      "category_slug": "vestuario-alta-visibilidade",
-      "description": "<p>Colete de alta visibilidade com faixas refletoras para segurança em ambientes de baixa luminosidade.</p>"
+        "sku": "CH000GH30",
+        "name": "Colete Refletor",
+        "price": 265,
+        "category_slug": "vestuario-alta-visibilidade",
+        "description": "<p>Colete de alta visibilidade com faixas refletoras para segurança em ambientes de baixa luminosidade.</p>"
     },
     {
-      "sku": "CH000GH31",
-      "name": "Polos Bordados Á Frente",
-      "price": 475,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisetas tipo polo com serviço de bordado na parte frontal incluído.</p>"
+        "sku": "CH000GH31",
+        "name": "Polos Bordados Á Frente",
+        "price": 475,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisetas tipo polo com serviço de bordado na parte frontal incluído.</p>"
     },
     {
-      "sku": "CH000GH32",
-      "name": "Botas Cabedal Leopard",
-      "price": 1300.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Leopard, confeccionadas em cabedal (couro).</p>"
+        "sku": "CH000GH32",
+        "name": "Botas Cabedal Leopard",
+        "price": 1300.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Leopard, confeccionadas em cabedal (couro).</p>"
     },
     {
-      "sku": "CH000GH33",
-      "name": "Botas Cabedal Frams",
-      "price": 1650.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Frams, confeccionadas em cabedal (couro).</p>"
+        "sku": "CH000GH33",
+        "name": "Botas Cabedal Frams",
+        "price": 1650.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Frams, confeccionadas em cabedal (couro).</p>"
     },
     {
-      "sku": "CH000GH34",
-      "name": "Luvas Verdes Multi Serviço",
-      "price": 89,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas na cor verde, adequadas para diversas tarefas (multi serviço), oferecendo proteção mecânica geral.</p>"
+        "sku": "CH000GH34",
+        "name": "Luvas Verdes Multi Serviço",
+        "price": 89,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas na cor verde, adequadas para diversas tarefas (multi serviço), oferecendo proteção mecânica geral.</p>"
     },
     {
-      "sku": "CH000GH35",
-      "name": "Máscaras FFP2 P/Poeira",
-      "price": 35,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, indicadas para proteção contra poeiras.</p>"
+        "sku": "CH000GH35",
+        "name": "Máscaras FFP2 P/Poeira",
+        "price": 35,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, indicadas para proteção contra poeiras.</p>"
     },
     {
-      "sku": "CH000GH36",
-      "name": "Uniforme Azul Escuro/ Laranja",
-      "price": 750,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme profissional de duas peças, combinando as cores azul escuro e laranja.</p>"
+        "sku": "CH000GH36",
+        "name": "Uniforme Azul Escuro/ Laranja",
+        "price": 750,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme profissional de duas peças, combinando as cores azul escuro e laranja.</p>"
     },
     {
-      "sku": "CH000GH37",
-      "name": "Macacão Para Pintor / Tyvek",
-      "price": 750,
-      "category_slug": "vestuario-protecao-quimica",
-      "description": "<p>Macacão de proteção descartável, tipo Tyvek, ideal para atividades de pintura e proteção contra respingos químicos leves.</p>"
+        "sku": "CH000GH37",
+        "name": "Macacão Para Pintor / Tyvek",
+        "price": 750,
+        "category_slug": "vestuario-protecao-quimica",
+        "description": "<p>Macacão de proteção descartável, tipo Tyvek, ideal para atividades de pintura e proteção contra respingos químicos leves.</p>"
     },
     {
-      "sku": "CH000GH38",
-      "name": "Luvas Vaqueta",
-      "price": 100,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas confeccionadas em couro vaqueta, oferecendo boa resistência e tato para proteção mecânica.</p>"
+        "sku": "CH000GH38",
+        "name": "Luvas Vaqueta",
+        "price": 100,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas confeccionadas em couro vaqueta, oferecendo boa resistência e tato para proteção mecânica.</p>"
     },
     {
-      "sku": "CH000GH39",
-      "name": "Óculos Transparentes",
-      "price": 64,
-      "category_slug": "protetores-faciais-oculos",
-      "description": "<p>Óculos de proteção com lentes transparentes, para proteção contra impactos e partículas.</p>"
+        "sku": "CH000GH39",
+        "name": "Óculos Transparentes",
+        "price": 64,
+        "category_slug": "protetores-faciais-oculos",
+        "description": "<p>Óculos de proteção com lentes transparentes, para proteção contra impactos e partículas.</p>"
     },
     {
-      "sku": "CH000GH40",
-      "name": "Luvas De Malha",
-      "price": 85,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas de proteção confeccionadas em malha, oferecendo proteção básica e conforto.</p>"
+        "sku": "CH000GH40",
+        "name": "Luvas De Malha",
+        "price": 85,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas de proteção confeccionadas em malha, oferecendo proteção básica e conforto.</p>"
     },
     {
-      "sku": "CH000GH41",
-      "name": "Jugular Para Capacete",
-      "price": 100,
-      "category_slug": "acessorios-protecao-cabeca",
-      "description": "<p>Tira jugular, acessório para fixação segura do capacete à cabeça.</p>"
+        "sku": "CH000GH41",
+        "name": "Jugular Para Capacete",
+        "price": 100,
+        "category_slug": "acessorios-protecao-cabeca",
+        "description": "<p>Tira jugular, acessório para fixação segura do capacete à cabeça.</p>"
     },
     {
-      "sku": "CH000GH42",
-      "name": "Capacete Laranja",
-      "price": 130,
-      "category_slug": "capacetes-seguranca",
-      "description": "<p>Capacete de segurança na cor laranja, para proteção contra impactos na cabeça.</p>"
+        "sku": "CH000GH42",
+        "name": "Capacete Laranja",
+        "price": 130,
+        "category_slug": "capacetes-seguranca",
+        "description": "<p>Capacete de segurança na cor laranja, para proteção contra impactos na cabeça.</p>"
     },
     {
-      "sku": "CH000GH43",
-      "name": "Bota Com Atador Rebel",
-      "price": 1800.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Rebel, com sistema de fechamento por atador (cadarço).</p>"
+        "sku": "CH000GH43",
+        "name": "Bota Com Atador Rebel",
+        "price": 1800.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Rebel, com sistema de fechamento por atador (cadarço).</p>"
     },
     {
-      "sku": "CH000GH44",
-      "name": "Abafadores Dublos 3M",
-      "price": 670,
-      "category_slug": "protetores-auriculares-concha",
-      "description": "<p>Protetor auditivo tipo concha (abafador) da marca 3M, modelo duplo, para atenuação de ruídos elevados.</p>"
+        "sku": "CH000GH44",
+        "name": "Abafadores Dublos 3M",
+        "price": 670,
+        "category_slug": "protetores-auriculares-concha",
+        "description": "<p>Protetor auditivo tipo concha (abafador) da marca 3M, modelo duplo, para atenuação de ruídos elevados.</p>"
     },
     {
-      "sku": "CH000GH45",
-      "name": "Luvas PVC Cano Longo",
-      "price": 110,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas confeccionadas em PVC, com cano longo para proteção estendida contra produtos químicos.</p>"
+        "sku": "CH000GH45",
+        "name": "Luvas PVC Cano Longo",
+        "price": 110,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas confeccionadas em PVC, com cano longo para proteção estendida contra produtos químicos.</p>"
     },
     {
-      "sku": "CH000GH46",
-      "name": "Luvas De Raspa",
-      "price": 100,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas confeccionadas em raspa de couro, oferecendo alta resistência à abrasão e proteção mecânica.</p>"
+        "sku": "CH000GH46",
+        "name": "Luvas De Raspa",
+        "price": 100,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas confeccionadas em raspa de couro, oferecendo alta resistência à abrasão e proteção mecânica.</p>"
     },
     {
-      "sku": "CH000GH47",
-      "name": "Bota Basix",
-      "price": 1100.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Basix, oferecendo proteção essencial para os pés.</p>"
+        "sku": "CH000GH47",
+        "name": "Bota Basix",
+        "price": 1100.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Basix, oferecendo proteção essencial para os pés.</p>"
     },
     {
-      "sku": "CH000GH48",
-      "name": "Glove Cano Curto",
-      "price": 100,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas (gloves) com cano curto, para proteção geral das mãos.</p>"
+        "sku": "CH000GH48",
+        "name": "Glove Cano Curto",
+        "price": 100,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas (gloves) com cano curto, para proteção geral das mãos.</p>"
     },
     {
-      "sku": "CH000GH49",
-      "name": "Glove De Couro",
-      "price": 100,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas (gloves) confeccionadas em couro, para proteção mecânica.</p>"
+        "sku": "CH000GH49",
+        "name": "Glove De Couro",
+        "price": 100,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas (gloves) confeccionadas em couro, para proteção mecânica.</p>"
     },
     {
-      "sku": "CH000GH50",
-      "name": "Luvas PVC Cano Curto",
-      "price": 90,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas confeccionadas em PVC, com cano curto, para proteção contra produtos químicos.</p>"
+        "sku": "CH000GH50",
+        "name": "Luvas PVC Cano Curto",
+        "price": 90,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas confeccionadas em PVC, com cano curto, para proteção contra produtos químicos.</p>"
     },
     {
-      "sku": "CH000GH51",
-      "name": "Luvas PVC Cano Longo",
-      "price": 100,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas confeccionadas em PVC, com cano longo para maior proteção do antebraço contra químicos.</p>"
+        "sku": "CH000GH51",
+        "name": "Luvas PVC Cano Longo",
+        "price": 100,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas confeccionadas em PVC, com cano longo para maior proteção do antebraço contra químicos.</p>"
     },
     {
-      "sku": "CH000GH52",
-      "name": "Camiseta De Uniforme Senior",
-      "price": 100,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta destinada a compor uniformes para cargos de nível sênior ou supervisão.</p>"
+        "sku": "CH000GH52",
+        "name": "Camiseta De Uniforme Senior",
+        "price": 100,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta destinada a compor uniformes para cargos de nível sênior ou supervisão.</p>"
     },
     {
-      "sku": "CH000GH53",
-      "name": "Óculos Escuros",
-      "price": 64,
-      "category_slug": "protetores-faciais-oculos",
-      "description": "<p>Óculos de proteção com lentes escuras para conforto visual em ambientes com alta luminosidade.</p>"
+        "sku": "CH000GH53",
+        "name": "Óculos Escuros",
+        "price": 64,
+        "category_slug": "protetores-faciais-oculos",
+        "description": "<p>Óculos de proteção com lentes escuras para conforto visual em ambientes com alta luminosidade.</p>"
     },
     {
-      "sku": "CH000GH54",
-      "name": "Máscaras De Filtro 3M",
-      "price": 1900.00,
-      "category_slug": "respiradores-reutilizaveis",
-      "description": "<p>Respirador reutilizável da marca 3M, com sistema de filtros substituíveis para proteção respiratória.</p>"
+        "sku": "CH000GH54",
+        "name": "Máscaras De Filtro 3M",
+        "price": 1900.00,
+        "category_slug": "respiradores-reutilizaveis",
+        "description": "<p>Respirador reutilizável da marca 3M, com sistema de filtros substituíveis para proteção respiratória.</p>"
     },
     {
-      "sku": "CH000GH55",
-      "name": "Colete Zipper C/Bolso",
-      "price": 234,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Colete de trabalho com fechamento em zíper e bolsos para praticidade.</p>"
+        "sku": "CH000GH55",
+        "name": "Colete Zipper C/Bolso",
+        "price": 234,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Colete de trabalho com fechamento em zíper e bolsos para praticidade.</p>"
     },
     {
-      "sku": "CH000GH56",
-      "name": "Fita Zebrada",
-      "price": 600,
-      "category_slug": "sinalizacao-visual-barreiras",
-      "description": "<p>Rolo de fita de sinalização zebrada (amarela e preta ou outra combinação) para demarcação de áreas.</p>"
+        "sku": "CH000GH56",
+        "name": "Fita Zebrada",
+        "price": 600,
+        "category_slug": "sinalizacao-visual-barreiras",
+        "description": "<p>Rolo de fita de sinalização zebrada (amarela e preta ou outra combinação) para demarcação de áreas.</p>"
     },
     {
-      "sku": "CH000GH57",
-      "name": "Perneira Contra Animais Pessonheiros",
-      "price": 100,
-      "category_slug": "protecao-pernas",
-      "description": "<p>Equipamento de proteção para as pernas (perneira) contra picadas de animais peçonhentos.</p>"
+        "sku": "CH000GH57",
+        "name": "Perneira Contra Animais Pessonheiros",
+        "price": 100,
+        "category_slug": "protecao-pernas",
+        "description": "<p>Equipamento de proteção para as pernas (perneira) contra picadas de animais peçonhentos.</p>"
     },
     {
-      "sku": "CH000GH58",
-      "name": "Bota Castanhas Sem Atador Pineapple",
-      "price": 100,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança na cor castanha, modelo Pineapple, sem atador (tipo botina elástica).</p>"
+        "sku": "CH000GH58",
+        "name": "Bota Castanhas Sem Atador Pineapple",
+        "price": 100,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança na cor castanha, modelo Pineapple, sem atador (tipo botina elástica).</p>"
     },
     {
-      "sku": "CH000GH59",
-      "name": "Filtro Respiratório Circular",
-      "price": 100,
-      "category_slug": "filtros-cartuchos",
-      "description": "<p>Filtro de formato circular para reposição em respiradores reutilizáveis.</p>"
+        "sku": "CH000GH59",
+        "name": "Filtro Respiratório Circular",
+        "price": 100,
+        "category_slug": "filtros-cartuchos",
+        "description": "<p>Filtro de formato circular para reposição em respiradores reutilizáveis.</p>"
     },
     {
-      "sku": "CH000GH60",
-      "name": "Uniforme Azul Fire Retardant",
-      "price": 2350.00,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Uniforme profissional de duas peças na cor azul, confeccionado com tecido resistente a chamas (Fire Retardant).</p>"
+        "sku": "CH000GH60",
+        "name": "Uniforme Azul Fire Retardant",
+        "price": 2350.00,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Uniforme profissional de duas peças na cor azul, confeccionado com tecido resistente a chamas (Fire Retardant).</p>"
     },
     {
-      "sku": "CH000GH61",
-      "name": "Botas PVC ",
-      "price": 450,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas confeccionadas em PVC, oferecendo impermeabilidade e proteção básica.</p>"
+        "sku": "CH000GH61",
+        "name": "Botas PVC ",
+        "price": 450,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas confeccionadas em PVC, oferecendo impermeabilidade e proteção básica.</p>"
     },
     {
-      "sku": "CH000GH62",
-      "name": "Avental De Raspa",
-      "price": 100,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Avental de proteção confeccionado em raspa de couro, ideal para atividades com risco de abrasão ou projeção de partículas.</p>"
+        "sku": "CH000GH62",
+        "name": "Avental De Raspa",
+        "price": 100,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Avental de proteção confeccionado em raspa de couro, ideal para atividades com risco de abrasão ou projeção de partículas.</p>"
     },
     {
-      "sku": "CH000GH63",
-      "name": "Protetor Facial",
-      "price": 100,
-      "category_slug": "protetores-faciais-oculos",
-      "description": "<p>Equipamento de proteção facial (viseira) para proteger o rosto contra impactos, respingos e partículas.</p>"
+        "sku": "CH000GH63",
+        "name": "Protetor Facial",
+        "price": 100,
+        "category_slug": "protetores-faciais-oculos",
+        "description": "<p>Equipamento de proteção facial (viseira) para proteger o rosto contra impactos, respingos e partículas.</p>"
     },
     {
-      "sku": "CH000GH64",
-      "name": "Colete Refletor Sticker",
-      "price": 295,
-      "category_slug": "vestuario-alta-visibilidade",
-      "description": "<p>Colete de alta visibilidade com material refletor, possivelmente com sistema de fechamento tipo sticker (velcro).</p>"
+        "sku": "CH000GH64",
+        "name": "Colete Refletor Sticker",
+        "price": 295,
+        "category_slug": "vestuario-alta-visibilidade",
+        "description": "<p>Colete de alta visibilidade com material refletor, possivelmente com sistema de fechamento tipo sticker (velcro).</p>"
     },
     {
-      "sku": "CH000GH65",
-      "name": "PVC Nitril Limpeza",
-      "price": 110,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas combinando PVC e nitrila, adequadas para tarefas de limpeza com manuseio de produtos químicos.</p>"
+        "sku": "CH000GH65",
+        "name": "PVC Nitril Limpeza",
+        "price": 110,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas combinando PVC e nitrila, adequadas para tarefas de limpeza com manuseio de produtos químicos.</p>"
     },
     {
-      "sku": "CH000GH66",
-      "name": "Camisa De Uniforme Administrativo Azul Escuro Javlin",
-      "price": 100,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Camisa social na cor azul escuro, marca Javlin, destinada a uniformes administrativos.</p>"
+        "sku": "CH000GH66",
+        "name": "Camisa De Uniforme Administrativo Azul Escuro Javlin",
+        "price": 100,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Camisa social na cor azul escuro, marca Javlin, destinada a uniformes administrativos.</p>"
     },
     {
-      "sku": "CH000GH67",
-      "name": "Capacetes Brancos (Q1)",
-      "price": 100,
-      "category_slug": "capacetes-seguranca",
-      "description": "<p>Capacete de segurança na cor branca, para proteção da cabeça contra impactos.</p>"
+        "sku": "CH000GH67",
+        "name": "Capacetes Brancos (Q1)",
+        "price": 100,
+        "category_slug": "capacetes-seguranca",
+        "description": "<p>Capacete de segurança na cor branca, para proteção da cabeça contra impactos.</p>"
     },
     {
-      "sku": "CH000GH68",
-      "name": "Perneira De Soldadura",
-      "price": 540,
-      "category_slug": "protecao-pernas",
-      "description": "<p>Equipamento de proteção para as pernas (perneira) específico para atividades de soldadura, protegendo contra faíscas e calor.</p>"
+        "sku": "CH000GH68",
+        "name": "Perneira De Soldadura",
+        "price": 540,
+        "category_slug": "protecao-pernas",
+        "description": "<p>Equipamento de proteção para as pernas (perneira) específico para atividades de soldadura, protegendo contra faíscas e calor.</p>"
     },
     {
-      "sku": "CH000GH69",
-      "name": "Camisetas 100% Algodão",
-      "price": 196,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisetas confeccionadas em tecido 100% algodão, proporcionando conforto.</p>"
+        "sku": "CH000GH69",
+        "name": "Camisetas 100% Algodão",
+        "price": 196,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisetas confeccionadas em tecido 100% algodão, proporcionando conforto.</p>"
     },
     {
-      "sku": "CH000GH70",
-      "name": "Camiseta Gola Redonda",
-      "price": 145,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta básica com gola redonda (careca).</p>"
+        "sku": "CH000GH70",
+        "name": "Camiseta Gola Redonda",
+        "price": 145,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta básica com gola redonda (careca).</p>"
     },
     {
-      "sku": "CH000GH71",
-      "name": "Boné",
-      "price": 75,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Boné básico para uso geral ou composição de uniformes.</p>"
+        "sku": "CH000GH71",
+        "name": "Boné",
+        "price": 75,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Boné básico para uso geral ou composição de uniformes.</p>"
     },
     {
-      "sku": "CH000GH72",
-      "name": "Estampagem No Boné",
-      "price": 50,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização através de estampagem (impressão) aplicado em bonés.</p>"
+        "sku": "CH000GH72",
+        "name": "Estampagem No Boné",
+        "price": 50,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização através de estampagem (impressão) aplicado em bonés.</p>"
     },
     {
-      "sku": "CH000GH73",
-      "name": "Estampagem Na Camiseta Frente E Costas",
-      "price": 60,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização através de estampagem (impressão) aplicado na frente e nas costas de camisetas.</p>"
+        "sku": "CH000GH73",
+        "name": "Estampagem Na Camiseta Frente E Costas",
+        "price": 60,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização através de estampagem (impressão) aplicado na frente e nas costas de camisetas.</p>"
     },
     {
-      "sku": "CH000GH74",
-      "name": "Luvas De Frio",
-      "price": 385,
-      "category_slug": "luvas-protecao-termica",
-      "description": "<p>Par de luvas projetadas para proteção das mãos contra baixas temperaturas (frio).</p>"
+        "sku": "CH000GH74",
+        "name": "Luvas De Frio",
+        "price": 385,
+        "category_slug": "luvas-protecao-termica",
+        "description": "<p>Par de luvas projetadas para proteção das mãos contra baixas temperaturas (frio).</p>"
     },
     {
-      "sku": "CH000GH75",
-      "name": "Fardamento Azul C/Refletor E Estampagem",
-      "price": 950,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e serviço de estampagem incluído.</p>"
+        "sku": "CH000GH75",
+        "name": "Fardamento Azul C/Refletor E Estampagem",
+        "price": 950,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e serviço de estampagem incluído.</p>"
     },
     {
-      "sku": "CH000GH76",
-      "name": "Farda Completa Flam Retardant",
-      "price": 2800.00,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
+        "sku": "CH000GH76",
+        "name": "Farda Completa Flam Retardant",
+        "price": 2800.00,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
     },
     {
-      "sku": "CH000GH77",
-      "name": "Bordado",
-      "price": 150,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço genérico de personalização através de bordado em peças de vestuário ou acessórios.</p>"
+        "sku": "CH000GH77",
+        "name": "Bordado",
+        "price": 150,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço genérico de personalização através de bordado em peças de vestuário ou acessórios.</p>"
     },
     {
-      "sku": "CH000GH78",
-      "name": "Estampagem",
-      "price": 80,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço genérico de personalização através de estampagem (impressão) em peças de vestuário ou acessórios.</p>"
+        "sku": "CH000GH78",
+        "name": "Estampagem",
+        "price": 80,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço genérico de personalização através de estampagem (impressão) em peças de vestuário ou acessórios.</p>"
     },
     {
-      "sku": "CH000GH79",
-      "name": "Camisetas Com Gola E Bordado Afrente",
-      "price": 485,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisetas tipo polo (com gola) com serviço de bordado na parte frontal incluído.</p>"
+        "sku": "CH000GH79",
+        "name": "Camisetas Com Gola E Bordado Afrente",
+        "price": 485,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisetas tipo polo (com gola) com serviço de bordado na parte frontal incluído.</p>"
     },
     {
-      "sku": "CH000GH80",
-      "name": "Capacete",
-      "price": 198,
-      "category_slug": "capacetes-seguranca",
-      "description": "<p>Capacete de segurança básico para proteção da cabeça contra impactos.</p>"
+        "sku": "CH000GH80",
+        "name": "Capacete",
+        "price": 198,
+        "category_slug": "capacetes-seguranca",
+        "description": "<p>Capacete de segurança básico para proteção da cabeça contra impactos.</p>"
     },
     {
-      "sku": "CH000GH81",
-      "name": "Colete Refletor C/ Bordado",
-      "price": 385,
-      "category_slug": "vestuario-alta-visibilidade",
-      "description": "<p>Colete de alta visibilidade com faixas refletoras e serviço de bordado incluído para personalização.</p>"
+        "sku": "CH000GH81",
+        "name": "Colete Refletor C/ Bordado",
+        "price": 385,
+        "category_slug": "vestuario-alta-visibilidade",
+        "description": "<p>Colete de alta visibilidade com faixas refletoras e serviço de bordado incluído para personalização.</p>"
     },
     {
-      "sku": "CH000GH82",
-      "name": "Camisetas Polo Bordada",
-      "price": 485,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisetas tipo polo com serviço de bordado incluído.</p>"
+        "sku": "CH000GH82",
+        "name": "Camisetas Polo Bordada",
+        "price": 485,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisetas tipo polo com serviço de bordado incluído.</p>"
     },
     {
-      "sku": "CH000GH83",
-      "name": "T-Shirt Com Bordado Afrente",
-      "price": 385,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>T-Shirt (camiseta) com serviço de bordado na parte frontal incluído.</p>"
+        "sku": "CH000GH83",
+        "name": "T-Shirt Com Bordado Afrente",
+        "price": 385,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>T-Shirt (camiseta) com serviço de bordado na parte frontal incluído.</p>"
     },
     {
-      "sku": "CH000GH84",
-      "name": "Bonés Bordados",
-      "price": 194,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Bonés com serviço de bordado incluído para personalização.</p>"
+        "sku": "CH000GH84",
+        "name": "Bonés Bordados",
+        "price": 194,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Bonés com serviço de bordado incluído para personalização.</p>"
     },
     {
-      "sku": "CH000GH85",
-      "name": "Uniforme Azul Flame Retardant Duas Peças C/Timbre",
-      "price": 2623.00,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Uniforme profissional (duas peças) na cor azul, com tecido resistente a chamas (Flame Retardant) e personalização com timbre.</p>"
+        "sku": "CH000GH85",
+        "name": "Uniforme Azul Flame Retardant Duas Peças C/Timbre",
+        "price": 2623.00,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Uniforme profissional (duas peças) na cor azul, com tecido resistente a chamas (Flame Retardant) e personalização com timbre.</p>"
     },
     {
-      "sku": "CH000GH86",
-      "name": "Camisetes",
-      "price": 250,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisetes (camisetas) básicas para composição de uniformes.</p>"
+        "sku": "CH000GH86",
+        "name": "Camisetes",
+        "price": 250,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisetes (camisetas) básicas para composição de uniformes.</p>"
     },
     {
-      "sku": "CH000GH87",
-      "name": "Bordado Afrente",
-      "price": 135,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado aplicado na parte frontal de peças.</p>"
+        "sku": "CH000GH87",
+        "name": "Bordado Afrente",
+        "price": 135,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado aplicado na parte frontal de peças.</p>"
     },
     {
-      "sku": "CH000GH88",
-      "name": "Bordado Nas Costas",
-      "price": 180,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado aplicado na parte traseira (costas) de peças.</p>"
+        "sku": "CH000GH88",
+        "name": "Bordado Nas Costas",
+        "price": 180,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado aplicado na parte traseira (costas) de peças.</p>"
     },
     {
-      "sku": "CH000GH89",
-      "name": "Botas Cabedal Frams",
-      "price": 1797.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Frams, confeccionadas em cabedal (couro).</p>"
+        "sku": "CH000GH89",
+        "name": "Botas Cabedal Frams",
+        "price": 1797.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Frams, confeccionadas em cabedal (couro).</p>"
     },
     {
-      "sku": "CH000GH90",
-      "name": "Bota Rebel",
-      "price": 1905.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Rebel.</p>"
+        "sku": "CH000GH90",
+        "name": "Bota Rebel",
+        "price": 1905.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Rebel.</p>"
     },
     {
-      "sku": "CH000GH91",
-      "name": "Bota Basix",
-      "price": 1200.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
+        "sku": "CH000GH91",
+        "name": "Bota Basix",
+        "price": 1200.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
     },
     {
-      "sku": "CH000GH92",
-      "name": "Chelsea Boots Rebel",
-      "price": 4600.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança estilo Chelsea (elástico lateral) da marca/modelo Rebel.</p>"
+        "sku": "CH000GH92",
+        "name": "Chelsea Boots Rebel",
+        "price": 4600.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança estilo Chelsea (elástico lateral) da marca/modelo Rebel.</p>"
     },
     {
-      "sku": "CH000GH93",
-      "name": "Capa De Chuva Rubber Rised Com Refletor",
-      "price": 950,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Capa de chuva confeccionada em material emborrachado (rubber rised) com faixas refletoras para visibilidade.</p>"
+        "sku": "CH000GH93",
+        "name": "Capa De Chuva Rubber Rised Com Refletor",
+        "price": 950,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Capa de chuva confeccionada em material emborrachado (rubber rised) com faixas refletoras para visibilidade.</p>"
     },
     {
-      "sku": "CH000GH94",
-      "name": "Fardamento Azul Duas Peças 100% Algodão Com Timbre",
-      "price": 1285.00,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme profissional (duas peças) na cor azul, confeccionado em tecido 100% algodão e personalizado com timbre.</p>"
+        "sku": "CH000GH94",
+        "name": "Fardamento Azul Duas Peças 100% Algodão Com Timbre",
+        "price": 1285.00,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme profissional (duas peças) na cor azul, confeccionado em tecido 100% algodão e personalizado com timbre.</p>"
     },
     {
-      "sku": "CH000GH95",
-      "name": "Botas Cabedal Frams",
-      "price": 1650.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Frams, confeccionadas em cabedal (couro).</p>"
+        "sku": "CH000GH95",
+        "name": "Botas Cabedal Frams",
+        "price": 1650.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Frams, confeccionadas em cabedal (couro).</p>"
     },
     {
-      "sku": "CH000GH96",
-      "name": "Blue T-Shirt 100% Cotton C/Timbre",
-      "price": 375,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>T-Shirt (camiseta) na cor azul, confeccionada em tecido 100% algodão e personalizada com timbre.</p>"
+        "sku": "CH000GH96",
+        "name": "Blue T-Shirt 100% Cotton C/Timbre",
+        "price": 375,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>T-Shirt (camiseta) na cor azul, confeccionada em tecido 100% algodão e personalizada com timbre.</p>"
     },
     {
-      "sku": "CH000GH97",
-      "name": "Uniforme Azul",
-      "price": 750,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme profissional básico de duas peças na cor azul.</p>"
+        "sku": "CH000GH97",
+        "name": "Uniforme Azul",
+        "price": 750,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme profissional básico de duas peças na cor azul.</p>"
     },
     {
-      "sku": "CH000GH98",
-      "name": "Botas Simples",
-      "price": 1000.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança de modelo básico ou simples.</p>"
+        "sku": "CH000GH98",
+        "name": "Botas Simples",
+        "price": 1000.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança de modelo básico ou simples.</p>"
     },
     {
-      "sku": "CH000GH99",
-      "name": "Capacetes",
-      "price": 135,
-      "category_slug": "capacetes-seguranca",
-      "description": "<p>Capacete de segurança genérico para proteção da cabeça.</p>"
+        "sku": "CH000GH99",
+        "name": "Capacetes",
+        "price": 135,
+        "category_slug": "capacetes-seguranca",
+        "description": "<p>Capacete de segurança genérico para proteção da cabeça.</p>"
     },
     {
-      "sku": "CH000GH100",
-      "name": "Capa De Chuva ",
-      "price": 485,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Capa de chuva básica para proteção contra intempéries.</p>"
+        "sku": "CH000GH100",
+        "name": "Capa De Chuva ",
+        "price": 485,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Capa de chuva básica para proteção contra intempéries.</p>"
     },
     {
-      "sku": "CH000GH101",
-      "name": "Fardamento",
-      "price": 750,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme de trabalho completo (duas peças) de modelo padrão.</p>"
+        "sku": "CH000GH101",
+        "name": "Fardamento",
+        "price": 750,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme de trabalho completo (duas peças) de modelo padrão.</p>"
     },
     {
-      "sku": "CH000GH102",
-      "name": "Botas De Segurança",
-      "price": 1300.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança genéricas, projetadas para proteger os pés no ambiente de trabalho.</p>"
+        "sku": "CH000GH102",
+        "name": "Botas De Segurança",
+        "price": 1300.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança genéricas, projetadas para proteger os pés no ambiente de trabalho.</p>"
     },
     {
-      "sku": "CH000GH103",
-      "name": "Blue Uniform, High Visibility Warning Clothing On It",
-      "price": 935,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme na cor azul com aplicação de material de alta visibilidade (refletor).</p>"
+        "sku": "CH000GH103",
+        "name": "Blue Uniform, High Visibility Warning Clothing On It",
+        "price": 935,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme na cor azul com aplicação de material de alta visibilidade (refletor).</p>"
     },
     {
-      "sku": "CH000GH104",
-      "name": "Fardamento 100% Algodão C/Refletor E Estampagem",
-      "price": 1285.00,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) confeccionado em tecido 100% algodão, com faixas refletoras e serviço de estampagem incluído.</p>"
+        "sku": "CH000GH104",
+        "name": "Fardamento 100% Algodão C/Refletor E Estampagem",
+        "price": 1285.00,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) confeccionado em tecido 100% algodão, com faixas refletoras e serviço de estampagem incluído.</p>"
     },
     {
-      "sku": "CH000GH105",
-      "name": "Fardas Vermelhas Com Estapagem",
-      "price": 850,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor vermelha, com serviço de estampagem incluído.</p>"
+        "sku": "CH000GH105",
+        "name": "Fardas Vermelhas Com Estapagem",
+        "price": 850,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor vermelha, com serviço de estampagem incluído.</p>"
     },
     {
-      "sku": "CH000GH106",
-      "name": "Uniforme Para Segurança",
-      "price": 1380.00,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) específico para profissionais da área de segurança.</p>"
+        "sku": "CH000GH106",
+        "name": "Uniforme Para Segurança",
+        "price": 1380.00,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) específico para profissionais da área de segurança.</p>"
     },
     {
-      "sku": "CH000GH107",
-      "name": "Bota Para Segurança",
-      "price": 1650.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança adequadas para profissionais da área de segurança.</p>"
+        "sku": "CH000GH107",
+        "name": "Bota Para Segurança",
+        "price": 1650.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança adequadas para profissionais da área de segurança.</p>"
     },
     {
-      "sku": "CH000GH108",
-      "name": "Cinto",
-      "price": 385,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Cinto para uso com calças de uniforme ou trabalho.</p>"
+        "sku": "CH000GH108",
+        "name": "Cinto",
+        "price": 385,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Cinto para uso com calças de uniforme ou trabalho.</p>"
     },
     {
-      "sku": "CH000GH109",
-      "name": "Bota Basix",
-      "price": 1150.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
+        "sku": "CH000GH109",
+        "name": "Bota Basix",
+        "price": 1150.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
     },
     {
-      "sku": "CH000GH110",
-      "name": "Fardamento Duas Peças 60x40 C/Estampagem E Refletor",
-      "price": 780,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) em tecido misto (provavelmente 60% algodão, 40% poliéster), com estampagem e faixas refletoras.</p>"
+        "sku": "CH000GH110",
+        "name": "Fardamento Duas Peças 60x40 C/Estampagem E Refletor",
+        "price": 780,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) em tecido misto (provavelmente 60% algodão, 40% poliéster), com estampagem e faixas refletoras.</p>"
     },
     {
-      "sku": "CH000GH111",
-      "name": "Bone",
-      "price": 75,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Boné básico.</p>"
+        "sku": "CH000GH111",
+        "name": "Bone",
+        "price": 75,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Boné básico.</p>"
     },
     {
-      "sku": "CH000GH112",
-      "name": "Estampagem No Boné",
-      "price": 500,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com estampagem (impressão) aplicado em bonés.</p>"
+        "sku": "CH000GH112",
+        "name": "Estampagem No Boné",
+        "price": 500,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com estampagem (impressão) aplicado em bonés.</p>"
     },
     {
-      "sku": "CH000GH113",
-      "name": "Botas Flams",
-      "price": 1600.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Flams.</p>"
+        "sku": "CH000GH113",
+        "name": "Botas Flams",
+        "price": 1600.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Flams.</p>"
     },
     {
-      "sku": "CH000GH114",
-      "name": "Farda Duas Peças 100% Algodão",
-      "price": 1380.00,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) confeccionado em tecido 100% algodão.</p>"
+        "sku": "CH000GH114",
+        "name": "Farda Duas Peças 100% Algodão",
+        "price": 1380.00,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) confeccionado em tecido 100% algodão.</p>"
     },
     {
-      "sku": "CH000GH115",
-      "name": "Mascaras QSA Sem Válvula",
-      "price": 38,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis da marca QSA, modelo sem válvula de exalação.</p>"
+        "sku": "CH000GH115",
+        "name": "Mascaras QSA Sem Válvula",
+        "price": 38,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis da marca QSA, modelo sem válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH116",
-      "name": "Mascaras 3M Sem Válvula",
-      "price": 44,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis da marca 3M, modelo sem válvula de exalação.</p>"
+        "sku": "CH000GH116",
+        "name": "Mascaras 3M Sem Válvula",
+        "price": 44,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis da marca 3M, modelo sem válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH117",
-      "name": "Botas De Segurança",
-      "price": 1850.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança genéricas.</p>"
+        "sku": "CH000GH117",
+        "name": "Botas De Segurança",
+        "price": 1850.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança genéricas.</p>"
     },
     {
-      "sku": "CH000GH118",
-      "name": "Mascaras",
-      "price": 89,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória genéricas (provavelmente descartáveis).</p>"
+        "sku": "CH000GH118",
+        "name": "Mascaras",
+        "price": 89,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória genéricas (provavelmente descartáveis).</p>"
     },
     {
-      "sku": "CH000GH119",
-      "name": "Fardamento Azul",
-      "price": 550,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
+        "sku": "CH000GH119",
+        "name": "Fardamento Azul",
+        "price": 550,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
     },
     {
-      "sku": "CH000GH120",
-      "name": "Máscaras Com Válvula",
-      "price": 65,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação para maior conforto.</p>"
+        "sku": "CH000GH120",
+        "name": "Máscaras Com Válvula",
+        "price": 65,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação para maior conforto.</p>"
     },
     {
-      "sku": "CH000GH121",
-      "name": "Fardamento Flam Retardant",
-      "price": 2395.00,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
+        "sku": "CH000GH121",
+        "name": "Fardamento Flam Retardant",
+        "price": 2395.00,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
     },
     {
-      "sku": "CH000GH122",
-      "name": "Bordado Afrente",
-      "price": 150,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado aplicado na parte frontal.</p>"
+        "sku": "CH000GH122",
+        "name": "Bordado Afrente",
+        "price": 150,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado aplicado na parte frontal.</p>"
     },
     {
-      "sku": "CH000GH123",
-      "name": "Bordado Nas Costas",
-      "price": 180,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado aplicado na parte traseira (costas).</p>"
+        "sku": "CH000GH123",
+        "name": "Bordado Nas Costas",
+        "price": 180,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado aplicado na parte traseira (costas).</p>"
     },
     {
-      "sku": "CH000GH124",
-      "name": "Botas",
-      "price": 984,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança genéricas.</p>"
+        "sku": "CH000GH124",
+        "name": "Botas",
+        "price": 984,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança genéricas.</p>"
     },
     {
-      "sku": "CH000GH125",
-      "name": "Máscaras Com Válvula",
-      "price": 55.55,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
+        "sku": "CH000GH125",
+        "name": "Máscaras Com Válvula",
+        "price": 55.55,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH126",
-      "name": "Fardamentos Azuis Com Estampagem",
-      "price": 750,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com serviço de estampagem incluído.</p>"
+        "sku": "CH000GH126",
+        "name": "Fardamentos Azuis Com Estampagem",
+        "price": 750,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com serviço de estampagem incluído.</p>"
     },
     {
-      "sku": "CH000GH127",
-      "name": "T-Shirt Cinza Com Estampagem",
-      "price": 350,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>T-Shirt (camiseta) na cor cinza, com serviço de estampagem incluído.</p>"
+        "sku": "CH000GH127",
+        "name": "T-Shirt Cinza Com Estampagem",
+        "price": 350,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>T-Shirt (camiseta) na cor cinza, com serviço de estampagem incluído.</p>"
     },
     {
-      "sku": "CH000GH128",
-      "name": "Botas De Cabedal",
-      "price": 1250.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança confeccionadas em cabedal (couro).</p>"
+        "sku": "CH000GH128",
+        "name": "Botas De Cabedal",
+        "price": 1250.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança confeccionadas em cabedal (couro).</p>"
     },
     {
-      "sku": "CH000GH129",
-      "name": "Luvas",
-      "price": 102,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas de proteção genéricas.</p>"
+        "sku": "CH000GH129",
+        "name": "Luvas",
+        "price": 102,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas de proteção genéricas.</p>"
     },
     {
-      "sku": "CH000GH130",
-      "name": "Fardamento Azul Com Refletor",
-      "price": 800,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras para alta visibilidade.</p>"
+        "sku": "CH000GH130",
+        "name": "Fardamento Azul Com Refletor",
+        "price": 800,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras para alta visibilidade.</p>"
     },
     {
-      "sku": "CH000GH131",
-      "name": "Bota De Cabedal Passion",
-      "price": 1350.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Passion, confeccionadas em cabedal (couro).</p>"
+        "sku": "CH000GH131",
+        "name": "Bota De Cabedal Passion",
+        "price": 1350.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Passion, confeccionadas em cabedal (couro).</p>"
     },
     {
-      "sku": "CH000GH132",
-      "name": "Bota De Cabedal Dura Mais",
-      "price": 1000.00,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Dura Mais, confeccionadas em cabedal (couro).</p>"
+        "sku": "CH000GH132",
+        "name": "Bota De Cabedal Dura Mais",
+        "price": 1000.00,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Dura Mais, confeccionadas em cabedal (couro).</p>"
     },
     {
-      "sku": "CH000GH133",
-      "name": "Calças",
-      "price": 650,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Calças de trabalho para composição de uniformes.</p>"
+        "sku": "CH000GH133",
+        "name": "Calças",
+        "price": 650,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Calças de trabalho para composição de uniformes.</p>"
     },
     {
-      "sku": "CH000GH134",
-      "name": "Máscaras De Protecção Com Válvula",
-      "price": 150,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
+        "sku": "CH000GH134",
+        "name": "Máscaras De Protecção Com Válvula",
+        "price": 150,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH135",
-      "name": "Máscaras De Protecção Sem Válvula",
-      "price": 45,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, modelo sem válvula de exalação.</p>"
+        "sku": "CH000GH135",
+        "name": "Máscaras De Protecção Sem Válvula",
+        "price": 45,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, modelo sem válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH136",
-      "name": "Máscaras FFP2 Com Válvula",
-      "price": 140,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, com válvula de exalação.</p>"
+        "sku": "CH000GH136",
+        "name": "Máscaras FFP2 Com Válvula",
+        "price": 140,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, com válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH137",
-      "name": "Máscaras Descartáveis",
-      "price": 55,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, de uso único.</p>"
+        "sku": "CH000GH137",
+        "name": "Máscaras Descartáveis",
+        "price": 55,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, de uso único.</p>"
     },
     {
-      "sku": "CH000GH138",
-      "name": "Máscaras De Protecção Com Válvula",
-      "price": 111.12,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
+        "sku": "CH000GH138",
+        "name": "Máscaras De Protecção Com Válvula",
+        "price": 111.12,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH139",
-      "name": "Máscaras De Protecção Com Válvula",
-      "price": 135,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
+        "sku": "CH000GH139",
+        "name": "Máscaras De Protecção Com Válvula",
+        "price": 135,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis com válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH140",
-      "name": "Máscaras EN149 2001 FFP2",
-      "price": 150,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2 conforme norma EN149:2001.</p>"
+        "sku": "CH000GH140",
+        "name": "Máscaras EN149 2001 FFP2",
+        "price": 150,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2 conforme norma EN149:2001.</p>"
     },
     {
-      "sku": "CH000GH141",
-      "name": "Máscaras De Protecção Sem Válvula",
-      "price": 55,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, sem válvula de exalação.</p>"
+        "sku": "CH000GH141",
+        "name": "Máscaras De Protecção Sem Válvula",
+        "price": 55,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, sem válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH142",
-      "name": "Máscaras De Protecção",
-      "price": 200,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória genéricas.</p>"
+        "sku": "CH000GH142",
+        "name": "Máscaras De Protecção",
+        "price": 200,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória genéricas.</p>"
     },
     {
-      "sku": "CH000GH143",
-      "name": "Máscaras De Protecção De Pano",
-      "price": 55,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção facial confeccionadas em tecido (pano), reutilizáveis.</p>"
+        "sku": "CH000GH143",
+        "name": "Máscaras De Protecção De Pano",
+        "price": 55,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção facial confeccionadas em tecido (pano), reutilizáveis.</p>"
     },
     {
-      "sku": "CH000GH144",
-      "name": "Máscaras De ProtecçãoFFP1",
-      "price": 135,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP1.</p>"
+        "sku": "CH000GH144",
+        "name": "Máscaras De ProtecçãoFFP1",
+        "price": 135,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP1.</p>"
     },
     {
-      "sku": "CH000GH145",
-      "name": "Fardas Flame Retardane",
-      "price": 27,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
+        "sku": "CH000GH145",
+        "name": "Fardas Flame Retardane",
+        "price": 27,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
     },
     {
-      "sku": "CH000GH146",
-      "name": "Fardas De Seguranças",
-      "price": 8,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) específico para profissionais da área de segurança.</p>"
+        "sku": "CH000GH146",
+        "name": "Fardas De Seguranças",
+        "price": 8,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) específico para profissionais da área de segurança.</p>"
     },
     {
-      "sku": "CH000GH147",
-      "name": "Bordado Afrente",
-      "price": 35,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado na parte frontal.</p>"
+        "sku": "CH000GH147",
+        "name": "Bordado Afrente",
+        "price": 35,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado na parte frontal.</p>"
     },
     {
-      "sku": "CH000GH148",
-      "name": "Bordado Nas Costas",
-      "price": 35,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado na parte traseira (costas).</p>"
+        "sku": "CH000GH148",
+        "name": "Bordado Nas Costas",
+        "price": 35,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado na parte traseira (costas).</p>"
     },
     {
-      "sku": "CH000GH149",
-      "name": "Fardamento Azul C/Reflector E Estampas",
-      "price": 15,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e estampas personalizadas.</p>"
+        "sku": "CH000GH149",
+        "name": "Fardamento Azul C/Reflector E Estampas",
+        "price": 15,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e estampas personalizadas.</p>"
     },
     {
-      "sku": "CH000GH150",
-      "name": "Bota De Porteçao Marca Basix",
-      "price": 15,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de proteção da marca Basix.</p>"
+        "sku": "CH000GH150",
+        "name": "Bota De Porteçao Marca Basix",
+        "price": 15,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de proteção da marca Basix.</p>"
     },
     {
-      "sku": "CH000GH151",
-      "name": "Fardamento Verde C/ Reflector E Estampas",
-      "price": 50,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor verde, com faixas refletoras e estampas personalizadas.</p>"
+        "sku": "CH000GH151",
+        "name": "Fardamento Verde C/ Reflector E Estampas",
+        "price": 50,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor verde, com faixas refletoras e estampas personalizadas.</p>"
     },
     {
-      "sku": "CH000GH152",
-      "name": "Camisetes Polo Royal Quenn Verde C/Bordado Afrente",
-      "price": 198,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor verde, com bordado na frente.</p>"
+        "sku": "CH000GH152",
+        "name": "Camisetes Polo Royal Quenn Verde C/Bordado Afrente",
+        "price": 198,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor verde, com bordado na frente.</p>"
     },
     {
-      "sku": "CH000GH153",
-      "name": "Camisetes Polo Cincento Royal Quenn C/Bordado Afrente",
-      "price": 86,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor cinzenta, com bordado na frente.</p>"
+        "sku": "CH000GH153",
+        "name": "Camisetes Polo Cincento Royal Quenn C/Bordado Afrente",
+        "price": 86,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor cinzenta, com bordado na frente.</p>"
     },
     {
-      "sku": "CH000GH154",
-      "name": "Camisete Polo Preta Royal Quenn C/Bordado Afrente",
-      "price": 80,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor preta, com bordado na frente.</p>"
+        "sku": "CH000GH154",
+        "name": "Camisete Polo Preta Royal Quenn C/Bordado Afrente",
+        "price": 80,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor preta, com bordado na frente.</p>"
     },
     {
-      "sku": "CH000GH155",
-      "name": "Camisete Polo Verde Royal Quenn C/Bordado Afrente",
-      "price": 297,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor verde, com bordado na frente.</p>"
+        "sku": "CH000GH155",
+        "name": "Camisete Polo Verde Royal Quenn C/Bordado Afrente",
+        "price": 297,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor verde, com bordado na frente.</p>"
     },
     {
-      "sku": "CH000GH156",
-      "name": "Camisetes Polo Cincento Royal Quenn C/Bordado Afrente",
-      "price": 129,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor cinzenta, com bordado na frente.</p>"
+        "sku": "CH000GH156",
+        "name": "Camisetes Polo Cincento Royal Quenn C/Bordado Afrente",
+        "price": 129,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor cinzenta, com bordado na frente.</p>"
     },
     {
-      "sku": "CH000GH157",
-      "name": "Camisete Polo Preta Royal Quenn C/Bordado Afrente",
-      "price": 120,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor preta, com bordado na frente.</p>"
+        "sku": "CH000GH157",
+        "name": "Camisete Polo Preta Royal Quenn C/Bordado Afrente",
+        "price": 120,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor preta, com bordado na frente.</p>"
     },
     {
-      "sku": "CH000GH158",
-      "name": "Fardamento Azul C/Reflector ",
-      "price": 1,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras.</p>"
+        "sku": "CH000GH158",
+        "name": "Fardamento Azul C/Reflector ",
+        "price": 1,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras.</p>"
     },
     {
-      "sku": "CH000GH159",
-      "name": "Bota Basix",
-      "price": 1,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
+        "sku": "CH000GH159",
+        "name": "Bota Basix",
+        "price": 1,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
     },
     {
-      "sku": "CH000GH160",
-      "name": "Calça Azul",
-      "price": 1,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Calça de trabalho na cor azul.</p>"
+        "sku": "CH000GH160",
+        "name": "Calça Azul",
+        "price": 1,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Calça de trabalho na cor azul.</p>"
     },
     {
-      "sku": "CH000GH161",
-      "name": "Camisete Polo Royal Quenn",
-      "price": 1,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen.</p>"
+        "sku": "CH000GH161",
+        "name": "Camisete Polo Royal Quenn",
+        "price": 1,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen.</p>"
     },
     {
-      "sku": "CH000GH162",
-      "name": "Estampagem ",
-      "price": 1,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço genérico de personalização por estampagem.</p>"
+        "sku": "CH000GH162",
+        "name": "Estampagem ",
+        "price": 1,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço genérico de personalização por estampagem.</p>"
     },
     {
-      "sku": "CH000GH163",
-      "name": "Impressão De Vinl Counter Vision  63Cm X 97Cm",
-      "price": 16,
-      "category_slug": "aplicacoes-acabamentos",
-      "description": "<p>Serviço de impressão em vinil perfurado (Counter Vision) nas dimensões 63cm x 97cm.</p>"
+        "sku": "CH000GH163",
+        "name": "Impressão De Vinl Counter Vision  63Cm X 97Cm",
+        "price": 16,
+        "category_slug": "aplicacoes-acabamentos",
+        "description": "<p>Serviço de impressão em vinil perfurado (Counter Vision) nas dimensões 63cm x 97cm.</p>"
     },
     {
-      "sku": "CH000GH164",
-      "name": "Impressão De Vinl Counter Vision  62Cm X 97Cm",
-      "price": 10,
-      "category_slug": "aplicacoes-acabamentos",
-      "description": "<p>Serviço de impressão em vinil perfurado (Counter Vision) nas dimensões 62cm x 97cm.</p>"
+        "sku": "CH000GH164",
+        "name": "Impressão De Vinl Counter Vision  62Cm X 97Cm",
+        "price": 10,
+        "category_slug": "aplicacoes-acabamentos",
+        "description": "<p>Serviço de impressão em vinil perfurado (Counter Vision) nas dimensões 62cm x 97cm.</p>"
     },
     {
-      "sku": "CH000GH165",
-      "name": "Montagem De Vinil Counter Vision De Cada Janela ",
-      "price": 26,
-      "category_slug": "aplicacoes-acabamentos",
-      "description": "<p>Serviço de aplicação/montagem de vinil perfurado (Counter Vision) em janelas (preço por janela).</p>"
+        "sku": "CH000GH165",
+        "name": "Montagem De Vinil Counter Vision De Cada Janela ",
+        "price": 26,
+        "category_slug": "aplicacoes-acabamentos",
+        "description": "<p>Serviço de aplicação/montagem de vinil perfurado (Counter Vision) em janelas (preço por janela).</p>"
     },
     {
-      "sku": "CH000GH166",
-      "name": "Máscaras FFP2 Com Válvula",
-      "price": 200,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, com válvula de exalação.</p>"
+        "sku": "CH000GH166",
+        "name": "Máscaras FFP2 Com Válvula",
+        "price": 200,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, com válvula de exalação.</p>"
     },
     {
-      "sku": "CH000GH167",
-      "name": "Termometro De Temperatura Corporal",
-      "price": 1,
-      "category_slug": "termometros-medidores-ambientais",
-      "description": "<p>Termômetro para medição de temperatura corporal, geralmente infravermelho sem contato.</p>"
+        "sku": "CH000GH167",
+        "name": "Termometro De Temperatura Corporal",
+        "price": 1,
+        "category_slug": "termometros-medidores-ambientais",
+        "description": "<p>Termômetro para medição de temperatura corporal, geralmente infravermelho sem contato.</p>"
     },
     {
-      "sku": "CH000GH168",
-      "name": "Fardamento Cinzento Com Reflector",
-      "price": 16,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor cinzenta, com faixas refletoras.</p>"
+        "sku": "CH000GH168",
+        "name": "Fardamento Cinzento Com Reflector",
+        "price": 16,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor cinzenta, com faixas refletoras.</p>"
     },
     {
-      "sku": "CH000GH169",
-      "name": "Camisete Gola Redonda",
-      "price": 30,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta básica com gola redonda.</p>"
+        "sku": "CH000GH169",
+        "name": "Camisete Gola Redonda",
+        "price": 30,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta básica com gola redonda.</p>"
     },
     {
-      "sku": "CH000GH170",
-      "name": "Camisete Polo Royal Quenn",
-      "price": 2,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen.</p>"
+        "sku": "CH000GH170",
+        "name": "Camisete Polo Royal Quenn",
+        "price": 2,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen.</p>"
     },
     {
-      "sku": "CH000GH171",
-      "name": "Camisa De Uniforme Administrativo",
-      "price": 2,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Camisa social destinada a uniformes administrativos.</p>"
+        "sku": "CH000GH171",
+        "name": "Camisa De Uniforme Administrativo",
+        "price": 2,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Camisa social destinada a uniformes administrativos.</p>"
     },
     {
-      "sku": "CH000GH172",
-      "name": "Estampagem",
-      "price": 46,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço genérico de personalização por estampagem.</p>"
+        "sku": "CH000GH172",
+        "name": "Estampagem",
+        "price": 46,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço genérico de personalização por estampagem.</p>"
     },
     {
-      "sku": "CH000GH173",
-      "name": "Bordado Afrente",
-      "price": 4,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado na parte frontal.</p>"
+        "sku": "CH000GH173",
+        "name": "Bordado Afrente",
+        "price": 4,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado na parte frontal.</p>"
     },
     {
-      "sku": "CH000GH174",
-      "name": "Capa Chuva",
-      "price": 15,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Capa de chuva básica.</p>"
+        "sku": "CH000GH174",
+        "name": "Capa Chuva",
+        "price": 15,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Capa de chuva básica.</p>"
     },
     {
-      "sku": "CH000GH175",
-      "name": "Capa De Chuva 2Pças",
-      "price": 50,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Conjunto de capa de chuva composto por duas peças (calça e jaqueta).</p>"
+        "sku": "CH000GH175",
+        "name": "Capa De Chuva 2Pças",
+        "price": 50,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Conjunto de capa de chuva composto por duas peças (calça e jaqueta).</p>"
     },
     {
-      "sku": "CH000GH176",
-      "name": "Cinturões",
-      "price": 100,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Cintos para uso com uniformes.</p>"
+        "sku": "CH000GH176",
+        "name": "Cinturões",
+        "price": 100,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Cintos para uso com uniformes.</p>"
     },
     {
-      "sku": "CH000GH177",
-      "name": "Bota De Combante",
-      "price": 100,
-      "category_slug": "calcados-especificos",
-      "description": "<p>Par de botas tipo coturno (bota de combate), adequadas para uso tático ou de segurança.</p>"
+        "sku": "CH000GH177",
+        "name": "Bota De Combante",
+        "price": 100,
+        "category_slug": "calcados-especificos",
+        "description": "<p>Par de botas tipo coturno (bota de combate), adequadas para uso tático ou de segurança.</p>"
     },
     {
-      "sku": "CH000GH178",
-      "name": "Cassetetes",
-      "price": 50,
-      "category_slug": "bastoes-tonfas",
-      "description": "<p>Equipamento de contenção e defesa tipo cassetete ou bastão.</p>"
+        "sku": "CH000GH178",
+        "name": "Cassetetes",
+        "price": 50,
+        "category_slug": "bastoes-tonfas",
+        "description": "<p>Equipamento de contenção e defesa tipo cassetete ou bastão.</p>"
     },
     {
-      "sku": "CH000GH179",
-      "name": "Algemas",
-      "price": 50,
-      "category_slug": "algemas-dispositivos-imobilizacao",
-      "description": "<p>Equipamento de contenção e imobilização (algemas).</p>"
+        "sku": "CH000GH179",
+        "name": "Algemas",
+        "price": 50,
+        "category_slug": "algemas-dispositivos-imobilizacao",
+        "description": "<p>Equipamento de contenção e imobilização (algemas).</p>"
     },
     {
-      "sku": "CH000GH180",
-      "name": "Fardamemto Azul",
-      "price": 100,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
+        "sku": "CH000GH180",
+        "name": "Fardamemto Azul",
+        "price": 100,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
     },
     {
-      "sku": "CH000GH181",
-      "name": "Capacete Azuis",
-      "price": 20,
-      "category_slug": "capacetes-seguranca",
-      "description": "<p>Capacete de segurança na cor azul.</p>"
+        "sku": "CH000GH181",
+        "name": "Capacete Azuis",
+        "price": 20,
+        "category_slug": "capacetes-seguranca",
+        "description": "<p>Capacete de segurança na cor azul.</p>"
     },
     {
-      "sku": "CH000GH182",
-      "name": "Capacete Branco",
-      "price": 80,
-      "category_slug": "capacetes-seguranca",
-      "description": "<p>Capacete de segurança na cor branca.</p>"
+        "sku": "CH000GH182",
+        "name": "Capacete Branco",
+        "price": 80,
+        "category_slug": "capacetes-seguranca",
+        "description": "<p>Capacete de segurança na cor branca.</p>"
     },
     {
-      "sku": "CH000GH183",
-      "name": "Oculos De Protecao",
-      "price": 70,
-      "category_slug": "protetores-faciais-oculos",
-      "description": "<p>Óculos de proteção genéricos para segurança dos olhos.</p>"
+        "sku": "CH000GH183",
+        "name": "Oculos De Protecao",
+        "price": 70,
+        "category_slug": "protetores-faciais-oculos",
+        "description": "<p>Óculos de proteção genéricos para segurança dos olhos.</p>"
     },
     {
-      "sku": "CH000GH184",
-      "name": "Luva De Cabidal Vip",
-      "price": 60,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro), modelo VIP.</p>"
+        "sku": "CH000GH184",
+        "name": "Luva De Cabidal Vip",
+        "price": 60,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro), modelo VIP.</p>"
     },
     {
-      "sku": "CH000GH185",
-      "name": "Bota De Combante",
-      "price": 20,
-      "category_slug": "calcados-especificos",
-      "description": "<p>Par de botas tipo coturno (bota de combate).</p>"
+        "sku": "CH000GH185",
+        "name": "Bota De Combante",
+        "price": 20,
+        "category_slug": "calcados-especificos",
+        "description": "<p>Par de botas tipo coturno (bota de combate).</p>"
     },
     {
-      "sku": "CH000GH186",
-      "name": "Cinturões",
-      "price": 20,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Cintos para uso com uniformes.</p>"
+        "sku": "CH000GH186",
+        "name": "Cinturões",
+        "price": 20,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Cintos para uso com uniformes.</p>"
     },
     {
-      "sku": "CH000GH187",
-      "name": "Boné",
-      "price": 50,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Boné básico.</p>"
+        "sku": "CH000GH187",
+        "name": "Boné",
+        "price": 50,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Boné básico.</p>"
     },
     {
-      "sku": "CH000GH188",
-      "name": "Apito",
-      "price": 20,
-      "category_slug": "acessorios-diversos",
-      "description": "<p>Apito para sinalização sonora, comum em uniformes de segurança.</p>"
+        "sku": "CH000GH188",
+        "name": "Apito",
+        "price": 20,
+        "category_slug": "acessorios-diversos",
+        "description": "<p>Apito para sinalização sonora, comum em uniformes de segurança.</p>"
     },
     {
-      "sku": "CH000GH189",
-      "name": "Algemas",
-      "price": 10,
-      "category_slug": "algemas-dispositivos-imobilizacao",
-      "description": "<p>Equipamento de contenção (algemas).</p>"
+        "sku": "CH000GH189",
+        "name": "Algemas",
+        "price": 10,
+        "category_slug": "algemas-dispositivos-imobilizacao",
+        "description": "<p>Equipamento de contenção (algemas).</p>"
     },
     {
-      "sku": "CH000GH190",
-      "name": "Colete De Pravo De Bala",
-      "price": 2,
-      "category_slug": "coletes-balisticos",
-      "description": "<p>Colete com proteção balística (à prova de bala).</p>"
+        "sku": "CH000GH190",
+        "name": "Colete De Pravo De Bala",
+        "price": 2,
+        "category_slug": "coletes-balisticos",
+        "description": "<p>Colete com proteção balística (à prova de bala).</p>"
     },
     {
-      "sku": "CH000GH191",
-      "name": "Farda De Segurança 2Peças",
-      "price": 50,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) específico para profissionais de segurança.</p>"
+        "sku": "CH000GH191",
+        "name": "Farda De Segurança 2Peças",
+        "price": 50,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) específico para profissionais de segurança.</p>"
     },
     {
-      "sku": "CH000GH192",
-      "name": "Fardamento Azuis 2Peças",
-      "price": 20,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
+        "sku": "CH000GH192",
+        "name": "Fardamento Azuis 2Peças",
+        "price": 20,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
     },
     {
-      "sku": "CH000GH193",
-      "name": "Cinturões-Arneis",
-      "price": 5,
-      "category_slug": "cintos-talabartes",
-      "description": "<p>Cinto de segurança tipo arnês (para quedas), para trabalhos em altura.</p>"
+        "sku": "CH000GH193",
+        "name": "Cinturões-Arneis",
+        "price": 5,
+        "category_slug": "cintos-talabartes",
+        "description": "<p>Cinto de segurança tipo arnês (para quedas), para trabalhos em altura.</p>"
     },
     {
-      "sku": "CH000GH194",
-      "name": "Bota De Porteção Basix",
-      "price": 1,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de proteção da marca Basix.</p>"
+        "sku": "CH000GH194",
+        "name": "Bota De Porteção Basix",
+        "price": 1,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de proteção da marca Basix.</p>"
     },
     {
-      "sku": "CH000GH195",
-      "name": "Mascaras FFP2 Com Filtro",
-      "price": 20,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, com filtro (possivelmente válvula).</p>"
+        "sku": "CH000GH195",
+        "name": "Mascaras FFP2 Com Filtro",
+        "price": 20,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, classificação FFP2, com filtro (possivelmente válvula).</p>"
     },
     {
-      "sku": "CH000GH196",
-      "name": "Mascaras KN95 Sem Filtro",
-      "price": 50,
-      "category_slug": "respiradores-descartaveis-pff",
-      "description": "<p>Máscaras de proteção respiratória descartáveis, padrão KN95, sem válvula (filtro).</p>"
+        "sku": "CH000GH196",
+        "name": "Mascaras KN95 Sem Filtro",
+        "price": 50,
+        "category_slug": "respiradores-descartaveis-pff",
+        "description": "<p>Máscaras de proteção respiratória descartáveis, padrão KN95, sem válvula (filtro).</p>"
     },
     {
-      "sku": "CH000GH197",
-      "name": "Fardamentos De Seguranças Cinzento",
-      "price": 3,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor cinzenta, para profissionais de segurança.</p>"
+        "sku": "CH000GH197",
+        "name": "Fardamentos De Seguranças Cinzento",
+        "price": 3,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor cinzenta, para profissionais de segurança.</p>"
     },
     {
-      "sku": "CH000GH198",
-      "name": "Cinturões",
-      "price": 3,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Cintos para uso com uniformes.</p>"
+        "sku": "CH000GH198",
+        "name": "Cinturões",
+        "price": 3,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Cintos para uso com uniformes.</p>"
     },
     {
-      "sku": "CH000GH199",
-      "name": "Bota De Combante",
-      "price": 3,
-      "category_slug": "calcados-especificos",
-      "description": "<p>Par de botas tipo coturno (bota de combate).</p>"
+        "sku": "CH000GH199",
+        "name": "Bota De Combante",
+        "price": 3,
+        "category_slug": "calcados-especificos",
+        "description": "<p>Par de botas tipo coturno (bota de combate).</p>"
     },
     {
-      "sku": "CH000GH200",
-      "name": "Bata Acores",
-      "price": 2,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Bata de trabalho modelo Acores.</p>"
+        "sku": "CH000GH200",
+        "name": "Bata Acores",
+        "price": 2,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Bata de trabalho modelo Acores.</p>"
     },
     {
-      "sku": "CH000GH201",
-      "name": "Calças",
-      "price": 2,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Calças de trabalho.</p>"
+        "sku": "CH000GH201",
+        "name": "Calças",
+        "price": 2,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Calças de trabalho.</p>"
     },
     {
-      "sku": "CH000GH202",
-      "name": "Casaco De Frio Frigorico",
-      "price": 26,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Casaco térmico projetado para trabalhos em ambientes de baixa temperatura (frigorífico).</p>"
+        "sku": "CH000GH202",
+        "name": "Casaco De Frio Frigorico",
+        "price": 26,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Casaco térmico projetado para trabalhos em ambientes de baixa temperatura (frigorífico).</p>"
     },
     {
-      "sku": "CH000GH203",
-      "name": "Calça De Frio Frigofico",
-      "price": 26,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Calça térmica projetada para trabalhos em ambientes de baixa temperatura (frigorífico).</p>"
+        "sku": "CH000GH203",
+        "name": "Calça De Frio Frigofico",
+        "price": 26,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Calça térmica projetada para trabalhos em ambientes de baixa temperatura (frigorífico).</p>"
     },
     {
-      "sku": "CH000GH204",
-      "name": "Luva De Frio",
-      "price": 26,
-      "category_slug": "luvas-protecao-termica",
-      "description": "<p>Par de luvas para proteção contra baixas temperaturas (frio).</p>"
+        "sku": "CH000GH204",
+        "name": "Luva De Frio",
+        "price": 26,
+        "category_slug": "luvas-protecao-termica",
+        "description": "<p>Par de luvas para proteção contra baixas temperaturas (frio).</p>"
     },
     {
-      "sku": "CH000GH205",
-      "name": "Farda Azuis 2Pças C/ Reflector Já Estampagem",
-      "price": 50,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e estampagem já aplicada.</p>"
+        "sku": "CH000GH205",
+        "name": "Farda Azuis 2Pças C/ Reflector Já Estampagem",
+        "price": 50,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e estampagem já aplicada.</p>"
     },
     {
-      "sku": "CH000GH206",
-      "name": "Colete  Refletor Já Com Estampagem",
-      "price": 200,
-      "category_slug": "vestuario-alta-visibilidade",
-      "description": "<p>Colete de alta visibilidade com faixas refletoras e estampagem já aplicada.</p>"
+        "sku": "CH000GH206",
+        "name": "Colete  Refletor Já Com Estampagem",
+        "price": 200,
+        "category_slug": "vestuario-alta-visibilidade",
+        "description": "<p>Colete de alta visibilidade com faixas refletoras e estampagem já aplicada.</p>"
     },
     {
-      "sku": "CH000GH207",
-      "name": "Bota Porteçao Basix",
-      "price": 20,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de proteção da marca Basix.</p>"
+        "sku": "CH000GH207",
+        "name": "Bota Porteçao Basix",
+        "price": 20,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de proteção da marca Basix.</p>"
     },
     {
-      "sku": "CH000GH208",
-      "name": "Camisete Amerelo Com Estampagem",
-      "price": 50,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta na cor amarela com serviço de estampagem incluído.</p>"
+        "sku": "CH000GH208",
+        "name": "Camisete Amerelo Com Estampagem",
+        "price": 50,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta na cor amarela com serviço de estampagem incluído.</p>"
     },
     {
-      "sku": "CH000GH209",
-      "name": "Camisete Branco Com Estagem",
-      "price": 50,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta na cor branca com serviço de estampagem incluído.</p>"
+        "sku": "CH000GH209",
+        "name": "Camisete Branco Com Estagem",
+        "price": 50,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta na cor branca com serviço de estampagem incluído.</p>"
     },
     {
-      "sku": "CH000GH210",
-      "name": "Farda Azuis Escuro C/ Reflector Já Estampagem",
-      "price": 500,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul escuro, com faixas refletoras e estampagem já aplicada.</p>"
+        "sku": "CH000GH210",
+        "name": "Farda Azuis Escuro C/ Reflector Já Estampagem",
+        "price": 500,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul escuro, com faixas refletoras e estampagem já aplicada.</p>"
     },
     {
-      "sku": "CH000GH211",
-      "name": "Farda Preta C/Reflector Já Bordados",
-      "price": 9,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor preta, com faixas refletoras e bordados já aplicados.</p>"
+        "sku": "CH000GH211",
+        "name": "Farda Preta C/Reflector Já Bordados",
+        "price": 9,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor preta, com faixas refletoras e bordados já aplicados.</p>"
     },
     {
-      "sku": "CH000GH212",
-      "name": "Bota Basix",
-      "price": 9,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
+        "sku": "CH000GH212",
+        "name": "Bota Basix",
+        "price": 9,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de segurança da marca/modelo Basix.</p>"
     },
     {
-      "sku": "CH000GH213",
-      "name": "Farda Flame Retardant",
-      "price": 27,
-      "category_slug": "vestuario-termico-impermeavel",
-      "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
+        "sku": "CH000GH213",
+        "name": "Farda Flame Retardant",
+        "price": 27,
+        "category_slug": "vestuario-termico-impermeavel",
+        "description": "<p>Uniforme completo (duas peças) confeccionado com tecido resistente a chamas (Flame Retardant).</p>"
     },
     {
-      "sku": "CH000GH214",
-      "name": "Bordado Afrente",
-      "price": 27,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado na parte frontal.</p>"
+        "sku": "CH000GH214",
+        "name": "Bordado Afrente",
+        "price": 27,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado na parte frontal.</p>"
     },
     {
-      "sku": "CH000GH215",
-      "name": "Bordado Nas Costas",
-      "price": 27,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado na parte traseira (costas).</p>"
+        "sku": "CH000GH215",
+        "name": "Bordado Nas Costas",
+        "price": 27,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado na parte traseira (costas).</p>"
     },
     {
-      "sku": "CH000GH216",
-      "name": "Camisa Versatex 65/35 Poiycotton",
-      "price": 160,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisa confeccionada em tecido misto (65% poliéster, 35% algodão) da linha Versatex.</p>"
+        "sku": "CH000GH216",
+        "name": "Camisa Versatex 65/35 Poiycotton",
+        "price": 160,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisa confeccionada em tecido misto (65% poliéster, 35% algodão) da linha Versatex.</p>"
     },
     {
-      "sku": "CH000GH217",
-      "name": "Calça Tone Hi-Work",
-      "price": 160,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Calça de trabalho da linha Tone Hi-Work.</p>"
+        "sku": "CH000GH217",
+        "name": "Calça Tone Hi-Work",
+        "price": 160,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Calça de trabalho da linha Tone Hi-Work.</p>"
     },
     {
-      "sku": "CH000GH218",
-      "name": "Farda Azul Com Reflector E C/ Estampagem",
-      "price": 100,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e estampagem.</p>"
+        "sku": "CH000GH218",
+        "name": "Farda Azul Com Reflector E C/ Estampagem",
+        "price": 100,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras e estampagem.</p>"
     },
     {
-      "sku": "CH000GH219",
-      "name": "Bota De Portção Marca Basix",
-      "price": 100,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de proteção da marca Basix.</p>"
+        "sku": "CH000GH219",
+        "name": "Bota De Portção Marca Basix",
+        "price": 100,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de proteção da marca Basix.</p>"
     },
     {
-      "sku": "CH000GH220",
-      "name": "Bota De Combante",
-      "price": 20,
-      "category_slug": "calcados-especificos",
-      "description": "<p>Par de botas tipo coturno (bota de combate).</p>"
+        "sku": "CH000GH220",
+        "name": "Bota De Combante",
+        "price": 20,
+        "category_slug": "calcados-especificos",
+        "description": "<p>Par de botas tipo coturno (bota de combate).</p>"
     },
     {
-      "sku": "CH000GH221",
-      "name": "Farda Azul Com Reflector",
-      "price": 1,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras.</p>"
+        "sku": "CH000GH221",
+        "name": "Farda Azul Com Reflector",
+        "price": 1,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul, com faixas refletoras.</p>"
     },
     {
-      "sku": "CH000GH222",
-      "name": "Estampagem",
-      "price": 1,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço genérico de personalização por estampagem.</p>"
+        "sku": "CH000GH222",
+        "name": "Estampagem",
+        "price": 1,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço genérico de personalização por estampagem.</p>"
     },
     {
-      "sku": "CH000GH223",
-      "name": "Bota PVÇ",
-      "price": 1,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas confeccionadas em PVC.</p>"
+        "sku": "CH000GH223",
+        "name": "Bota PVÇ",
+        "price": 1,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas confeccionadas em PVC.</p>"
     },
     {
-      "sku": "CH000GH224",
-      "name": "Luvas De Cabidal Cenzento",
-      "price": 1,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro) na cor cinzenta.</p>"
+        "sku": "CH000GH224",
+        "name": "Luvas De Cabidal Cenzento",
+        "price": 1,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro) na cor cinzenta.</p>"
     },
     {
-      "sku": "CH000GH225",
-      "name": "Farda A Zul ",
-      "price": 50,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
+        "sku": "CH000GH225",
+        "name": "Farda A Zul ",
+        "price": 50,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) na cor azul.</p>"
     },
     {
-      "sku": "CH000GH226",
-      "name": "Bota De Porteção Basix",
-      "price": 50,
-      "category_slug": "botas-seguranca",
-      "description": "<p>Par de botas de proteção da marca Basix.</p>"
+        "sku": "CH000GH226",
+        "name": "Bota De Porteção Basix",
+        "price": 50,
+        "category_slug": "botas-seguranca",
+        "description": "<p>Par de botas de proteção da marca Basix.</p>"
     },
     {
-      "sku": "CH000GH227",
-      "name": "Oculos De Protecao",
-      "price": 150,
-      "category_slug": "protetores-faciais-oculos",
-      "description": "<p>Óculos de proteção genéricos para segurança dos olhos.</p>"
+        "sku": "CH000GH227",
+        "name": "Oculos De Protecao",
+        "price": 150,
+        "category_slug": "protetores-faciais-oculos",
+        "description": "<p>Óculos de proteção genéricos para segurança dos olhos.</p>"
     },
     {
-      "sku": "CH000GH228",
-      "name": "Luva Cabidal Cinzento",
-      "price": 200,
-      "category_slug": "luvas-protecao-mecanica",
-      "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro) na cor cinzenta.</p>"
+        "sku": "CH000GH228",
+        "name": "Luva Cabidal Cinzento",
+        "price": 200,
+        "category_slug": "luvas-protecao-mecanica",
+        "description": "<p>Par de luvas de proteção confeccionadas em cabedal (couro) na cor cinzenta.</p>"
     },
     {
-      "sku": "CH000GH229",
-      "name": "Capacete",
-      "price": 120,
-      "category_slug": "capacetes-seguranca",
-      "description": "<p>Capacete de segurança básico.</p>"
+        "sku": "CH000GH229",
+        "name": "Capacete",
+        "price": 120,
+        "category_slug": "capacetes-seguranca",
+        "description": "<p>Capacete de segurança básico.</p>"
     },
     {
-      "sku": "CH000GH230",
-      "name": "Luvas Veds De Llimpeza",
-      "price": 85.47,
-      "category_slug": "luvas-protecao-quimica",
-      "description": "<p>Par de luvas na cor verde, adequadas para tarefas de limpeza.</p>"
+        "sku": "CH000GH230",
+        "name": "Luvas Veds De Llimpeza",
+        "price": 85.47,
+        "category_slug": "luvas-protecao-quimica",
+        "description": "<p>Par de luvas na cor verde, adequadas para tarefas de limpeza.</p>"
     },
     {
-      "sku": "CH000GH231",
-      "name": "Fardamentos De Seguranças",
-      "price": 1385.00,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme completo (duas peças) específico para profissionais de segurança.</p>"
+        "sku": "CH000GH231",
+        "name": "Fardamentos De Seguranças",
+        "price": 1385.00,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme completo (duas peças) específico para profissionais de segurança.</p>"
     },
     {
-      "sku": "CH000GH232",
-      "name": "Platina",
-      "price": 1485.00,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Acessório de uniforme (platina/dragonas) para ombros.</p>"
+        "sku": "CH000GH232",
+        "name": "Platina",
+        "price": 1485.00,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Acessório de uniforme (platina/dragonas) para ombros.</p>"
     },
     {
-      "sku": "CH000GH233",
-      "name": "Cinto",
-      "price": 800,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Cinto para uso com uniformes.</p>"
+        "sku": "CH000GH233",
+        "name": "Cinto",
+        "price": 800,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Cinto para uso com uniformes.</p>"
     },
     {
-      "sku": "NOSL2024001",
-      "name": "Uniforme Johnson",
-      "price": 4085.00,
-      "category_slug": "uniformes-profissionais",
-      "description": "<p>Uniforme profissional específico (possivelmente marca ou modelo Johnson).</p>"
+        "sku": "NOSL2024001",
+        "name": "Uniforme Johnson",
+        "price": 4085.00,
+        "category_slug": "uniformes-profissionais",
+        "description": "<p>Uniforme profissional específico (possivelmente marca ou modelo Johnson).</p>"
     },
     {
-      "sku": "NOSL2024002",
-      "name": "Bordado Afrente (No Peito)",
-      "price": 150,
-      "category_slug": "bordados-estampagens",
-      "description": "<p>Serviço de personalização com bordado aplicado na frente, especificamente na região do peito.</p>"
+        "sku": "NOSL2024002",
+        "name": "Bordado Afrente (No Peito)",
+        "price": 150,
+        "category_slug": "bordados-estampagens",
+        "description": "<p>Serviço de personalização com bordado aplicado na frente, especificamente na região do peito.</p>"
     },
     {
-      "sku": "NOSL2024003",
-      "name": "Polo Royal Queen Cinza Claro Bordada",
-      "price": 390,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor cinza claro, com bordado.</p>"
+        "sku": "NOSL2024003",
+        "name": "Polo Royal Queen Cinza Claro Bordada",
+        "price": 390,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camiseta tipo polo da marca Royal Queen, na cor cinza claro, com bordado.</p>"
     },
     {
-      "sku": "NOSL2024004",
-      "name": "Polos Esplendor Laranja",
-      "price": 787.5,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Camisetas tipo polo da marca/modelo Esplendor, na cor laranja.</p>"
+        "sku": "NOSL2024004",
+        "name": "Polos Esplendor Laranja",
+        "price": 787.5,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Camisetas tipo polo da marca/modelo Esplendor, na cor laranja.</p>"
     },
     {
-      "sku": "NOSL2024005",
-      "name": "Boné Estampado",
-      "price": 150,
-      "category_slug": "pecas-vestuario-avulsas",
-      "description": "<p>Boné com serviço de estampagem (impressão) incluído.</p>"
+        "sku": "NOSL2024005",
+        "name": "Boné Estampado",
+        "price": 150,
+        "category_slug": "pecas-vestuario-avulsas",
+        "description": "<p>Boné com serviço de estampagem (impressão) incluído.</p>"
     }
-  ]
+]
