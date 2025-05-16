@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Inventory;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -28,6 +30,7 @@ class WarehouseSeeder extends Seeder
                 'description' => 'Armazém principal para todas as operações físicas',
                 'is_main' => true,
                 'active' => true,
+                'available_for_ecommerce' => false,
                 'address' => 'Moçambique, Maputo',
                 'city' => 'Maputo',
                 'province' => 'Maputo',
@@ -36,12 +39,13 @@ class WarehouseSeeder extends Seeder
             ]);
 
             // Criar o armazém de e-commerce
-            Warehouse::create([
+            $ecommerce = Warehouse::create([
                 'name' => 'Armazém E-commerce',
                 'code' => 'ECOM',
                 'description' => 'Armazém dedicado às vendas online',
                 'is_main' => false,
                 'active' => true,
+                'available_for_ecommerce' => true,
                 'address' => 'Moçambique, Maputo',
                 'city' => 'Maputo',
                 'province' => 'Maputo',
@@ -49,6 +53,16 @@ class WarehouseSeeder extends Seeder
                 'manager_id' => $admin?->id,
             ]);
 
+
+            Product::limit(30)->get()->each(function ($product) use ($ecommerce) {
+                Inventory::create([
+                    'product_id' => $product->id,
+                    'warehouse_id' => $ecommerce->id,
+                    'quantity' => 100,
+                    'min_quantity' => 50,
+
+                ]);
+            });
             DB::commit();
 
             $this->command->info('Armazéns criados com sucesso!');

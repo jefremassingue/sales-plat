@@ -19,3 +19,8 @@ Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::get('/about', [HomeController::class, 'about'])->name('about');
+// Route::inertia('')
+
+
+Route::inertia('/cart', 'Site/Cart/Index')->name('cart');
+Route::inertia('/checkout', 'Site/Checkout/Index')->name('checkout');

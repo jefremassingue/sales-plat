@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Currency;
 use App\Models\Category;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -41,17 +42,19 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        // Carregar a moeda padrão do sistema para estar disponível em todas as páginas
-        try {
-            $defaultCurrency = Currency::where('is_default', true)->first();
+        // Cache key definitions
+        $currencyCacheKey = 'default_currency';
+        $categoriesCacheKey = 'top_categories_with_subs';
 
-            // Se não encontrar moeda padrão, tentar encontrar qualquer moeda ativa
-            if (!$defaultCurrency) {
-                $defaultCurrency = Currency::where('is_active', true)->first();
+        // Carregar a moeda padrão do sistema com cache
+        $defaultCurrency = Cache::remember($currencyCacheKey, now()->addMinutes(60), function () {
+            $currency = Currency::where('is_default', true)->first();
 
-                // Se ainda não tiver nenhuma moeda, criar uma moeda padrão
-                if (!$defaultCurrency) {
-                    $defaultCurrency = Currency::create([
+            if (! $currency) {
+                $currency = Currency::where('is_active', true)->first();
+
+                if (! $currency) {
+                    $currency = Currency::create([
                         'code' => 'MZN',
                         'name' => 'Metical Moçambicano',
                         'symbol' => 'MT',
@@ -64,45 +67,35 @@ class HandleInertiaRequests extends Middleware
                     ]);
                 }
             }
-        } catch (\Exception $e) {
-            // Em caso de erro, definir valores padrão para a moeda
-            $defaultCurrency = (object)[
-                'code' => 'MZN',
-                'name' => 'Metical Moçambicano',
-                'symbol' => 'MT',
-                'exchange_rate' => 1.0000,
-                'is_default' => true,
-                'is_active' => true,
-                'decimal_separator' => ',',
-                'thousand_separator' => '.',
-                'decimal_places' => 2,
-            ];
-        }
 
+            return $currency;
+        });
 
-        // Carregar categorias apenas se necessário
-        $categories = Category::whereNull('parent_id')
-            ->with('subcategories')
-            ->orderBy('name')
-            ->get(['id', 'name', 'slug'])
-            ->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'href' => "/category/{$category->slug}",
-                    'subcategories' => $category->subcategories->map(function ($subcategory) {
-                        return [
-                            'id' => $subcategory->id,
-                            'name' => $subcategory->name,
-                            'href' => "/category/{$subcategory->slug}"
-                        ];
-                    })
-                ];
-            });
+        // Carregar categorias apenas se necessário, com cache
+        $categories = Cache::remember($categoriesCacheKey, now()->addMinutes(60), function () {
+            return Category::whereNull('parent_id')
+                ->with('subcategories')
+                ->orderBy('name')
+                ->get(['id', 'name', 'slug'])
+                ->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'href' => "/products?c={$category->id}",
+                        'subcategories' => $category->subcategories->map(function ($subcategory) {
+                            return [
+                                'id' => $subcategory->id,
+                                'name' => $subcategory->name,
+                                'href' => "/products?categories[0]={$subcategory->id}",
+                            ];
+                        }),
+                    ];
+                });
+        });
 
-        // dd(json_encode($categories));
         return [
             ...parent::share($request),
+
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
@@ -114,10 +107,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
 
-            // Adicionando a moeda padrão aos dados compartilhados globalmente
+            // Adicionando a moeda padrão e categorias com cache
             'currency' => $defaultCurrency,
-
-            // Adicionando categorias apenas quando necessário
             'categories' => $categories,
 
             'flash' => [

@@ -1,6 +1,6 @@
 <?php
 
-    use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Pos\PosSaleController;
 use App\Http\Controllers\HomeController;
@@ -22,7 +22,7 @@ Route::prefix('pos')->name('pos.')->middleware(['auth'])->group(function () {
 });
 
 
-require __DIR__.'/site.php';
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-require __DIR__.'/admin.php';
+require __DIR__ . '/site.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
+require __DIR__ . '/admin.php';

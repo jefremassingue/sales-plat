@@ -28,6 +28,7 @@ class Warehouse extends Model
         'is_main',
         'active',
         'manager_id',
+        'available_for_ecommerce'
     ];
 
     /**

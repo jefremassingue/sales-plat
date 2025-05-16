@@ -363,7 +363,7 @@ export default function Create({ products, warehouses, statuses }: Props) {
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        <SelectItem value="">Nenhuma (produto principal)</SelectItem>
+                                                        {/* <SelectItem value="">Nenhuma (produto principal)</SelectItem> */}
                                                         {productVariants.map(variant => (
                                                             <SelectItem key={variant.id} value={variant.id.toString()}>
                                                                 {variant.name} ({variant.sku || "Sem SKU"})

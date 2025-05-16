@@ -25,6 +25,7 @@ class Inventory extends Model
         'batch_number',
         'expiry_date',
         'unit_cost',
+        'old_cost',
         'status',
         'notes',
         'user_id',

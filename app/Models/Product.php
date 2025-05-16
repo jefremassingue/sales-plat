@@ -125,6 +125,18 @@ class Product extends Model
     }
 
     /**
+     * Relação com os itens de inventário
+     */
+    public function ecommerce_inventory()
+    {
+        return $this->hasOne(Inventory::class)
+            ->whereHas('warehouse', function ($query) {
+                $query->where('active', true)
+                    ->where('available_for_ecommerce', true);
+            });;
+    }
+
+    /**
      * Obter o estoque total do produto em todos os armazéns
      */
     public function getTotalStockAttribute()

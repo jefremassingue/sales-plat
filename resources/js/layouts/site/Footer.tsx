@@ -37,21 +37,21 @@ interface QuickLinkItem {
 
 const companyLinks: QuickLinkItem[] = [
     { href: '/about', label: 'Sobre a Matony' },
-    { href: '/careers', label: 'Trabalhe Conosco' }, // Exemplo
-    { href: '/blog', label: 'Blog de Segurança' }, // Exemplo
+    { href: '/contact', label: 'Trabalhe Conosco' }, // Exemplo
+    { href: '/blog', label: 'Blog' }, // Exemplo
 ];
 
 const resourceLinks: QuickLinkItem[] = [
     { href: '/products', label: 'Nossos Produtos' },
-    { href: '/services', label: 'Serviços Oferecidos' }, // Exemplo
+    // { href: '/services', label: 'Serviços Oferecidos' }, // Exemplo
     { href: '/faq', label: 'Perguntas Frequentes' },
     { href: '/contact', label: 'Fale Conosco' },
 ];
 
 const contactDetails = [
-    { icon: <Mail size={16} className="text-orange-600" />, text: 'info@matony.co.mz', href: 'mailto:info@matony.co.mz' },
-    { icon: <Phone size={16} className="text-orange-600" />, text: '+258 84 123 4567', href: 'tel:+258841234567' },
-    { icon: <MapPin size={16} className="text-orange-600" />, text: 'Av. Julius Nyerere, Maputo' },
+    { icon: <Mail size={16} className="text-orange-600" />, text: 'geral@matonyservicos.com', href: 'mailto:geral@matonyservicos.com' },
+    { icon: <Phone size={16} className="text-orange-600" />, text: '+258 87 115 4336', href: 'tel:+258871154336' },
+    { icon: <MapPin size={16} className="text-orange-600" />, text: 'Av. Ahmed sekou toure n° 3007 - Maputo' },
 ];
 
 // --- COMPONENTES PLACEHOLDER (se não usar shadcn/ui) ---
@@ -178,11 +178,7 @@ const Footer: React.FC = () => {
                     <p className="text-xs text-slate-500"> {/* Cor de texto ajustada */}
                         © {new Date().getFullYear()} Matony Serviços, Lda. Todos os direitos reservados.
                     </p>
-                    <p className="text-xs text-slate-400 mt-1"> {/* Cor de texto ajustada */}
-                        NUIT: 123456789 {/* Exemplo, adicione o NUIT real */}
-                        <span className="mx-1.5">|</span>
-                        Design por <a href="https://seulink.com" className="hover:text-orange-600 hover:underline" target="_blank" rel="noopener noreferrer">Seu Nome/Agência</a> {/* Cor de hover ajustada */}
-                    </p>
+
                 </div>
             </div>
         </footer>

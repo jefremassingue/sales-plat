@@ -243,7 +243,7 @@ export default function Edit({ inventory, adjustment, suppliers, adjustmentTypes
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        <SelectItem value="">Nenhum</SelectItem>
+                                                        {/* <SelectItem value="">Nenhum</SelectItem> */}
                                                         {suppliers.map(supplier => (
                                                             <SelectItem
                                                                 key={supplier.id}

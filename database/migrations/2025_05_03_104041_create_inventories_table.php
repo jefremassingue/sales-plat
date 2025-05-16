@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('batch_number')->nullable();
             $table->date('expiry_date')->nullable();
             $table->decimal('unit_cost', 12, 2)->nullable();
+            $table->decimal('old_cost', 10, 2)->nullable();
             $table->string('status')->default('active')->comment('active, reserved, damaged, expired');
             $table->text('notes')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null')->comment('Utilizador que atualizou o registo pela última vez');

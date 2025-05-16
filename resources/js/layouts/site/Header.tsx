@@ -13,9 +13,11 @@ import {
     ChevronUp,
     ArrowUp,
     MessageCircle,
-    Map
+    Map,
+    ShoppingBag
 } from 'lucide-react';
 import { usePage } from '@inertiajs/react';
+import { useCart } from '@/contexts/CartContext';
 
 interface Category {
     id: number;
@@ -43,26 +45,49 @@ const navLinks = [
 const TopBar = () => {
     return (
         <div className="bg-orange-600 text-white text-xs py-2">
-            <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center">
-                <div className="mb-1 sm:mb-0 flex gap-2 items-center">
-                    <Map className='h-4' />
-                    <span>Av. Ahmed sekou toure n° 3007</span> |
-                    <Link href="/products" className="ml-2 font-semibold hover:underline">
-                        Garanta a sua segurança e da sua equipa!
-                    </Link>
-                </div>
-                <div className="flex items-center space-x-4">
-                    <a href="tel:+258871154336" className="flex items-center hover:text-orange-100">
-                        <Phone size={16} className="mr-1" strokeWidth={1.5} />
-                        <span>+258 87 115 4336</span>
-                    </a>
-                    <a href="mailto:geral@matonyservicos.com" className="flex items-center hover:text-orange-100">
-                        <Mail size={16} className="mr-1" strokeWidth={1.5} />
-                        <span>geral@matonyservicos.com</span>
-                    </a>
+            <div className="container mx-auto px-4">
+                <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
+
+                    {/* ── CONTACTO & EMAIL (sempre visível) */}
+                    <div className="order-1 md:order-2 flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
+                        <a
+                            href="tel:+258871154336"
+                            className="flex items-center hover:text-orange-100 transition-colors"
+                        >
+                            <Phone size={16} className="mr-1.5" strokeWidth={1.5} />
+                            <span className="hidden sm:inline">+258 87 115 4336</span>
+                            <span className="sm:hidden">87 115 4336</span>
+                        </a>
+                        <a
+                            href="mailto:geral@matonyservicos.com"
+                            className="flex items-center hover:text-orange-100 transition-colors"
+                        >
+                            <Mail size={16} className="mr-1.5" strokeWidth={1.5} />
+                            <span className="">geral@matonyservicos.com</span>
+                        </a>
+                    </div>
+
+                    {/* ── ENDEREÇO & MENSAGEM (oculto no mobile) */}
+                    <div className="order-2 md:order-1 hidden md:flex flex-col sm:flex-row items-center gap-2 text-center sm:text-left">
+                        <div className="flex items-center gap-2">
+                            <Map className="h-4" />
+                            <span className="hidden sm:inline">Av. Ahmed sekou toure n° 3007</span>
+                            <span className="sm:hidden">Av. A. S. toure n° 3007</span>
+                        </div>
+                        <div className="hidden sm:block">|</div>
+                        <Link
+                            href="/products"
+                            className="font-semibold hover:underline text-center sm:text-left"
+                        >
+                            Garanta a sua segurança e da sua equipa!
+                        </Link>
+                    </div>
+
                 </div>
             </div>
         </div>
+
+
     );
 };
 
@@ -200,91 +225,85 @@ const NavigationBar = () => {
     return (
         <nav
             ref={navRef}
-            // CORREÇÃO APLICADA AQUI: Removido 'sticky top-0'
-            className="hidden lg:block bg-gray-50 border-b border-gray-100 z-30 transition-none will-change-transform transform-gpu backface-hidden"
+            className="hidden lg:block bg-gray-50 border-b border-gray-100"
         >
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <ul className="flex justify-center items-center space-x-6 h-12">
                     {navLinks.map((link, index) => (
-                        link.name === 'Categorias' ? ( // Simplificado o condicional
-                            categories && categories.length > 0 && (
-                                <li
-                                    key={`nav-categories-${index}`} // Chave mais específica
-                                    className="relative group"
-                                    onMouseEnter={() => handleMouseEnter(0)} // Assumindo que "Categorias" sempre corresponde ao primeiro conjunto de categorias para o dropdown
-                                    onMouseLeave={handleMouseLeave}
-                                >
-                                    <button
-                                        className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors duration-200 py-3 flex items-center"
+                        link.name === 'Categorias' && categories && categories.length > 0 ? (
+                            <li
+                                key={`nav-categories-${index}`}
+                                className="relative group"
+                                onMouseEnter={() => handleMouseEnter(0)}
+                                onMouseLeave={handleMouseLeave}
+                            >
+                                <button className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors duration-200 py-3 flex items-center">
+                                    Categorias
+                                    <ChevronDown
+                                        size={16}
+                                        className="ml-1 text-gray-500 group-hover:text-orange-600 transition-transform duration-200 group-hover:rotate-180"
+                                        strokeWidth={2}
+                                    />
+                                </button>
+                                {openDropdown === 0 && (
+                                    <div
+                                        className="absolute left-1/2 transform -translate-x-1/2 mt-0 w-[1000px] origin-top bg-white rounded-md shadow-lg z-10 ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                        onMouseEnter={() => handleMouseEnter(0)}
+                                        onMouseLeave={handleMouseLeave}
                                     >
-                                        Categorias
-                                        <ChevronDown
-                                            size={16}
-                                            className="ml-1 text-gray-500 group-hover:text-orange-600 transition-transform duration-200 group-hover:rotate-180"
-                                            strokeWidth={2}
-                                        />
-                                    </button>
-                                    {openDropdown === 0 && (
-                                        <div
-                                            className="absolute left-1/2 transform -translate-x-1/2 mt-0 w-[1000px] origin-top bg-white rounded-md shadow-lg z-10 ring-1 ring-black ring-opacity-5 focus:outline-none"
-                                            onMouseEnter={() => handleMouseEnter(0)}
-                                            onMouseLeave={handleMouseLeave}
-                                        >
-                                            <div className="py-6 px-6">
-                                                <table className="w-full border-collapse table-fixed">
-                                                    <tbody>
-                                                        {/* Dividir categorias em linhas de 4 */}
-                                                        {Array.from({ length: Math.ceil(categories.slice(0, 8).length / 4) }).map((_, rowIndex) => ( // Usando slice(0,8) para pegar as primeiras 8
-                                                            <tr key={`row-${rowIndex}`} className="align-top">
-                                                                {Array.from({ length: 4 }).map((_, colIndex) => {
-                                                                    const categoryIndex = rowIndex * 4 + colIndex;
-                                                                    const category = categories[categoryIndex]; // Acessando diretamente 'categories'
+                                        <div className="py-6 px-6">
+                                            <table className="w-full border-collapse table-fixed">
+                                                <tbody>
+                                                    {Array.from({ length: Math.ceil(categories.slice(0, 8).length / 4) }).map((_, rowIndex) => (
+                                                        <tr key={`row-${rowIndex}`} className="align-top">
+                                                            {Array.from({ length: 4 }).map((_, colIndex) => {
+                                                                const categoryIndex = rowIndex * 4 + colIndex;
+                                                                const category = categories[categoryIndex];
 
-                                                                    if (!category) return <td key={`empty-${colIndex}`} className="p-3 w-1/4"></td>;
+                                                                if (!category) return <td key={`empty-${colIndex}`} className="p-3 w-1/4"></td>;
 
-                                                                    return (
-                                                                        <td key={`cat-${category.id}`} className="p-3  w-1/4">
-                                                                            <div className="mb-3">
-                                                                                <Link
-                                                                                    href={category.href}
-                                                                                    className="block text-base border-none font-medium text-gray-900 hover:text-orange-600 pb-2 relative "
-                                                                                >
-                                                                                    {category.name}
-                                                                                </Link>
-                                                                            </div>
-                                                                            <ul className="space-y-2 border-none">
-                                                                                {category.subcategories?.map((subItem) => (
-                                                                                    <li key={`${category.id}-${subItem.id}`}>
-                                                                                        <Link
-                                                                                            href={subItem.href} // Usar subItem.href diretamente
-                                                                                            className="block text-sm text-gray-600 hover:text-orange-600"
-                                                                                        >
-                                                                                            {subItem.name}
-                                                                                        </Link>
-                                                                                    </li>
-                                                                                ))}
-                                                                            </ul>
-                                                                        </td>
-                                                                    );
-                                                                })}
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            <div className="bg-gray-50 px-4 py-3 border-t border-gray-100 rounded-b-md text-center">
-                                                <Link
-                                                    href="/products" // ou uma página específica de todas as categorias
-                                                    className="text-sm font-medium text-orange-600 hover:text-orange-700 inline-flex items-center"
-                                                >
-                                                    Ver todas as categorias
-                                                    <ChevronDown size={16} className="ml-1 rotate-270" strokeWidth={2} /> {/* Icone de "ver mais" */}
-                                                </Link>
-                                            </div>
+                                                                return (
+                                                                    <td key={`cat-${category.id}`} className="p-3 w-1/4">
+                                                                        <div className="mb-3">
+                                                                            <Link
+                                                                                href={category.href}
+                                                                                className="block text-base font-medium text-gray-900 hover:text-orange-600 pb-2"
+                                                                            >
+                                                                                {category.name}
+                                                                            </Link>
+                                                                        </div>
+                                                                        <ul className="space-y-2">
+                                                                            {category.subcategories?.map((subItem) => (
+                                                                                <li key={`${category.id}-${subItem.id}`}>
+                                                                                    <Link
+                                                                                        href={subItem.href}
+                                                                                        className="block text-sm text-gray-600 hover:text-orange-600"
+                                                                                    >
+                                                                                        {subItem.name}
+                                                                                    </Link>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </td>
+                                                                );
+                                                            })}
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                    )}
-                                </li>
-                            )
+                                        <div className="bg-gray-50 px-4 py-3 border-t border-gray-100 rounded-b-md text-center">
+                                            <Link
+                                                href="/products"
+                                                className="text-sm font-medium text-orange-600 hover:text-orange-700 inline-flex items-center"
+                                            >
+                                                Ver todas as categorias
+                                                <ChevronDown size={16} className="ml-1 rotate-90" strokeWidth={2} />
+                                            </Link>
+                                        </div>
+                                    </div>
+                                )}
+                            </li>
                         ) : (
                             <li key={`nav-link-${index}`}>
                                 <Link
@@ -316,7 +335,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
         setOpenDropdownIndex(openDropdownIndex === index ? null : index);
     };
 
-    useEffect(() => { // Fechar dropdown de categorias quando o menu mobile é fechado
+    useEffect(() => {
         if (!isOpen) {
             setOpenDropdownIndex(null);
         }
@@ -326,13 +345,12 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
 
     return (
         <div
-            className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out"
-            onClick={onClose} // Fechar ao clicar no overlay
+            className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity duration-300"
+            onClick={onClose}
         >
             <div
-                className={`fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'
-                    }`}
-                onClick={(e) => e.stopPropagation()} // Evitar fechar ao clicar dentro do menu
+                className={`fixed top-0 left-0 h-full w-4/5 max-w-sm bg-white shadow-xl z-50 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                onClick={(e) => e.stopPropagation()}
             >
                 <div className="p-5 border-b border-gray-100 flex justify-between items-center">
                     <Link href="/" className="text-2xl font-bold text-orange-600" onClick={onClose}>
@@ -342,47 +360,44 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                         <X size={28} strokeWidth={1.5} />
                     </button>
                 </div>
-                <nav className="py-4 overflow-y-auto h-[calc(100vh-65px)]"> {/* Ajuste para altura do header do menu */}
+                <nav className="py-4 overflow-y-auto h-[calc(100vh-65px)]">
                     <ul>
                         {navLinks.map((link, index) => (
-                            link.name === 'Categorias' ? ( // Simplificado o condicional
-                                categories && categories.length > 0 && (
-                                    <li key={`mobile-categories-${index}`} className="border-b border-gray-100">
-                                        <button
-                                            onClick={() => toggleDropdown(0)} // Usando índice 0 para o dropdown de categorias
-                                            className="w-full flex justify-between items-center px-5 py-3 text-left text-gray-700 hover:bg-gray-50 hover:text-orange-600 transition-colors"
-                                        >
-                                            <span>Categorias</span>
-                                            {openDropdownIndex === 0 ? (
-                                                <ChevronUp size={20} strokeWidth={2} />
-                                            ) : (
-                                                <ChevronDown size={20} strokeWidth={2} />
-                                            )}
-                                        </button>
-                                        {openDropdownIndex === 0 && (
-                                            <ul className="pl-8 bg-gray-50">
-                                                {categories.map((category) => (
-                                                    <li key={`mobile-cat-${category.id}`} className="border-t border-gray-100 first:border-t-0">
-                                                        <Link
-                                                            href={category.href}
-                                                            className="block px-5 py-3 text-sm text-gray-600 hover:bg-gray-100 hover:text-orange-600 transition-colors"
-                                                            onClick={onClose} // Fechar menu ao clicar no link
-                                                        >
-                                                            {category.name}
-                                                        </Link>
-                                                        {/* Poderia adicionar subcategorias aqui se necessário */}
-                                                    </li>
-                                                ))}
-                                            </ul>
+                            link.name === 'Categorias' && categories && categories.length > 0 ? (
+                                <li key={`mobile-categories-${index}`} className="border-b border-gray-100">
+                                    <button
+                                        onClick={() => toggleDropdown(0)}
+                                        className="w-full flex justify-between items-center px-5 py-3 text-left text-gray-700 hover:bg-gray-50 hover:text-orange-600 transition-colors"
+                                    >
+                                        <span>Categorias</span>
+                                        {openDropdownIndex === 0 ? (
+                                            <ChevronUp size={20} strokeWidth={2} />
+                                        ) : (
+                                            <ChevronDown size={20} strokeWidth={2} />
                                         )}
-                                    </li>
-                                )
+                                    </button>
+                                    {openDropdownIndex === 0 && (
+                                        <ul className="pl-8 bg-gray-50">
+                                            {categories.map((category) => (
+                                                <li key={`mobile-cat-${category.id}`} className="border-t border-gray-100 first:border-t-0">
+                                                    <Link
+                                                        href={category.href}
+                                                        className="block px-5 py-3 text-sm text-gray-600 hover:bg-gray-100 hover:text-orange-600 transition-colors"
+                                                        onClick={onClose}
+                                                    >
+                                                        {category.name}
+                                                    </Link>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </li>
                             ) : (
                                 <li key={`mobile-link-${index}`} className="border-b border-gray-100">
                                     <Link
                                         href={link.href}
                                         className="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-orange-600 transition-colors"
-                                        onClick={onClose} // Fechar menu ao clicar no link
+                                        onClick={onClose}
                                     >
                                         {link.name}
                                     </Link>
@@ -396,17 +411,17 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     );
 };
 
-// --- Main Header Component (Orchestrator) ---
+// --- Main Header Component ---
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [cartItemCount] = useState(3); // Example
+    const { itemCount } = useCart();
     const [showTopBar, setShowTopBar] = useState(true);
     const [showNav, setShowNav] = useState(true);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const lastScrollY = useRef(0);
-    const scrollDirection = useRef<'up' | 'down' | 'none'>('none'); // Tipo mais específico
-    const scrollThreshold = 20; // Limiar para detectar mudança de direção
-    const scrollLock = useRef(false); // Para evitar múltiplas atualizações rápidas
+    const scrollDirection = useRef<'up' | 'down' | 'none'>('none');
+    const scrollThreshold = 20;
+    const scrollLock = useRef(false);
 
     const handleMobileMenuToggle = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -430,11 +445,7 @@ const Header = () => {
     }, [isMobileMenuOpen]);
 
     useEffect(() => {
-        if (isMobileMenuOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
+        document.body.style.overflow = isMobileMenuOpen ? 'hidden' : 'unset';
         return () => {
             document.body.style.overflow = 'unset';
         };
@@ -445,101 +456,78 @@ const Header = () => {
             if (scrollLock.current) return;
 
             const currentScrollY = window.scrollY;
+            setShowScrollTop(currentScrollY > 300);
 
-            // Mostrar/ocultar botão de voltar ao topo
-            if (currentScrollY > 300) {
-                setShowScrollTop(true);
-            } else {
-                setShowScrollTop(false);
-            }
-
-            // Lógica para mostrar/ocultar TopBar e NavBase (NavigationBar)
-            // Apenas processa se a rolagem for significativa
             if (Math.abs(currentScrollY - lastScrollY.current) > scrollThreshold || currentScrollY === 0) {
-                scrollLock.current = true; // Bloqueia processamento adicional até que este termine
+                scrollLock.current = true;
 
-                const newDirection = currentScrollY > lastScrollY.current ? 'down' : 'up';
-
-                if (currentScrollY === 0) { // No topo da página
+                if (currentScrollY === 0) {
                     setShowTopBar(true);
                     setShowNav(true);
                     scrollDirection.current = 'none';
-                } else if (newDirection !== scrollDirection.current) { // Mudança de direção
-                    scrollDirection.current = newDirection;
-                    if (newDirection === 'down') {
-                        setShowTopBar(false);
-                        // Atraso para setShowNav(false) pode ajudar, mas o problema principal era o sticky duplicado
-                        setTimeout(() => {
-                            setShowNav(false);
-                            scrollLock.current = false; // Libera após a última ação de estado
-                        }, 50); // Ajuste este tempo se necessário
-                        return; // Retorna para não liberar o lock imediatamente
-                    } else { // Scrolling up
-                        setShowNav(true); // Mostra a barra de navegação imediatamente
-                        // TopBar só aparece se estiver perto do topo
-                        if (currentScrollY <= 50) { // Limiar para mostrar TopBar
-                            setTimeout(() => { // Pequeno delay para TopBar
-                                setShowTopBar(true);
+                } else {
+                    const newDirection = currentScrollY > lastScrollY.current ? 'down' : 'up';
+
+                    if (newDirection !== scrollDirection.current) {
+                        scrollDirection.current = newDirection;
+                        if (newDirection === 'down') {
+                            setShowTopBar(false);
+                            setTimeout(() => {
+                                setShowNav(false);
                                 scrollLock.current = false;
                             }, 50);
                             return;
+                        } else {
+                            setShowNav(true);
+                            if (currentScrollY <= 50) {
+                                setTimeout(() => {
+                                    setShowTopBar(true);
+                                    scrollLock.current = false;
+                                }, 50);
+                                return;
+                            }
                         }
                     }
                 }
+
                 lastScrollY.current = currentScrollY;
-                scrollLock.current = false; // Libera se não houve return antecipado
+                scrollLock.current = false;
             }
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-        // Removidas dependências que causariam re-execução desnecessária.
-        // A lógica de scroll deve ser independente do estado que ela mesma modifica.
-        // As refs (lastScrollY, scrollDirection, scrollLock) não causam re-renderização.
     }, []);
-
 
     return (
         <>
-            {/* Header principal que será sticky */}
             <header className="sticky top-0 z-30 bg-white shadow-sm">
-                {/* TopBar com transição */}
                 <div
                     className="transition-all duration-300 ease-out overflow-hidden"
                     style={{
-                        maxHeight: showTopBar ? '50px' : '0', // Altura aproximada da TopBar
+                        maxHeight: showTopBar ? '50px' : '0',
                         opacity: showTopBar ? 1 : 0,
                     }}
                 >
                     <TopBar />
                 </div>
 
-                {/* MainHeader (logo, busca, ícones de conta) */}
                 <MainHeader
                     onMobileMenuToggle={handleMobileMenuToggle}
                     isMobileMenuOpen={isMobileMenuOpen}
-                    cartItemCount={cartItemCount}
+                    cartItemCount={itemCount}
                 />
 
-                {/* NavigationBar (links de navegação desktop) com transição */}
-                <div
-                    className="transition-all duration-300 ease-out overflow-hidden"
-                >
-                    {/* style={{
-                        maxHeight: showNav ? '50px' : '0', // Altura aproximada da NavigationBar (h-12 = 48px)
-                        opacity: showNav ? 1 : 0,
-                    }} */}
+                <div className="transition-all duration-300 ease-out ">
                     <NavigationBar />
                 </div>
 
-                {/* MobileMenu (drawer) */}
                 <MobileMenu
                     isOpen={isMobileMenuOpen}
                     onClose={() => setIsMobileMenuOpen(false)}
                 />
             </header>
 
-            {/* Botão de WhatsApp */}
             <a
                 href="https://wa.me/258841234567"
                 target="_blank"
@@ -550,7 +538,6 @@ const Header = () => {
                 <MessageCircle size={28} strokeWidth={2} />
             </a>
 
-            {/* Botão de Voltar ao Topo */}
             <button
                 onClick={scrollToTop}
                 className={`fixed bottom-4 right-4 z-50 bg-orange-600 text-white p-3 rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 flex items-center justify-center ${showScrollTop ? 'opacity-100 visible' : 'opacity-0 invisible'}`}

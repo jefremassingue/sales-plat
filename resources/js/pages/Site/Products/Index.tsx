@@ -6,11 +6,64 @@ import {
 import { Link, router } from '@inertiajs/react';
 import ProductCard from '@/pages/Site/_components/ProductCard';
 
-// --- Componente Interno Reutilizável para Card do Produto (Sem Sombra, Cor Laranja) ---
 
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    parent: Category | null;
+}
+
+interface Product {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    technical_details: string | null;
+    features: string | null;
+    price: number;
+    old_price?: number;
+    cost: number | null;
+    sku: string | null;
+    barcode: string | null;
+    weight: number | null;
+    category_id: number;
+    stock: number;
+    active: boolean;
+    featured: boolean;
+    certification: string | null;
+    warranty: string | null;
+    brand: string | null;
+    origin_country: string | null;
+    currency: string;
+    created_at: string;
+    updated_at: string;
+    category: Category;
+}
+
+interface Props {
+    products: {
+        data: Product[];
+        current_page: number;
+        last_page: number;
+    }
+    categories: Category[]
+    brands: string[]
+    filters: {
+        categories: number[]
+        brands: string[]
+        price_min: string
+        price_max: string
+        search: string
+        c: string
+        sort: string
+        order: string
+        page: number
+    }
+}
 
 // --- Componente Principal da Página da Loja (Refatorado) ---
-export default function ShopPage({ products, categories, brands, filters }) {
+export default function ShopPage({ products, categories, brands, filters }: Props) {
     const [isFiltersOpenMobile, setIsFiltersOpenMobile] = useState(false);
     const [openFilterSections, setOpenFilterSections] = useState({
         categories: true,
@@ -25,6 +78,7 @@ export default function ShopPage({ products, categories, brands, filters }) {
         price_min: filters.price_min || '',
         price_max: filters.price_max || '',
         search: filters.search || '',
+        c: filters.c || '',
         sort: filters.sort || 'created_at',
         order: filters.order || 'desc',
         page: filters.page || 1,
@@ -33,7 +87,7 @@ export default function ShopPage({ products, categories, brands, filters }) {
     // Calcular faixas de preço com base nos produtos disponíveis
     const priceRanges = useMemo(() => {
         if (!products.data || products.data.length === 0) return { min: 0, max: 1000 };
-        const prices = products.data.map(p => parseFloat(p.price));
+        const prices = products.data.map(p => parseFloat(p.price?.toString()));
         return {
             min: Math.floor(Math.min(...prices)),
             max: Math.ceil(Math.max(...prices)),
@@ -41,7 +95,7 @@ export default function ShopPage({ products, categories, brands, filters }) {
     }, [products]);
 
     // Handler para mudanças nos filtros de texto/preço com debounce
-    const handleFilterChange = (filterName, value) => {
+    const handleFilterChange = (filterName: string, value) => {
         setFilterData(prev => ({
             ...prev,
             [filterName]: value,
@@ -133,6 +187,7 @@ export default function ShopPage({ products, categories, brands, filters }) {
             price_min: '',
             price_max: '',
             search: '',
+            c: '',
             sort: 'created_at',
             order: 'desc',
             page: 1,
@@ -216,7 +271,7 @@ export default function ShopPage({ products, categories, brands, filters }) {
     };
 
     // Função para navegar entre páginas
-    const handlePageChange = (page) => {
+    const handlePageChange = (page: number) => {
         handleFilterChange('page', page);
 
         // Aplicar filtros com a nova página

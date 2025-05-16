@@ -74,6 +74,7 @@
         "react-day-picker": "^8.10.1",
         "react-dom": "^19.0.0",
         "react-hook-form": "^7.56.1",
+        "react-image-magnify": "^2.7.4",
         "slate": "^0.114.0",
         "slate-history": "^0.113.1",
         "slate-react": "^0.114.2",

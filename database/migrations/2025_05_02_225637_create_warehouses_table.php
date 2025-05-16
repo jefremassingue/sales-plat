@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->text('description')->nullable();
             $table->boolean('is_main')->default(false);
+            $table->boolean('available_for_ecommerce')->default(false);
             $table->boolean('active')->default(true);
             $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
