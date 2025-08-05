@@ -66,10 +66,10 @@ class Category extends Model
      * Gerar um slug único baseado no nome ou texto fornecido.
      *
      * @param string $text O texto para converter em slug
-     * @param int|null $excludeId ID a ser excluído da verificação de unicidade (para atualizações)
+     * @param string|null $excludeId ID a ser excluído da verificação de unicidade (para atualizações)
      * @return string O slug único
      */
-    protected static function generateUniqueSlug(string $text, ?int $excludeId = null): string
+    protected static function generateUniqueSlug(string $text, ?string $excludeId = null): string
     {
         $baseSlug = Str::slug($text);
         $slug = $baseSlug;

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -28,8 +29,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Nome da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -38,8 +37,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Endereço da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -48,8 +45,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Cidade da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -58,8 +53,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Província da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -68,8 +61,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Código postal da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -78,8 +69,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'País da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -88,8 +77,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Telefone principal da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -98,8 +85,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Email principal da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -108,8 +93,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Website da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -118,8 +101,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'NUIT da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -128,8 +109,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Logo da empresa',
                     'type' => 'image',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -138,8 +117,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Moeda padrão da empresa',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -148,8 +125,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Início do ano fiscal (MM-DD)',
                     'type' => 'text',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -158,8 +133,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Fim do ano fiscal (MM-DD)',
                     'type' => 'text',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -168,8 +141,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Imagem de fundo para o cabeçalho dos documentos',
                     'type' => 'image',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -178,8 +149,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Imagem de fundo para o rodapé dos documentos',
                     'type' => 'image',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'company',
@@ -188,13 +157,12 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Texto adicional para o rodapé dos documentos',
                     'type' => 'text',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
             ];
 
-            // Inserir as configurações
-            DB::table('settings')->insert($companySettings);
+            foreach ($companySettings as $value) {
+                Setting::create($value);
+            }
 
             // Configurações adicionais (invoice, pdf, etc)
             $invoiceSettings = [
@@ -205,8 +173,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Fonte padrão para PDFs',
                     'type' => 'text',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'pdf',
@@ -215,8 +181,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Tamanho da fonte padrão para PDFs',
                     'type' => 'number',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'invoice',
@@ -225,8 +189,6 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Termos padrão para faturas',
                     'type' => 'textarea',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'quotation',
@@ -235,13 +197,14 @@ class CompanySettingsSeeder extends Seeder
                     'description' => 'Termos padrão para cotações',
                     'type' => 'textarea',
                     'is_public' => false,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
             ];
 
             // Inserir as configurações adicionais
-            DB::table('settings')->insert($invoiceSettings);
+            // Setting::create($invoiceSettings);
+            foreach ($invoiceSettings as $value) {
+                Setting::create($value);
+            }
 
             // Confirmar as alterações
             DB::commit();

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Setting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -28,8 +29,6 @@ class BankSettingsSeeder extends Seeder
                     'description' => 'Nome do banco principal',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'bank',
@@ -38,8 +37,6 @@ class BankSettingsSeeder extends Seeder
                     'description' => 'Número da conta bancária principal',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'bank',
@@ -48,8 +45,6 @@ class BankSettingsSeeder extends Seeder
                     'description' => 'NIB da conta bancária principal',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'bank',
@@ -58,8 +53,6 @@ class BankSettingsSeeder extends Seeder
                     'description' => 'Código SWIFT do banco principal',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
                 [
                     'group' => 'bank',
@@ -68,13 +61,13 @@ class BankSettingsSeeder extends Seeder
                     'description' => 'IBAN da conta bancária principal',
                     'type' => 'text',
                     'is_public' => true,
-                    'created_at' => $now,
-                    'updated_at' => $now,
                 ],
             ];
 
             // Inserir as configurações bancárias
-            DB::table('settings')->insert($bankSettings);
+            foreach ($bankSettings as $value) {
+                Setting::create($value);
+            }
 
             DB::commit();
 
