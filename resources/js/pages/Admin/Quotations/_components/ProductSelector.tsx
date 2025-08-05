@@ -63,7 +63,7 @@ export default function ProductSelector({
             className="mb-4"
           />
 
-          <div className="rounded-md border max-h-[400px] overflow-y-auto">
+          <div className="rounded-md border max-h-[400px]  overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>

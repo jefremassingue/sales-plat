@@ -11,6 +11,8 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Quotation;
 use App\Models\QuotationItem;
+use App\Models\Sale;
+use App\Models\SaleItem;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -749,6 +751,131 @@ class QuotationController extends Controller
         }
     }
 
+    /**
+     * Converte uma cotação em uma venda.
+     */
+    public function convertToSale(Quotation $quotation)
+    {
+        try {
+            // Verificar se a cotação pode ser convertida
+            if (!in_array($quotation->status, ['sent', 'approved'])) {
+                return redirect()->back()->with('error', 'Apenas cotações enviadas ou aprovadas podem ser convertidas em venda.');
+            }
+
+            if ($quotation->converted_to_sale_id) {
+                return redirect()->back()->with('error', 'Esta cotação já foi convertida na venda ID: ' . $quotation->converted_to_sale_id);
+            }
+
+            DB::beginTransaction();
+
+            // 1. Criar a Venda
+            $sale = Sale::create([
+                'customer_id' => $quotation->customer_id,
+                'user_id' => Auth::id(),
+                'sale_number' => $this->generateUniqueSaleNumber(),
+                'issue_date' => now()->format('Y-m-d'),
+                'due_date' => now()->addDays(30)->format('Y-m-d'), // Padrão de 30 dias, pode ser ajustado
+                'status' => 'pending', // Inicia como pendente
+                'currency_code' => $quotation->currency_code,
+                'exchange_rate' => $quotation->exchange_rate,
+                'subtotal' => $quotation->subtotal,
+                'discount_amount' => $quotation->discount_amount,
+                'tax_amount' => $quotation->tax_amount,
+                'shipping_amount' => $quotation->shipping_amount,
+                'total' => $quotation->total,
+                'amount_paid' => 0,
+                'amount_due' => $quotation->total,
+                'notes' => $quotation->notes,
+                'terms' => $quotation->terms,
+                'include_tax' => $quotation->include_tax,
+                'quotation_id' => $quotation->id,
+            ]);
+
+            // 2. Copiar os Itens da Cotação para a Venda e atualizar inventário
+            $quotation->load('items');
+            foreach ($quotation->items as $quotationItem) {
+                $saleItem = SaleItem::create([
+                    'sale_id' => $sale->id,
+                    'product_id' => $quotationItem->product_id,
+                    'product_variant_id' => $quotationItem->product_variant_id,
+                    'warehouse_id' => $quotationItem->warehouse_id,
+                    'name' => $quotationItem->name,
+                    'description' => $quotationItem->description,
+                    'quantity' => $quotationItem->quantity,
+                    'unit' => $quotationItem->unit,
+                    'unit_price' => $quotationItem->unit_price,
+                    'subtotal' => $quotationItem->subtotal,
+                    'discount_type' => $quotationItem->discount_type,
+                    'discount_value' => $quotationItem->discount_value,
+                    'discount_amount' => $quotationItem->discount_amount,
+                    'tax_percentage' => $quotationItem->tax_percentage,
+                    'tax_amount' => $quotationItem->tax_amount,
+                    'total' => $quotationItem->total,
+                    'sort_order' => $quotationItem->sort_order,
+                ]);
+
+                // Atualizar o inventário
+                if ($saleItem->product_id && $saleItem->warehouse_id) {
+                    $inventory = Inventory::where('product_id', $saleItem->product_id)
+                        ->where('warehouse_id', $saleItem->warehouse_id)
+                        ->where('product_variant_id', $saleItem->product_variant_id)
+                        ->first();
+
+                    if ($inventory) {
+                        $inventory->quantity -= $saleItem->quantity;
+                        $inventory->save();
+                    }
+                }
+            }
+
+            // 3. Atualizar a Cotação
+            $quotation->status = 'converted';
+            $quotation->converted_to_sale_id = $sale->id;
+            $quotation->save();
+
+            DB::commit();
+
+            return redirect()->route('admin.sales.show', $sale->id)
+                ->with('success', 'Cotação convertida em venda com sucesso!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao converter cotação em venda: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'quotation_id' => $quotation->id,
+            ]);
+            return redirect()->back()->with('error', 'Ocorreu um erro ao converter a cotação: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Gera um número de venda único.
+     * NOTA: Idealmente, esta lógica estaria em um Trait ou Service para evitar duplicação.
+     */
+    private function generateUniqueSaleNumber()
+    {
+        $prefix = 'SAL-' . date('Ym') . '-';
+        $lastSale = Sale::where('sale_number', 'LIKE', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(sale_number, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
+            ->first();
+
+        if ($lastSale) {
+            $lastNumber = substr($lastSale->sale_number, strlen($prefix));
+            $nextNumber = intval($lastNumber) + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        while (Sale::where('sale_number', $saleNumber)->exists()) {
+            $nextNumber++;
+            $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $saleNumber;
+    }
+    
     /**
      * Get inventory information for a product in a warehouse
      */

@@ -55,7 +55,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('api/product-inventory', [QuotationController::class, 'getProductInventory'])->name('api.product.inventory');
     Route::post('quotations/{quotation}/send-email', [QuotationController::class, 'sendEmail'])->name('quotations.send-email');
     Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
-    Route::post('quotations/{quotation}/convert-to-sale', [SaleController::class, 'convertFromQuotation'])->name('quotations.convert-to-sale');
+    Route::post('quotations/{quotation}/convert-to-sale', [QuotationController::class, 'convertToSale'])->name('quotations.convert-to-sale');
 
     // Rotas para vendas
     Route::resource('sales', SaleController::class);

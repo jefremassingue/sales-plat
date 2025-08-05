@@ -67,6 +67,8 @@
   If we ever want to remove these styles, we need to add an explicit border
   color utility to any element that depends on these defaults.
 */
+
+
 @layer base {
 
     *,
@@ -214,4 +216,8 @@
         --chart-4: 280 65% 60%;
         --chart-5: 340 75% 55%;
     }
+}
+
+.container {
+    @apply mx-auto;
 }

@@ -72,8 +72,8 @@ export default function ItemsTab({
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
+        <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+          <div className=''>
             <CardTitle>Itens da Cotação</CardTitle>
             <CardDescription>
               Adicione produtos ou serviços a esta cotação

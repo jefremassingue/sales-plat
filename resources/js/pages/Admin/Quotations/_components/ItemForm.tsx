@@ -213,8 +213,8 @@ export default function ItemForm({
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[600px]">
+        <Dialog open={open} onOpenChange={onOpenChange} >
+            <DialogContent className="sm:max-w-[600px]  max-h-10/12 overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
@@ -320,7 +320,7 @@ export default function ItemForm({
                             )}
                         />
 
-                        <div className="grid grid-cols-3 items-start gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
                             <FormField
                                 control={form.control}
                                 name="quantity"
@@ -382,7 +382,6 @@ export default function ItemForm({
                                                 step="0.01"
                                                 {...field}
                                                 className={isLoadingInventory ? 'animate-pulse' : ''}
-                                                readOnly={selectedProduct !== null}
                                             />
                                         </FormControl>
                                         {isLoadingInventory && <FormDescription>A carregar preço atualizado...</FormDescription>}

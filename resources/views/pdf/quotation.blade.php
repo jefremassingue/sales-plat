@@ -388,7 +388,7 @@
     <div class="container">
         <main class="main">
             @if ($quotation->customer)
-                <div class="customer-info" style="margin-top: 120px">
+                <div class="customer-info" style="">
                     <div class="section-title">CLIENTE</div>
                     <div class="customer-name">{{ $quotation->customer->name }}</div>
                     @if ($quotation->customer->address)

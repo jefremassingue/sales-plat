@@ -218,6 +218,7 @@ export default function DetailsTab({ control, customers, currencies, statuses }:
                 <Select
                   onValueChange={field.onChange}
                   value={field.value}
+                  disabled={true}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -247,7 +248,7 @@ export default function DetailsTab({ control, customers, currencies, statuses }:
               <FormItem>
                 <FormLabel>Taxa de Câmbio <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Input {...field} type="number" min="0.0001" step="0.0001" />
+                  <Input readOnly={true} {...field} type="number" min="0.0001" step="0.0001" />
                 </FormControl>
                 <FormDescription>
                   Taxa de câmbio em relação à moeda base
