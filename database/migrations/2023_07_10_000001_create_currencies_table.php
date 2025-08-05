@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('currencies', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('code', 3)->unique()->comment('Código ISO da moeda (ex: MZN, USD)');
             $table->string('name')->comment('Nome da moeda (ex: Metical Moçambicano)');
             $table->string('symbol', 10)->comment('Símbolo da moeda (ex: MT, $)');
@@ -26,20 +26,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Inserir a moeda padrão (Metical Moçambicano)
-        DB::table('currencies')->insert([
-            'code' => 'MZN',
-            'name' => 'Metical Moçambicano',
-            'symbol' => 'MT',
-            'exchange_rate' => 1.0000,
-            'is_default' => true,
-            'is_active' => true,
-            'decimal_separator' => ',',
-            'thousand_separator' => '.',
-            'decimal_places' => 2,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
     }
 
     /**

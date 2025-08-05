@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('blogs', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('title');
             $table->string('slug')->unique();
             $table->longText('content');
@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('featured_image')->nullable();
             $table->boolean('status')->default(true);
             $table->timestamp('published_at')->nullable();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignUlid('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('blog_category_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();

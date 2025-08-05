@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('images', function (Blueprint $table) {
-            $table->id();
-            $table->nullableMorphs('typeable');
+            $table->ulid('id')->primary();
+            $table->nullableUlidMorphs('typeable');
 
             $table->string('storage')->nullable();
             $table->string('path')->nullable();
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('extension')->nullable();
             $table->boolean('is_main')->default(false);
 
-            $table->foreignId('parent_id')->nullable();
+            $table->foreignUlid('parent_id')->nullable();
             $table->string('version')->default('original');
         });
     }

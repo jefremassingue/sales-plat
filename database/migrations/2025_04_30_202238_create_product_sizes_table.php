@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_sizes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('product_id')->constrained()->onDelete('cascade');
             $table->string('name'); // Ex: XL, L, M, S, XS, Único
             $table->string('code')->nullable(); // Código interno para o tamanho
             $table->text('description')->nullable();

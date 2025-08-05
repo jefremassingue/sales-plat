@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inventories', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('product_variant_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('warehouse_id')->nullable()->constrained()->onDelete('set null');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('product_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignUlid('product_variant_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignUlid('warehouse_id')->nullable()->constrained()->onDelete('set null');
             $table->integer('quantity')->default(0);
             $table->integer('min_quantity')->default(0);
             $table->integer('max_quantity')->nullable();
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->decimal('old_cost', 10, 2)->nullable();
             $table->string('status')->default('active')->comment('active, reserved, damaged, expired');
             $table->text('notes')->nullable();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null')->comment('Utilizador que atualizou o registo pela última vez');
+            $table->foreignUlid('user_id')->nullable()->constrained()->onDelete('set null')->comment('Utilizador que atualizou o registo pela última vez');
             $table->timestamps();
 
             // Índices para otimização de pesquisa

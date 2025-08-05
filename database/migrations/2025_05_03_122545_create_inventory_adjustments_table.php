@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('inventory_adjustments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('inventory_id')->constrained()->onDelete('cascade');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('inventory_id')->constrained()->onDelete('cascade');
             $table->decimal('quantity', 10, 2); // Quantidade (positiva para adição, negativa para subtração)
             $table->string('type')->default('manual'); // manual, transfer, loss, correction, etc.
             $table->string('reference_number')->nullable(); // Número de referência do documento
-            $table->foreignId('supplier_id')->nullable()->constrained()->onDelete('set null'); // Fornecedor relacionado ao ajuste
+            $table->foreignUlid('supplier_id')->nullable()->constrained()->onDelete('set null'); // Fornecedor relacionado ao ajuste
             $table->text('reason')->nullable(); // Motivo do ajuste
             $table->text('notes')->nullable(); // Notas adicionais
-            $table->foreignId('user_id')->constrained()->onDelete('set null');
+            $table->foreignUlid('user_id')->constrained()->onDelete('set null');
             $table->timestamps();
 
             // Índices para otimização de pesquisa

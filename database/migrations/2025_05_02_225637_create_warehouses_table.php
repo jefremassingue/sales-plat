@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('warehouses', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->string('code')->nullable()->unique();
             $table->string('address')->nullable();
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->boolean('is_main')->default(false);
             $table->boolean('available_for_ecommerce')->default(false);
             $table->boolean('active')->default(true);
-            $table->foreignId('manager_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUlid('manager_id')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes(); // Soft delete para manter histórico
         });

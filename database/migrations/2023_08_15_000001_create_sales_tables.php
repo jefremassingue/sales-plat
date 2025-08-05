@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('sales', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('sale_number')->unique()->comment('Número da venda');
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete()->comment('Cliente associado à venda');
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete()->comment('Utilizador que criou a venda');
+            $table->foreignUlid('customer_id')->nullable()->constrained()->nullOnDelete()->comment('Cliente associado à venda');
+            $table->foreignUlid('user_id')->nullable()->constrained()->nullOnDelete()->comment('Utilizador que criou a venda');
             $table->date('issue_date')->comment('Data de emissão');
             $table->date('due_date')->nullable()->comment('Data de vencimento');
             $table->enum('status', ['draft', 'pending', 'paid', 'partial', 'cancelled'])->default('pending')->comment('Estado da venda');
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->text('terms')->nullable()->comment('Termos e condições');
             $table->boolean('include_tax')->default(true)->comment('Incluir impostos na venda');
             $table->string('reference')->nullable()->comment('Referência externa');
-            $table->foreignId('quotation_id')->nullable()->comment('Cotação de origem, se aplicável');
+            $table->foreignUlid('quotation_id')->nullable()->comment('Cotação de origem, se aplicável');
             $table->text('shipping_address')->nullable()->comment('Endereço de entrega');
             $table->text('billing_address')->nullable()->comment('Endereço de faturação');
             $table->timestamps();
@@ -43,11 +43,11 @@ return new class extends Migration
 
         // Tabela para itens da venda
         Schema::create('sale_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('sale_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('product_variant_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('warehouse_id')->nullable()->constrained()->nullOnDelete()->comment('Armazém de onde o item foi separado');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('sale_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('product_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('product_variant_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('warehouse_id')->nullable()->constrained()->nullOnDelete()->comment('Armazém de onde o item foi separado');
             $table->string('name')->comment('Nome do produto ou serviço');
             $table->text('description')->nullable()->comment('Descrição detalhada');
             $table->decimal('quantity', 10, 2)->comment('Quantidade');
@@ -64,15 +64,15 @@ return new class extends Migration
 
         // Tabela para pagamentos
         Schema::create('sale_payments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('sale_id')->constrained()->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('sale_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 15, 2)->comment('Valor do pagamento');
             $table->string('payment_method')->comment('Método de pagamento utilizado');
             $table->datetime('payment_date')->comment('Data e hora do pagamento');
             $table->string('reference')->nullable()->comment('Referência do pagamento');
             $table->text('notes')->nullable()->comment('Notas sobre o pagamento');
             $table->enum('status', ['pending', 'completed', 'failed', 'refunded'])->default('completed');
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('transaction_id')->nullable()->comment('ID da transação externa');
             $table->timestamps();
             $table->softDeletes();
@@ -81,7 +81,7 @@ return new class extends Migration
         // Adicionar campo para vendas na tabela de cotações
         Schema::table('quotations', function (Blueprint $table) {
             if (!Schema::hasColumn('quotations', 'converted_to_sale_id')) {
-                $table->foreignId('converted_to_sale_id')->nullable()->comment('ID da venda, se a cotação foi convertida');
+                $table->foreignUlid('converted_to_sale_id')->nullable()->comment('ID da venda, se a cotação foi convertida');
             }
         });
     }

@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class Setting extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUlids;
 
     /**
      * Os atributos que são atribuíveis em massa.
@@ -84,7 +86,7 @@ class Setting extends Model
 
             return $setting;
         } catch (\Exception $e) {
-            \Log::error("Erro ao definir configuração {$group}.{$key}: " . $e->getMessage());
+            Log::error("Erro ao definir configuração {$group}.{$key}: " . $e->getMessage());
             throw $e;
         }
     }

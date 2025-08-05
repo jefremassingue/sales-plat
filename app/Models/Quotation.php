@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class Quotation extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUlids;
 
     protected $fillable = [
         'quotation_number',
@@ -27,7 +28,6 @@ class Quotation extends Model
         'notes',
         'terms',
         'include_tax',
-        'converted_to_order_id',
         'converted_to_sale_id',
     ];
 
@@ -47,8 +47,8 @@ class Quotation extends Model
      */
     public static function generateQuotationNumber(): string
     {
-        $lastQuotation = self::withTrashed()->orderBy('id', 'desc')->first();
-        $nextId = $lastQuotation ? $lastQuotation->id + 1 : 1;
+        $lastQuotation = self::withTrashed()->orderBy('created_at', 'desc')->first();
+        $nextId = $lastQuotation ? (int) substr($lastQuotation->quotation_number, -5) + 1 : 1;
         $year = date('Y');
 
         return "COT-{$year}-" . str_pad($nextId, 5, '0', STR_PAD_LEFT);
@@ -76,14 +76,6 @@ class Quotation extends Model
     public function items()
     {
         return $this->hasMany(QuotationItem::class)->orderBy('sort_order');
-    }
-
-    /**
-     * Relação com a encomenda, caso a cotação tenha sido convertida
-     */
-    public function order()
-    {
-        return $this->belongsTo(Order::class, 'converted_to_order_id');
     }
 
     /**

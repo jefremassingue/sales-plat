@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('suppliers', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Associação com utilizador do sistema
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->nullable()->constrained()->onDelete('set null'); // Associação com utilizador do sistema
             $table->string('name'); // Nome do fornecedor
             $table->string('company_name')->nullable(); // Nome da empresa
             $table->string('tax_id')->nullable()->comment('NUIT em Moçambique'); // Número de identificação fiscal

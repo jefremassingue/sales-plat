@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('settings', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('group')->index(); // Para agrupar configurações relacionadas (ex: 'company', 'email', etc)
             $table->string('key')->index(); // Chave única dentro do grupo
             $table->text('value')->nullable(); // Valor da configuração

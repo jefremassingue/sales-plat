@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_attributes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('product_id')->constrained()->onDelete('cascade');
             $table->string('name'); // Nome do atributo: ex: Material, Nível de Proteção, Classe, etc.
             $table->string('value'); // Valor do atributo: ex: Algodão, IP65, Class 2, etc.
             $table->text('description')->nullable();

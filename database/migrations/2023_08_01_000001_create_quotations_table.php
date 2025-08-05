@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('quotations', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('quotation_number')->unique()->comment('Número da cotação');
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete()->comment('Cliente associado à cotação');
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete()->comment('Utilizador que criou a cotação');
+            $table->foreignUlid('customer_id')->nullable()->constrained()->nullOnDelete()->comment('Cliente associado à cotação');
+            $table->foreignUlid('user_id')->nullable()->constrained()->nullOnDelete()->comment('Utilizador que criou a cotação');
             $table->date('issue_date')->comment('Data de emissão');
             $table->date('expiry_date')->nullable()->comment('Data de validade da cotação');
             $table->enum('status', ['draft', 'sent', 'approved', 'rejected', 'expired', 'converted'])->default('draft')->comment('Estado da cotação');
@@ -29,18 +29,17 @@ return new class extends Migration
             $table->text('notes')->nullable()->comment('Notas adicionais');
             $table->text('terms')->nullable()->comment('Termos e condições');
             $table->boolean('include_tax')->default(true)->comment('Incluir impostos na cotação');
-            $table->foreignId('converted_to_order_id')->nullable()->comment('ID da encomenda caso convertida');
             $table->timestamps();
             $table->softDeletes();
         });
 
         // Tabela para itens da cotação
         Schema::create('quotation_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('quotation_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('product_variant_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('warehouse_id')->nullable()->constrained()->nullOnDelete()->comment('Armazém de onde o item será separado');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('quotation_id')->constrained()->cascadeOnDelete();
+            $table->foreignUlid('product_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('product_variant_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUlid('warehouse_id')->nullable()->constrained()->nullOnDelete()->comment('Armazém de onde o item será separado');
             $table->string('name')->comment('Nome do produto ou serviço');
             $table->text('description')->nullable()->comment('Descrição detalhada');
             $table->decimal('quantity', 10, 2)->comment('Quantidade');

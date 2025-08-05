@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('blog_categories', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name'); // Nome da categoria
             $table->string('slug')->unique(); // Slug para URLs amigáveis
             $table->text('description')->nullable(); // Descrição opcional
-            $table->unsignedBigInteger('parent_id')->nullable(); // ID da categoria pai (para relação recursiva)
+            $table->foreignUlid('parent_id')->nullable(); // ID da categoria pai (para relação recursiva)
             $table->boolean('active')->default(true); // Estado ativo/inativo
             $table->integer('order')->default(0); // Ordem de exibição
             $table->timestamps();
@@ -25,7 +25,7 @@ return new class extends Migration
             // Chave estrangeira para auto-relacionamento
             $table->foreign('parent_id')
                 ->references('id')
-                ->on('categories')
+                ->on('blog_categories')
                 ->onDelete('cascade');
         });
     }
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::dropIfExists('blog_categories');
     }
 };

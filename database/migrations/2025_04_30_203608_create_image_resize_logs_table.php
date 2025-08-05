@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('image_resize_logs', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('path')->nullable();
             $table->text('error')->nullable();
             $table->timestamps();

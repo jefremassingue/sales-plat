@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_variants', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_color_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('product_size_id')->nullable()->constrained()->onDelete('set null');
+            $table->ulid('id')->primary();
+            $table->foreignUlid('product_id')->constrained()->onDelete('cascade');
+            $table->foreignUlid('product_color_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignUlid('product_size_id')->nullable()->constrained()->onDelete('set null');
             $table->string('sku')->nullable();
             $table->string('barcode')->nullable();
             $table->decimal('price', 10, 2)->nullable(); // Preço específico para esta variante

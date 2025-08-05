@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
 
         // Executar o seeder de categorias
         $this->call([
+            CurrencySeeder::class,
+            PaymentMethodSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
             UserSeeder::class,
