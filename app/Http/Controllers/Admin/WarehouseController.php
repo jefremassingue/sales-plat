@@ -11,9 +11,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class WarehouseController extends Controller
+class WarehouseController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-warehouse.index', only: ['index']),
+            new Middleware('permission:admin-warehouse.create', only: ['create', 'store']),
+            new Middleware('permission:admin-warehouse.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-warehouse.show', only: ['show']),
+            new Middleware('permission:admin-warehouse.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

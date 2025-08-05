@@ -12,7 +12,7 @@ export interface BreadcrumbItem {
 }
 
 export interface NavGroup {
-    title: string;
+    title?: string;
     items: NavItem[];
 }
 
@@ -21,6 +21,7 @@ export interface NavItem {
     href: string;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    permission?: string;
 }
 
 export interface SharedData {
@@ -40,6 +41,7 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    can: { [key: string]: boolean };
     [key: string]: unknown; // This allows for additional properties...
 }
 

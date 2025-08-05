@@ -21,9 +21,27 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class QuotationController extends Controller
+class QuotationController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-quotation.index', only: ['index']),
+            new Middleware('permission:admin-quotation.create', only: ['create', 'store']),
+            new Middleware('permission:admin-quotation.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-quotation.show', only: ['show']),
+            new Middleware('permission:admin-quotation.destroy', only: ['destroy']),
+            new Middleware('permission:admin-quotation.updateStatus', only: ['updateStatus']),
+            new Middleware('permission:admin-quotation.generatePdf', only: ['generatePdf']),
+            new Middleware('permission:admin-quotation.sendEmail', only: ['sendEmail']),
+            new Middleware('permission:admin-quotation.duplicate', only: ['duplicate']),
+            new Middleware('permission:admin-quotation.convertToSale', only: ['convertToSale']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

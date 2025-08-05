@@ -14,9 +14,22 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class BlogController extends Controller
+class BlogController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-blog.index', only: ['index']),
+            new Middleware('permission:admin-blog.create', only: ['create', 'store']),
+            new Middleware('permission:admin-blog.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-blog.show', only: ['show']),
+            new Middleware('permission:admin-blog.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

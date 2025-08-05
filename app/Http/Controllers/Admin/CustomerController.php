@@ -11,9 +11,22 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CustomerController extends Controller
+class CustomerController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-customer.index', only: ['index']),
+            new Middleware('permission:admin-customer.create', only: ['create', 'store']),
+            new Middleware('permission:admin-customer.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-customer.show', only: ['show']),
+            new Middleware('permission:admin-customer.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

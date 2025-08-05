@@ -21,9 +21,27 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class SaleController extends Controller
+class SaleController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-sale.index', only: ['index']),
+            new Middleware('permission:admin-sale.create', only: ['create', 'store']),
+            new Middleware('permission:admin-sale.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-sale.show', only: ['show']),
+            new Middleware('permission:admin-sale.destroy', only: ['destroy']),
+            new Middleware('permission:admin-sale.updateStatus', only: ['updateStatus']),
+            new Middleware('permission:admin-sale.generatePdf', only: ['generatePdf']),
+            new Middleware('permission:admin-sale.sendEmail', only: ['sendEmail']),
+            new Middleware('permission:admin-sale.duplicate', only: ['duplicate']),
+            new Middleware('permission:admin-sale.registerPayment', only: ['registerPayment']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -9,9 +9,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class UserRoleController extends Controller
+class UserRoleController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-userrole.index', only: ['index']),
+            new Middleware('permission:admin-userrole.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-userrole.show', only: ['show']),
+        ];
+    }
+
     /**
      * Display a listing of the users with their roles.
      */

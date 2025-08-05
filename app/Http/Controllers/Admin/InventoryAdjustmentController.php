@@ -12,9 +12,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class InventoryAdjustmentController extends Controller
+class InventoryAdjustmentController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-inventoryadjustment.index', only: ['index']),
+            new Middleware('permission:admin-inventoryadjustment.create', only: ['create', 'store']),
+            new Middleware('permission:admin-inventoryadjustment.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-inventoryadjustment.show', only: ['show']),
+            new Middleware('permission:admin-inventoryadjustment.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Mostrar a lista de ajustes para um item específico do inventário.
      *

@@ -11,9 +11,22 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-user.index', only: ['index']),
+            new Middleware('permission:admin-user.create', only: ['create', 'store']),
+            new Middleware('permission:admin-user.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-user.show', only: ['show']),
+            new Middleware('permission:admin-user.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

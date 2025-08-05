@@ -10,9 +10,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class SupplierController extends Controller
+class SupplierController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-supplier.index', only: ['index']),
+            new Middleware('permission:admin-supplier.create', only: ['create', 'store']),
+            new Middleware('permission:admin-supplier.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-supplier.show', only: ['show']),
+            new Middleware('permission:admin-supplier.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

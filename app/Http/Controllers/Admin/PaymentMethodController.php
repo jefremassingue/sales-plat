@@ -10,9 +10,23 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class PaymentMethodController extends Controller
+class PaymentMethodController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-paymentmethod.index', only: ['index']),
+            new Middleware('permission:admin-paymentmethod.create', only: ['create', 'store']),
+            new Middleware('permission:admin-paymentmethod.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-paymentmethod.destroy', only: ['destroy']),
+            new Middleware('permission:admin-paymentmethod.updateStatus', only: ['updateStatus']),
+            new Middleware('permission:admin-paymentmethod.setDefault', only: ['setDefault']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

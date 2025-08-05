@@ -19,3 +19,13 @@ export function formatPrice(price: number): string {
 
   return formattedPrice.replace('MZN', currency.symbol);
 }
+
+export function can(permission: string): boolean {
+    const { auth } = usePage<PageProps>().props;
+    return auth.user.can[permission] ?? false;
+}
+
+export function canany(permissions: string[]): boolean {
+    const { auth } = usePage<PageProps>().props;
+    return permissions.some((permission) => auth.user.can[permission] ?? false);
+}

@@ -13,9 +13,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class InventoryController extends Controller
+class InventoryController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-inventory.index', only: ['index']),
+            new Middleware('permission:admin-inventory.create', only: ['create', 'store']),
+            new Middleware('permission:admin-inventory.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-inventory.show', only: ['show']),
+            new Middleware('permission:admin-inventory.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -10,9 +10,22 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CategoryController extends Controller
+class CategoryController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-category.index', only: ['index']),
+            new Middleware('permission:admin-category.create', only: ['create', 'store']),
+            new Middleware('permission:admin-category.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-category.show', only: ['show']),
+            new Middleware('permission:admin-category.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

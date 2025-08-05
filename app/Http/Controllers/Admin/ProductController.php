@@ -21,9 +21,23 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class ProductController extends Controller
+class ProductController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-product.index', only: ['index']),
+            new Middleware('permission:admin-product.create', only: ['create', 'store']),
+            new Middleware('permission:admin-product.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-product.show', only: ['show']),
+            new Middleware('permission:admin-product.destroy', only: ['destroy']),
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -10,9 +10,23 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 
-class CurrencyController extends Controller
+class CurrencyController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:admin-currency.index', only: ['index']),
+            new Middleware('permission:admin-currency.create', only: ['create', 'store']),
+            new Middleware('permission:admin-currency.edit', only: ['edit', 'update']),
+            new Middleware('permission:admin-currency.show', only: ['show']),
+            new Middleware('permission:admin-currency.destroy', only: ['destroy']),
+            new Middleware('permission:admin-currency.setDefault', only: ['setDefault']),
+        ];
+    }
+
     /**
      * Display a listing of currencies.
      */

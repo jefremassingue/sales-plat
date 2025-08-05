@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { ArrowLeft, Edit, File, Hammer, PackageSearch, Palette, Ruler, Scan, Tag, Trash, WarehouseIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { usePermission } from '@/hooks/usePermission';
 
 interface Image {
     id: number;
@@ -198,6 +199,7 @@ export default function Show({ product }: Props) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const { toast } = useToast();
     const { flash } = usePage().props as any;
+    const { can } = usePermission();
 
     const mainImage = product.images.find((img) => img.is_main) || product.images[0];
 
@@ -275,22 +277,28 @@ export default function Show({ product }: Props) {
                         {product.featured && <Badge variant="default">Destaque</Badge>}
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" asChild>
-                            <Link href={`/admin/products/${product.id}/edit`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                            </Link>
-                        </Button>
-                        <Button variant="outline" asChild className="ml-2">
-                            <Link href={`/admin/products/${product.id}/inventory`}>
-                                <WarehouseIcon className="mr-2 h-4 w-4" />
-                                Gerir Inventário
-                            </Link>
-                        </Button>
-                        <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)}>
-                            <Trash className="mr-2 h-4 w-4" />
-                            Eliminar
-                        </Button>
+                        {can('admin-product.edit') && (
+                            <Button variant="outline" asChild>
+                                <Link href={`/admin/products/${product.id}/edit`}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar
+                                </Link>
+                            </Button>
+                        )}
+                        {can('admin-product.edit') && (
+                            <Button variant="outline" asChild className="ml-2">
+                                <Link href={`/admin/products/${product.id}/inventory`}>
+                                    <WarehouseIcon className="mr-2 h-4 w-4" />
+                                    Gerir Inventário
+                                </Link>
+                            </Button>
+                        )}
+                        {can('admin-product.destroy') && (
+                            <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)}>
+                                <Trash className="mr-2 h-4 w-4" />
+                                Eliminar
+                            </Button>
+                        )}
                     </div>
                 </div>
 
