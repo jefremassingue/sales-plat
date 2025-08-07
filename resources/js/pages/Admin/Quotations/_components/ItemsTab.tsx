@@ -2,24 +2,29 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash } from 'lucide-react';
-import { UseFieldArrayReturn, UseFormReturn, Control } from 'react-hook-form';
+import { Plus, Pencil, Trash, Copy } from 'lucide-react';
+import { UseFieldArrayReturn, UseFormReturn } from 'react-hook-form';
 import { Currency, Product, TaxRate, Warehouse } from './types';
 import { ItemFormValues } from './ItemForm';
+import { z } from 'zod';
+import { formSchema } from '../Create'; // Import formSchema from Create.tsx
+
+type FormValues = z.infer<typeof formSchema>;
 
 interface ItemsTabProps {
-  fieldArray: UseFieldArrayReturn<any, "items", "id">;
+  fieldArray: UseFieldArrayReturn<FormValues, "items", "id">;
   products: Product[];
   warehouses: Warehouse[];
   taxRates: TaxRate[];
   units: { value: string; label: string }[];
-  form: UseFormReturn<any>;
+  form: UseFormReturn<FormValues>;
   currencies: Currency[];
-  calculateItemValues: (item: any) => { subtotal: string; discount_amount: string; tax_amount: string; total: string; };
+  calculateItemValues: (item: FormValues['items'][number]) => { subtotal: string; discount_amount: string; tax_amount: string; total: string; };
   formatCurrency: (value: number | null | undefined, withSymbol?: boolean) => string;
   onAddItemManual: () => void;
   onAddProduct: () => void;
   onEditItem: (index: number) => void;
+  onDuplicateItem: (index: number) => void; // Added onDuplicateItem prop
   onRemoveItem: (index: number) => void;
 }
 
@@ -36,6 +41,7 @@ export default function ItemsTab({
   onAddItemManual,
   onAddProduct,
   onEditItem,
+  onDuplicateItem, // Destructure onDuplicateItem
   onRemoveItem
 }: ItemsTabProps) {
   const { fields } = fieldArray;
@@ -164,6 +170,14 @@ export default function ItemsTab({
                             onClick={() => onEditItem(index)}
                           >
                             <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => onDuplicateItem(index)}
+                          >
+                            <Copy className="h-4 w-4" />
                           </Button>
                           <Button
                             type="button"

@@ -23,4 +23,4 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 
 
 Route::inertia('/cart', 'Site/Cart/Index')->name('cart');
-Route::inertia('/checkout', 'Site/Checkout/Index')->name('checkout');
+Route::inertia('/quotation', 'Site/Checkout/Index')->name('quotation');

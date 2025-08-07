@@ -3,7 +3,7 @@ import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { BreadcrumbItem } from '@/types'; // Changed import to named import
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
@@ -32,7 +32,7 @@ interface Props {
 }
 
 // Schema de validação do formulário
-const formSchema = z.object({
+export const formSchema = z.object({
     quotation_number: z.string().optional().nullable(),
     customer_id: z.string().optional(),
     issue_date: z.date({ required_error: 'Data de emissão é obrigatória' }),
@@ -117,7 +117,7 @@ export default function Create({
     const [itemFormOpen, setItemFormOpen] = useState(false);
     const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState('items');
-    const { errors } = usePage().props as any;
+    const { errors } = usePage().props as { errors?: Record<string, string | string[]> };
 
     // Calcular datas padrão
     const today = new Date();
@@ -167,14 +167,14 @@ export default function Create({
                 // Verificar se o erro é em um campo de item
                 if (key.startsWith('items.')) {
                     const [_, index, field] = key.split('.');
-                    form.setError(`items.${index}.${field}` as any, {
+                    form.setError(`items.${parseInt(index)}.${field}` as any, { // Cast index to number
                         type: 'manual',
-                        message: errors[key],
+                        message: Array.isArray(errors[key]) ? errors[key][0] : errors[key], // Handle array of errors
                     });
                 } else {
-                    form.setError(key as any, {
+                    form.setError(key as keyof FormValues, { // Cast key to keyof FormValues
                         type: 'manual',
-                        message: errors[key],
+                        message: Array.isArray(errors[key]) ? errors[key][0] : errors[key], // Handle array of errors
                     });
                 }
             });
@@ -210,8 +210,10 @@ export default function Create({
                 unit_price: selectedProduct.price.toString(),
                 unit: selectedProduct.unit || 'unit', // Usar a unidade do produto
                 discount_percentage: '0',
-                tax_percentage: taxRates.find((tax) => tax.is_default == true)?.value || '16', // Taxa padrão de IVA em Moçambique
+                tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value || '16', // Taxa padrão de IVA em Moçambique
             };
+            // Ensure tax_percentage is a string
+            newItem.tax_percentage = String(newItem.tax_percentage);
 
             // Adicionar diretamente no form
             append(newItem);
@@ -242,6 +244,16 @@ export default function Create({
     const handleEditItem = (index: number) => {
         setEditingItemIndex(index);
         setItemFormOpen(true);
+    };
+
+    const handleDuplicateItem = (index: number) => {
+        const itemToDuplicate = fields[index];
+        if (itemToDuplicate) {
+            // Create a shallow copy of the item
+            const duplicatedItem = { ...itemToDuplicate };
+            // Append the duplicated item to the end of the array
+            append(duplicatedItem);
+        }
     };
 
     // Remover um item
@@ -414,6 +426,7 @@ export default function Create({
                                         setProductSelectorOpen(true);
                                     }}
                                     onEditItem={handleEditItem}
+                                    onDuplicateItem={handleDuplicateItem}
                                     onRemoveItem={handleRemoveItem}
                                 />
                             </TabsContent>

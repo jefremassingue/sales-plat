@@ -34,11 +34,11 @@ class SaleController extends Controller implements HasMiddleware
             new Middleware('permission:admin-sale.edit', only: ['edit', 'update']),
             new Middleware('permission:admin-sale.show', only: ['show']),
             new Middleware('permission:admin-sale.destroy', only: ['destroy']),
-            new Middleware('permission:admin-sale.updateStatus', only: ['updateStatus']),
-            new Middleware('permission:admin-sale.generatePdf', only: ['generatePdf']),
-            new Middleware('permission:admin-sale.sendEmail', only: ['sendEmail']),
+            new Middleware('permission:admin-sale.updatestatus', only: ['updateStatus']),
+            new Middleware('permission:admin-sale.generatepdf', only: ['generatepdf']),
+            new Middleware('permission:admin-sale.sendemail', only: ['sendEmail']),
             new Middleware('permission:admin-sale.duplicate', only: ['duplicate']),
-            new Middleware('permission:admin-sale.registerPayment', only: ['registerPayment']),
+            new Middleware('permission:admin-sale.registerpayment', only: ['registerPayment']),
         ];
     }
 

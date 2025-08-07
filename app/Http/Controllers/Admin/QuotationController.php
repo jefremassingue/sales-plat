@@ -34,11 +34,11 @@ class QuotationController extends Controller implements HasMiddleware
             new Middleware('permission:admin-quotation.edit', only: ['edit', 'update']),
             new Middleware('permission:admin-quotation.show', only: ['show']),
             new Middleware('permission:admin-quotation.destroy', only: ['destroy']),
-            new Middleware('permission:admin-quotation.updateStatus', only: ['updateStatus']),
-            new Middleware('permission:admin-quotation.generatePdf', only: ['generatePdf']),
-            new Middleware('permission:admin-quotation.sendEmail', only: ['sendEmail']),
+            new Middleware('permission:admin-quotation.updatestatus', only: ['updateStatus']),
+            new Middleware('permission:admin-quotation.generatepdf', only: ['generatePdf']),
+            new Middleware('permission:admin-quotation.sendemail', only: ['sendEmail']),
             new Middleware('permission:admin-quotation.duplicate', only: ['duplicate']),
-            new Middleware('permission:admin-quotation.convertToSale', only: ['convertToSale']),
+            new Middleware('permission:admin-quotation.converttosale', only: ['convertToSale']),
         ];
     }
 

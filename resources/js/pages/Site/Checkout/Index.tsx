@@ -82,7 +82,7 @@ const PAYMENT_METHODS_DATA = [
 // --- Esquema de Validação com Zod ---
 const phoneRegex = /^(?:\+?258\s?)?(8[2-7])\s?(\d{3})\s?(\d{4})$/; // Regex para telefones de Moçambique
 
-const checkoutSchema = z.object({
+const quotationSchema = z.object({
     fullName: z.string().min(3, "Nome completo deve ter pelo menos 3 caracteres.").max(100, "Nome muito longo."),
     phone: z.string().regex(phoneRegex, "Formato de telefone inválido (ex: 841234567 ou +258 841234567)."),
     email: z.string().email("Formato de email inválido."),
@@ -115,7 +115,7 @@ export default function Checkout() {
             fullName: '',
             phone: '',
             email: '',
-            city: '',
+            companyName: '',
             neighborhood: '',
             streetAndNumber: '',
             notes: '',
@@ -188,7 +188,7 @@ export default function Checkout() {
                 paymentProof: paymentProofFile,
             };
 
-            const validationResult = checkoutSchema.safeParse(dataToValidate);
+            const validationResult = quotationSchema.safeParse(dataToValidate);
 
             if (!validationResult.success) {
                 const formattedErrors = {};
@@ -294,10 +294,10 @@ export default function Checkout() {
                 <div className="flex items-center mb-6">
                     <Link href="/cart" className="text-orange-600 hover:text-orange-700 flex items-center">
                         <ArrowLeft className="h-5 w-5 mr-2" />
-                        Voltar ao Carrinho
+                        Voltar a Cotação
                     </Link>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center md:text-left">Finalizar Compra</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center md:text-left">Solicitar Cotação</h1>
 
                 {Object.keys(errors).length > 0 && !errors.paymentProof && !errors.paymentMethod && ( /* Não mostrar erro geral se for só de pagamento */
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700">
@@ -319,27 +319,15 @@ export default function Checkout() {
                             {/* Informações Pessoais */}
                             <section className="bg-white p-6 rounded-lg shadow-sm">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-3 flex items-center">
-                                    <User className="w-6 h-6 mr-3 text-orange-600" /> Informações Pessoais
+                                    <User className="w-6 h-6 mr-3 text-orange-600" /> Informações do cliente
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <InputField label="Nome Completo" name="fullName" value={formData.fullName} onChange={handleChange} error={errors.fullName} placeholder="Seu nome completo" />
+                                    <InputField label="Nome Da empresa" name="companyName" value={formData.companyName} onChange={handleChange} error={errors.fullName} placeholder="Seu nome completo" />
                                     <InputField label="Telefone" name="phone" type="tel" value={formData.phone} onChange={handleChange} error={errors.phone} placeholder="8X XXX XXXX" />
                                     <InputField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} error={errors.email} placeholder="seuemail@exemplo.com" />
                                 </div>
-                            </section>
-
-                            {/* Endereço de Entrega */}
-                            <section className="bg-white p-6 rounded-lg shadow-sm">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-3 flex items-center">
-                                    <MapPin className="w-6 h-6 mr-3 text-orange-600" /> Endereço de Entrega
-                                </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <InputField label="Cidade" name="city" value={formData.city} onChange={handleChange} error={errors.city} placeholder="Maputo, Matola, etc." />
-                                    <InputField label="Bairro" name="neighborhood" value={formData.neighborhood} onChange={handleChange} error={errors.neighborhood} placeholder="Seu bairro" />
-                                    <div className="md:col-span-2">
-                                        <InputField label="Rua / Avenida e Número da Casa" name="streetAndNumber" value={formData.streetAndNumber} onChange={handleChange} error={errors.streetAndNumber} placeholder="Av. Exemplo, No. 123" />
-                                    </div>
-                                    <div className="md:col-span-2">
+                                <div className="md:col-span-2 mt-4">
                                         <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notas Adicionais <span className="text-xs text-gray-500">(Opcional)</span></label>
                                         <textarea
                                             name="notes"
@@ -352,58 +340,9 @@ export default function Checkout() {
                                         ></textarea>
                                         {errors.notes && <p className="text-red-500 text-xs mt-1">{errors.notes}</p>}
                                     </div>
-                                </div>
                             </section>
 
-                            {/* Método de Pagamento */}
-                            <section className="bg-white p-6 rounded-lg shadow-sm">
-                                <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-3 flex items-center">
-                                    <CreditCard className="w-6 h-6 mr-3 text-orange-600" /> Método de Pagamento
-                                </h2>
-                                {errors.paymentMethod && <p className="text-red-500 text-sm mb-3 -mt-2">{errors.paymentMethod}</p>}
-                                <div className="space-y-3">
-                                    {PAYMENT_METHODS_DATA.map(method => (
-                                        <div key={method.id} className={`border rounded-md ${selectedPaymentMethodId === method.id ? 'border-orange-500 ring-1 ring-orange-500' : 'border-gray-300'}`}>
-                                            <button
-                                                type="button"
-                                                onClick={() => handlePaymentMethodSelect(method.id)}
-                                                className="w-full flex justify-between items-center p-4 text-left hover:bg-gray-50 transition-colors"
-                                                aria-expanded={activeAccordion === method.id}
-                                                aria-controls={`payment-details-${method.id}`}
-                                            >
-                                                <div className="flex items-center">
-                                                    {method.icon}
-                                                    <span className="font-medium text-gray-800">{method.name}</span>
-                                                </div>
-                                                {activeAccordion === method.id ? <ChevronUp className="w-5 h-5 text-gray-500" /> : <ChevronDown className="w-5 h-5 text-gray-500" />}
-                                            </button>
-                                            {activeAccordion === method.id && (
-                                                <div id={`payment-details-${method.id}`} className="p-4 border-t border-gray-200 bg-gray-50">
-                                                    {method.instructions}
-                                                    {method.requiresProof && (
-                                                        <div className="mt-4">
-                                                            <label htmlFor="paymentProof" className="block text-sm font-medium text-gray-700 mb-1">Anexar Comprovativo (PDF, JPG, PNG - máx 5MB)</label>
-                                                            <div className="flex items-center">
-                                                                <input
-                                                                    ref={fileInputRef}
-                                                                    type="file"
-                                                                    id="paymentProof"
-                                                                    name="paymentProof"
-                                                                    onChange={handleFileChange}
-                                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"
-                                                                />
-                                                            </div>
-                                                            {paymentProofFile && <p className="text-xs text-green-600 mt-1">Arquivo: {paymentProofFile.name}</p>}
-                                                            {errors.paymentProof && <p className="text-red-500 text-xs mt-1">{errors.paymentProof}</p>}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
+
                         </div>
 
                         {/* Coluna do Resumo do Pedido */}
@@ -435,24 +374,8 @@ export default function Checkout() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <p className="text-sm font-medium text-gray-700 shrink-0 ml-2">{formatCurrency(item.price * item.quantity)}</p>
                                         </div>
                                     ))}
-                                </div>
-
-                                <div className="space-y-2 border-t pt-4">
-                                    <div className="flex justify-between text-sm text-gray-600">
-                                        <span>Subtotal ({itemCount} {itemCount === 1 ? 'item' : 'itens'})</span>
-                                        <span className="font-medium">{formatCurrency(cartTotal)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm text-gray-600">
-                                        <span><Truck className="w-4 h-4 inline mr-1 text-gray-500" /> Entrega</span>
-                                        <span className="font-medium text-gray-700">A calcular</span>
-                                    </div>
-                                    <div className="border-t pt-3 mt-3 flex justify-between text-lg">
-                                        <span className="font-semibold text-gray-900">Total Estimado</span>
-                                        <span className="font-semibold text-orange-600">{formatCurrency(totalOrderAmount)}</span>
-                                    </div>
                                 </div>
 
                                 <div className="mt-8">
@@ -465,7 +388,7 @@ export default function Checkout() {
                                     </button>
                                 </div>
                                 <p className="mt-4 text-xs text-gray-500 text-center">
-                                    Ao clicar em "Finalizar Pedido", você concorda com nossos <Link href="/terms" className="underline hover:text-orange-600">Termos de Serviço</Link> (simulado).
+                                    Ao clicar em "Finalizar Pedido", você concorda com nossos <Link href="/terms" className="underline hover:text-orange-600">Termos de Serviço</Link>
                                 </p>
                             </div>
                         </div>

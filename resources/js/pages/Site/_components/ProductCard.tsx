@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { PackageSearch, ShoppingBag, ShoppingCart, Star } from 'lucide-react';
+import { Eye, PackageSearch, ShoppingBag, ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 interface Image {
@@ -19,8 +19,6 @@ interface Product {
     name: string;
     slug: string;
     category: { name: string };
-    price: string;
-    old_price: string | null;
     isNew?: boolean;
     main_image?: Image;
     mainImage?: Image;
@@ -47,7 +45,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         addItem({
             id: product.id,
             name: product.name,
-            price: parseFloat(product.price),
             quantity: 1,
             image: product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
                 product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
@@ -95,26 +92,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                         <div className="text-sm text-slate-500 mb-1">{product.category?.name}</div>
                         <h3 className="font-medium text-slate-800 mb-2 line-clamp-1">{product.name}</h3>
 
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-semibold text-slate-900">{formatPrice(product.price)}</span>
-                            {product.old_price && (
-                                <span className="text-sm text-slate-400 line-through">{formatPrice(product.old_price)}</span>
-                            )}
-                        </div>
 
                     </div>
-                    <div className="flex justify-between gap-2">
+                    <div className="flex flex-col justify-between gap-2">
                         <button
                             onClick={handleAddToCart}
                             className="text-orange-600 hover:bg-orange-600 hover:text-white cursor-pointer border border-orange-500 bg-white font-medium py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 flex items-center justify-center gap-2"
                         >
                             <ShoppingCart size={16} />
+                            Adicionar a Cotação
                         </button>
                         <button
                             href={`/products/${product.slug}`}
                             className="w-full bg-orange-600 hover:bg-orange-700 text-white cursor-pointer font-medium py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 flex items-center justify-center gap-2"
                         >
-                            <ShoppingBag size={16} /> Comprar
+                            <Eye size={16} /> 
+                            Ver Detalhes
                         </button>
                     </div>
                 </div>

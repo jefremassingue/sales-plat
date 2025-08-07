@@ -128,9 +128,7 @@ const ShoppingCart: React.FC = () => {
                                                             <Plus className="h-3 w-3" />
                                                         </button>
                                                     </div>
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {formatCurrency(item.price * item.quantity)}
-                                                    </div>
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -145,7 +143,7 @@ const ShoppingCart: React.FC = () => {
                                 <p>{formatCurrency(total)}</p>
                             </div>
                             <p className="text-sm text-gray-500">
-                                Frete e impostos calculados no checkout
+                                Frete e impostos calculados no quotation
                             </p>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
@@ -155,7 +153,7 @@ const ShoppingCart: React.FC = () => {
                                     Continuar Comprando
                                 </button>
                                 <Link
-                                    href="/checkout"
+                                    href="/quotation"
                                     className="flex items-center justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-700"
                                 >
                                     Finalizar Compra

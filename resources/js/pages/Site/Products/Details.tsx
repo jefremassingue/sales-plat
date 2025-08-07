@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import SiteLayout from '@/layouts/site-layout';
 import {
-    Star, ShoppingBag, ShieldCheck, Zap, Truck, RotateCcw, MessageSquare, ArrowLeft, ChevronLeft, ChevronRight, ZoomIn, CheckCircle, CreditCard, X, ImageIcon
+    Star, ShoppingBag, ShieldCheck, Zap, Truck, RotateCcw, MessageSquare, ArrowLeft, ChevronLeft, ChevronRight, ZoomIn, CheckCircle, CreditCard, X, ImageIcon,
+    ShoppingCart,
+    List
 } from 'lucide-react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -98,14 +100,12 @@ interface Inventory {
 }
 
 interface Product {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
     technical_details: string | null;
     features: string | null;
-    price: number;
-    old_price?: number;
     cost: number | null;
     sku: string | null;
     barcode: string | null;
@@ -249,7 +249,6 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
         addItem({
             id: product.id,
             name: product.name,
-            price: product.price, // Ou preço da variante se aplicável e diferente
             quantity: quantity,
             image: selectedImage?.versions?.find((image) => image.version == 'md')?.url ||
                 selectedImage?.versions?.find((image) => image.version == 'lg')?.url ||
@@ -266,11 +265,10 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
 
     // Função para comprar agora
     const handleBuyNow = () => {
-        // Adiciona ao carrinho e redireciona para o checkout
+        // Adiciona ao carrinho e redireciona para o quotation
         addItem({
             id: product.id,
             name: product.name,
-            price: product.price, // Ou preço da variante
             quantity: quantity,
             image: selectedImage?.versions?.find((image) => image.version == 'md')?.url ||
                 selectedImage?.versions?.find((image) => image.version == 'lg')?.url ||
@@ -281,8 +279,8 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
             size_id: selectedSize?.id || null,
             size_name: selectedSize?.name || null
         });
-        // Aqui você pode redirecionar para a página de checkout
-        router.visit('/checkout'); // Usando router do Inertia para navegação
+        // Aqui você pode redirecionar para a página de quotation
+        router.visit('/quotation'); // Usando router do Inertia para navegação
     };
 
     // Função para formatar preço
@@ -446,18 +444,6 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                 <div className='text-zinc-700' dangerouslySetInnerHTML={{ __html: product.description || '' }} />
                             </div>
 
-                            {/* Preço */}
-                            <div className="flex items-baseline gap-3 pb-4 border-b border-slate-200">
-                                <span className="text-3xl font-bold text-slate-800">{formatCurrency(product.price)}</span>
-                                {product.old_price && (
-                                    <span className="text-lg text-slate-400 line-through">{formatCurrency(product.old_price)}</span>
-                                )}
-                                {product.old_price && (
-                                    <span className="text-sm font-semibold text-red-500 bg-red-100 px-2 py-0.5 rounded-md">
-                                        {Math.round(((product.old_price - product.price) / product.old_price) * 100)}% OFF
-                                    </span>
-                                )}
-                            </div>
 
                             {/* Opções de Cor */}
                             {product.colors && product.colors.length > 0 && (
@@ -538,8 +524,8 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                         className={`cursor-pointer font-semibold py-3 px-6 rounded-md text-base transition-colors duration-300 flex items-center justify-center gap-2 bg-zinc-600 hover:bg-zinc-700 text-white`}
                                         disabled={!isInStock} // Exemplo: desabilitar se fora de estoque
                                     >
-                                        <ShoppingBag size={20} />
-                                        Adicionar ao Carrinho
+                                        <ShoppingCart size={16} />
+                                        Adicionar a cotação
                                     </button>
 
                                     <button
@@ -547,8 +533,8 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                         className="cursor-pointer font-semibold py-3 px-6 rounded-md text-base transition-colors duration-300 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white"
                                         disabled={!isInStock} // Exemplo: desabilitar se fora de estoque
                                     >
-                                        <CreditCard size={20} />
-                                        Comprar Agora
+                                        <List size={20} />
+                                        Solicitar cotação
                                     </button>
                                 </div>
                             </div>

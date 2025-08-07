@@ -308,7 +308,7 @@ export default function Index({ quotations, customers, statuses, currency, filte
         </div>
 
         {/* Estatísticas rápidas */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mb-6">
+        <div className="md:grid gap-4 grid-cols-2 md:grid-cols-4 mb-6 hidden ">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total de Cotações</CardTitle>

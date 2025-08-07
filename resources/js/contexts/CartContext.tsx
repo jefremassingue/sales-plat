@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface CartItem {
     id: string;
     name: string;
-    price: number;
     quantity: number;
     image?: string;
     slug: string;
@@ -24,9 +23,9 @@ interface CartContextType {
     total: number;
     isOpen: boolean;
     setIsOpen: (isOpen: boolean) => void;
-    feedbackMessage: string | null; // Nova propriedade para feedback
+    feedbackMessage: string | null; // Nova     propriedade para feedback
     clearFeedbackMessage: () => void; // Nova função para limpar feedback
-}
+}   
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -139,7 +138,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     const itemCount = items.reduce((count, item) => count + item.quantity, 0);
 
     // Calcular valor total
-    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     const value = {
         items,
@@ -148,7 +146,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         updateQuantity,
         clearCart,
         itemCount,
-        total,
         isOpen,
         setIsOpen,
         feedbackMessage, // Adicionado ao valor do contexto
