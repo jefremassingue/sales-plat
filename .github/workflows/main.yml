@@ -1,4 +1,4 @@
-name: Edutecka Prod. Deploy
+name: Matony Prod. Deploy
 on:
   push:
     branches: [ "main" ]

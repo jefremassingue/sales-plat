@@ -77,6 +77,7 @@
         "react-hook-form": "^7.56.1",
         "react-image-magnify": "^2.7.4",
         "slate": "^0.114.0",
+        "slate-dom": "^0.117.4",
         "slate-history": "^0.113.1",
         "slate-react": "^0.114.2",
         "swiper": "^11.2.6",
