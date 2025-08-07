@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignUlid('supplier_id')->nullable()->constrained()->onDelete('set null'); // Fornecedor relacionado ao ajuste
             $table->text('reason')->nullable(); // Motivo do ajuste
             $table->text('notes')->nullable(); // Notas adicionais
-            $table->foreignUlid('user_id')->constrained()->onDelete('set null');
+            $table->foreignUlid('user_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
 
             // Índices para otimização de pesquisa
