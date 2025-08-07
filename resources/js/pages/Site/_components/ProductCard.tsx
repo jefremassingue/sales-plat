@@ -4,7 +4,7 @@ import { PackageSearch, ShoppingBag, ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 interface Image {
-    id: number;
+    id: string;
     name: string;
     original_name: string;
     size: number;
@@ -45,7 +45,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         e.preventDefault(); // Evitar navegação para a página do produto
 
         addItem({
-            id: parseInt(product.id),
+            id: product.id,
             name: product.name,
             price: parseFloat(product.price),
             quantity: 1,

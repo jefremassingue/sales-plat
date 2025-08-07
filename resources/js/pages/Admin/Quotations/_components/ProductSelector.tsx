@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState } from 'react';
 import { Product } from './types';
 
@@ -33,6 +34,8 @@ export default function ProductSelector({
 
   const handleConfirm = () => {
     if (selectedProduct) {
+      console.log(selectedProduct);
+      
       onSelect(selectedProduct);
       setSelectedProduct(null);
       setSearchQuery('');
@@ -50,12 +53,12 @@ export default function ProductSelector({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="w-full max-w-full sm:max-w-lg md:max-w-xl lg:max-w-2xl h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Selecionar Produto</DialogTitle>
         </DialogHeader>
 
-        <div className="py-4">
+        <div className="py-4 flex flex-col flex-1">
           <Input
             placeholder="Pesquisar por nome ou SKU"
             value={searchQuery}
@@ -63,52 +66,33 @@ export default function ProductSelector({
             className="mb-4"
           />
 
-          <div className="rounded-md border max-h-[400px]  overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[300px]">Nome</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead className="text-right">Preço</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <TableRow
-                      key={product.id}
-                      onClick={() => handleSelect(product.id.toString())}
-                      className={`cursor-pointer hover:bg-muted transition-colors ${selectedProduct === product.id.toString() ? 'bg-primary/10' : ''}`}
-                    >
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>{product.sku || 'N/A'}</TableCell>
-                      <TableCell className="text-right">
+          <div className="flex-1 max-h-[60vh] overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-4 ">
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <Card
+                    key={product.id}
+                    onClick={() => handleSelect(product.id)}
+                    className={`cursor-pointer hover:bg-muted transition-colors ${selectedProduct === product.id.toString() ? 'bg-primary/10' : ''}`}
+                  >
+                    <CardHeader>
+
+                      <CardTitle>{product.name}</CardTitle>
+                      <CardDescription>SKU: {product.sku || 'N/A'}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-lg font-semibold">
                         {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'MZN' }).format(product.price)}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelect(product.id.toString());
-                          }}
-                          variant="secondary"
-                        >
-                          Selecionar
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                      Nenhum produto encontrado.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8 text-muted-foreground">
+                  Nenhum produto encontrado.
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="mt-4 flex justify-end space-x-2">

@@ -148,7 +148,7 @@ export default function Show({ quotation, statuses }: Props) {
       <Head title={`Cotação ${quotation.quotation_number}`} />
 
       <div className="container px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" asChild>
               <Link href="/admin/quotations">
@@ -167,7 +167,7 @@ export default function Show({ quotation, statuses }: Props) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={quotation.status} onValueChange={handleStatusChange}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue>
@@ -213,9 +213,9 @@ export default function Show({ quotation, statuses }: Props) {
         </div>
 
         {/* Conteúdo principal */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {/* Coluna da esquerda - Informações principais */}
-          <div className="col-span-2 space-y-6">
+          <div className="md:col-span-2 space-y-6">
             {/* Cabeçalho com dados do cliente e informações gerais */}
             <Card>
               <CardHeader>

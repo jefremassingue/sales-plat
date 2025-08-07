@@ -343,16 +343,16 @@ export default function Edit({
       // Converter tipos de dados antes de enviar
       const data = {
         ...values,
-        customer_id: values.customer_id ? parseInt(values.customer_id) : null,
+        customer_id: values.customer_id ? values.customer_id : null,
         exchange_rate: parseFloat(values.exchange_rate),
         issue_date: format(values.issue_date, 'yyyy-MM-dd'),
         expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
         items: values.items.map(item => ({
           ...item,
           id: item.id || undefined,
-          product_id: item.product_id ? parseInt(item.product_id) : null,
-          product_variant_id: item.product_variant_id ? parseInt(item.product_variant_id) : null,
-          warehouse_id: item.warehouse_id ? parseInt(item.warehouse_id) : null,
+          product_id: item.product_id ? item.product_id : null,
+          product_variant_id: item.product_variant_id ? item.product_variant_id : null,
+          warehouse_id: item.warehouse_id ? item.warehouse_id : null,
           quantity: parseFloat(item.quantity),
           unit_price: parseFloat(item.unit_price),
           discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,

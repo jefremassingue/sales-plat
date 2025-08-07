@@ -116,7 +116,7 @@ export default function Edit({ category, categories }: Props) {
         try {
             router.put(`/admin/categories/${category.id}`, {
                 ...values,
-                parent_id: values.parent_id && values.parent_id !== 'root' ? parseInt(values.parent_id) : null,
+                parent_id: values.parent_id && values.parent_id !== 'root' ? values.parent_id : null,
             }, {
                 onSuccess: () => {
                     toast({

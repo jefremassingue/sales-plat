@@ -1,5 +1,5 @@
 export interface Customer {
-  id: number;
+  id: string;
   name: string;
   email?: string;
   phone?: string;
@@ -17,7 +17,7 @@ export interface Currency {
 }
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
 }
@@ -29,7 +29,7 @@ export interface Unit {
 }
 
 export interface Product {
-  id: number;
+  id: string;
   name: string;
   sku: string;
   price: number;
@@ -38,23 +38,23 @@ export interface Product {
 }
 
 export interface ProductVariant {
-  id: number;
-  product_id: number;
+  id: string;
+  product_id: string;
   sku: string;
   name: string;
 }
 
 export interface Warehouse {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface QuotationItem {
-  id?: number;
-  quotation_id?: number;
-  product_id?: number;
-  product_variant_id?: number;
-  warehouse_id?: number;
+  id?: string;
+  quotation_id?: string;
+  product_id?: string;
+  product_variant_id?: string;
+  warehouse_id?: string;
   name: string;
   description?: string;
   quantity: number;
@@ -74,10 +74,10 @@ export interface QuotationItem {
 }
 
 export interface Quotation {
-  id: number;
+  id: string;
   quotation_number: string;
-  customer_id?: number;
-  user_id?: number;
+  customer_id?: string;
+  user_id?: string;
   issue_date: string;
   expiry_date?: string;
   status: 'draft' | 'sent' | 'approved' | 'rejected' | 'expired' | 'converted';
@@ -85,12 +85,12 @@ export interface Quotation {
   tax_amount: number;
   discount_amount: number;
   total: number;
-  currency_id: number;
+  currency_id: string;
   exchange_rate: number;
   notes?: string;
   terms?: string;
   include_tax: boolean;
-  converted_to_order_id?: number;
+  converted_to_order_id?: string;
   created_at: string;
   updated_at: string;
   customer?: Customer;
@@ -101,7 +101,7 @@ export interface Quotation {
 }
 
 export interface TaxRate {
-  id: number;
+  id: string;
   value: number;
   label: string;
   is_default?: boolean;

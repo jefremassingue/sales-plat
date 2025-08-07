@@ -164,9 +164,9 @@ export default function Create({ products, warehouses, statuses }: Props) {
         // Preparar os dados para submissão
         const submissionData = {
             ...values,
-            product_id: parseInt(values.product_id),
-            product_variant_id: values.product_variant_id ? parseInt(values.product_variant_id) : null,
-            warehouse_id: parseInt(values.warehouse_id),
+            product_id: values.product_id,
+            product_variant_id: values.product_variant_id ? values.product_variant_id : null,
+            warehouse_id: values.warehouse_id,
             quantity: parseInt(values.quantity),
             min_quantity: values.min_quantity ? parseInt(values.min_quantity) : 0,
             max_quantity: values.max_quantity ? parseInt(values.max_quantity) : null,

@@ -2,15 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Pos\PosSaleController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SearchController;
 
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 });
 
 // Rotas POS (fora do admin)

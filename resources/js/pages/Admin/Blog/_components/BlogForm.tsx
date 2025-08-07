@@ -98,7 +98,7 @@ export function BlogForm({ form, isEditMode, categories = [] }: BlogFormProps) {
                     <FormItem>
                         <FormLabel>Categoria</FormLabel>
                         <Select
-                            onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}
+                            onValueChange={(value) => field.onChange(value)}
                             defaultValue={field.value?.toString()}
                         >
                             <FormControl>

@@ -82,8 +82,8 @@ export default function ProductCatalog({
     // Filtro por categoria
     if (selectedCategory && selectedCategory !== "all") {
       filtered = filtered.filter(product =>
-        product.category_id === parseInt(selectedCategory) ||
-        product.category?.id === parseInt(selectedCategory)
+        product.category_id === selectedCategory ||
+        product.category?.id === selectedCategory
       );
     }
 
@@ -152,7 +152,7 @@ export default function ProductCatalog({
 
   // Função para selecionar um produto e verificar se tem preço específico
   const handleProductSelect = async (productId: string) => {
-    const numericProductId = parseInt(productId);
+    const numericProductId = productId;
     // Verificar se já temos o preço deste produto neste armazém
     if (!productPrices[numericProductId] && selectedWarehouseId) {
       const specificPrice = await fetchProductPrice(numericProductId);

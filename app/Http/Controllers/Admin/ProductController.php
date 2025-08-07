@@ -251,6 +251,7 @@ class ProductController extends Controller implements HasMiddleware
 
                 // Processar variantes
                 if ($request->has('variants') && is_array($request->variants)) {
+                    dd($request->variants);
                     foreach ($request->variants as $index => $variantData) {
                         try {
                             $colorId = null;

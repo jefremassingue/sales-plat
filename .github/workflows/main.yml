@@ -1,0 +1,41 @@
+name: Edutecka Prod. Deploy
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@master
+      - name: Setup Environment
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+      # - name: Install Composer Packages
+      #   run: composer install --no-dev
+      - name: Setup Node.js
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: '16'
+          check-latest: true
+      - name: Install NPM dependencies
+
+        run: npm install
+
+      - name: Compile assets for production
+
+        run: npm run prod
+
+      - name: Deploy To production
+        uses: hypertech-lda/laravel-auto-deploy@1.1
+        with:
+          user: ${{ secrets.SERVER_USER }}
+          host: ${{ secrets.SERVER_HOST }}
+          path: ${{ secrets.SERVER_PATH }}
+          owner: www
+          commands: "# Customer commands"
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}

@@ -1,6 +1,5 @@
-import { LucideIcon } from 'lucide-react';
-import type { Config } from 'ziggy-js';
-import { Page } from '@inertiajs/core';
+import { type LucideIcon } from 'lucide-react';
+import { type Config } from 'ziggy-js';
 
 export interface Auth {
     user: User;
@@ -45,6 +44,21 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface Product {
+    id: number;
+    name: string;
+    price: number;
+    [key: string]: unknown;
+}
+
+export interface Quotation {
+    id: number;
+    customer_name: string;
+    status: string;
+    total_amount: number;
+    [key: string]: unknown;
+}
+
 export interface PageProps {
   auth: {
     user: {
@@ -74,7 +88,5 @@ export interface PageProps {
 }
 
 declare module '@inertiajs/core' {
-  interface Page {
-    props: PageProps;
-  }
+    interface PageProps extends PageProps, SharedData {}
 }
