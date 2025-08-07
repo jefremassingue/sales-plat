@@ -23,11 +23,11 @@ jobs:
           check-latest: true
       - name: Install NPM dependencies
 
-        run: npm install
+        run: npm install --legacy-peer-deps
 
       - name: Compile assets for production
 
-        run: npm run prod
+        run: npm run build
 
       - name: Deploy To production
         uses: hypertech-lda/laravel-auto-deploy@1.1
