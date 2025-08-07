@@ -300,7 +300,7 @@ class BlogController extends Controller implements HasMiddleware
 
             DB::commit();
 
-            return redirect()->route('admin.blogs.index')
+            return redirect()->route('admin.blog.index')
                 ->with('success', 'Post eliminado com sucesso!');
         } catch (\Exception $e) {
             DB::rollback();

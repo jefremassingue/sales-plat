@@ -59,6 +59,14 @@ export interface Quotation {
     [key: string]: unknown;
 }
 
+export interface Sale {
+    id: number;
+    customer: { name: string };
+    status: string;
+    total_amount: number;
+    [key: string]: unknown;
+}
+
 export interface PageProps {
   auth: {
     user: {
