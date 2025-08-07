@@ -153,7 +153,7 @@ class CompanySettingsSeeder extends Seeder
                 [
                     'group' => 'company',
                     'key' => 'footer_text',
-                    'value' => 'Obrigado pela preferência! | www.matony.co.mz',
+                    'value' => 'Obrigado pela preferência! | matonyservicos.com',
                     'description' => 'Texto adicional para o rodapé dos documentos',
                     'type' => 'text',
                     'is_public' => false,

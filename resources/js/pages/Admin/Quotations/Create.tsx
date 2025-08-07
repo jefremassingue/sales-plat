@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types'; // Changed import to named import
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -98,6 +99,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/admin/quotations/create',
     },
 ];
+// NOVO: Definir uma chave para o localStorage
+const LOCAL_STORAGE_KEY = 'new_quotation_form';
 
 export default function Create({
     quotationNumber,
@@ -115,6 +118,7 @@ export default function Create({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [productSelectorOpen, setProductSelectorOpen] = useState(false);
     const [itemFormOpen, setItemFormOpen] = useState(false);
+    const [onSearch, setOnSearch] = useState('');
     const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState('items');
     const { errors } = usePage().props as { errors?: Record<string, string | string[]> };
@@ -124,23 +128,47 @@ export default function Create({
     const expiryDate = new Date();
     expiryDate.setDate(today.getDate() + 30); // Validade padrão de 30 dias
 
-    // Inicializar o formulário
+    // NOVO: Definir os valores padrão iniciais em uma variável separada
+    const initialDefaultValues: FormValues = {
+        quotation_number: quotationNumber,
+        customer_id: '',
+        issue_date: today,
+        expiry_date: expiryDate,
+        status: 'draft',
+        currency_code: defaultCurrency?.code || 'MZN',
+        exchange_rate: defaultCurrency ? defaultCurrency.exchange_rate.toString() : '1.0000',
+        include_tax: true,
+        notes: '',
+        terms: '',
+        items: [],
+    };
+
+    // NOVO: Instanciar o hook useLocalStorage
+    const [savedFormData, setSavedFormData, removeSavedFormData] = useLocalStorage<FormValues>(LOCAL_STORAGE_KEY, initialDefaultValues);
+
+    // NOVO: Preparar valores para o useForm, convertendo datas salvas como string de volta para objetos Date
+    const formInitialValues = {
+        ...savedFormData,
+        issue_date: savedFormData.issue_date ? new Date(savedFormData.issue_date) : today,
+        expiry_date: savedFormData.expiry_date ? new Date(savedFormData.expiry_date) : expiryDate,
+    };
+
+    // Inicializar o formulário com dados do localStorage ou os padrões
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            quotation_number: quotationNumber,
-            customer_id: '',
-            issue_date: today,
-            expiry_date: expiryDate,
-            status: 'draft',
-            currency_code: defaultCurrency?.code || 'MZN',
-            exchange_rate: defaultCurrency ? defaultCurrency.exchange_rate.toString() : '1.0000',
-            include_tax: true,
-            notes: '',
-            terms: '',
-            items: [],
-        },
+        defaultValues: formInitialValues, // NOVO: Usar os valores preparados
     });
+
+    useEffect(() => {
+        // Inicia a "escuta" das mudanças no formulário
+        const subscription = form.watch((value) => {
+            // A cada mudança, atualizamos nosso estado que está ligado ao localStorage
+            setSavedFormData(value as FormValues);
+        });
+
+        // Retorna uma função de limpeza que cancela a "escuta" quando o componente é desmontado
+        return () => subscription.unsubscribe();
+    }, [form.watch, setSavedFormData]); // As dependências agora são estáveis
 
     // Field array para manipular os itens da cotação
     const fieldArray = useFieldArray({
@@ -167,12 +195,14 @@ export default function Create({
                 // Verificar se o erro é em um campo de item
                 if (key.startsWith('items.')) {
                     const [_, index, field] = key.split('.');
-                    form.setError(`items.${parseInt(index)}.${field}` as any, { // Cast index to number
+                    form.setError(`items.${parseInt(index)}.${field}` as any, {
+                        // Cast index to number
                         type: 'manual',
                         message: Array.isArray(errors[key]) ? errors[key][0] : errors[key], // Handle array of errors
                     });
                 } else {
-                    form.setError(key as keyof FormValues, { // Cast key to keyof FormValues
+                    form.setError(key as keyof FormValues, {
+                        // Cast key to keyof FormValues
                         type: 'manual',
                         message: Array.isArray(errors[key]) ? errors[key][0] : errors[key], // Handle array of errors
                     });
@@ -260,6 +290,10 @@ export default function Create({
     const handleRemoveItem = (index: number) => {
         remove(index);
     };
+
+    // const onCreateNew = () => {
+    //     setItemFormOpen(false)
+    // }
 
     // Calcular valores do item
     const calculateItemValues = (item: any) => {
@@ -356,6 +390,7 @@ export default function Create({
                     description: 'A cotação foi criada com sucesso.',
                     variant: 'success',
                 });
+                removeSavedFormData();
             },
             onError: () => {
                 setIsSubmitting(false);
@@ -438,7 +473,14 @@ export default function Create({
                         </Tabs>
 
                         <div className="bg-background sticky bottom-0 flex items-center justify-between border-t p-4 shadow-lg">
-                            <Button type="button" variant="outline" onClick={() => router.get('/admin/quotations')}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    removeSavedFormData(); // NOVO: Limpar o localStorage ao cancelar
+                                    router.get('/admin/quotations');
+                                }}
+                            >
                                 Cancelar
                             </Button>
                             <Button type="submit" disabled={isSubmitting}>
@@ -461,6 +503,12 @@ export default function Create({
                 <ProductSelector
                     open={productSelectorOpen}
                     onOpenChange={setProductSelectorOpen}
+                    onAddItemManual={() => {
+                        setProductSelectorOpen(false)
+                        setEditingItemIndex(null);
+                        setItemFormOpen(true);
+                    }}
+                    setOnSearch={setOnSearch}
                     products={products}
                     onSelect={handleProductSelect}
                 />
@@ -471,9 +519,11 @@ export default function Create({
                     onOpenChange={setItemFormOpen}
                     onSubmit={handleAddItem}
                     products={products}
+                    name={onSearch || ''}
                     warehouses={warehouses}
                     taxRates={taxRates}
                     units={units}
+                    setOnSearch={setOnSearch}
                     initialValues={editingItemIndex !== null ? fields[editingItemIndex] : undefined}
                     title={editingItemIndex !== null ? 'Editar Item' : 'Adicionar Item'}
                     isManualItemMode={editingItemIndex === null && !productSelectorOpen}

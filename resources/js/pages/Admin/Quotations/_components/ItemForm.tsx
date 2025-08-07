@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -54,7 +55,9 @@ interface ItemFormProps {
     units: { value: string; label: string }[];
     initialValues?: Partial<ItemFormValues>;
     title?: string;
+    name?: string;
     isManualItemMode?: boolean;
+    setOnSearch: (search: string) => void;
 }
 
 export default function ItemForm({
@@ -67,12 +70,16 @@ export default function ItemForm({
     initialValues,
     units = [],
     title = 'Adicionar Item',
+    name,
     isManualItemMode = false,
+    setOnSearch,
 }: ItemFormProps) {
     const { toast } = useToast();
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [warehouseInventories, setWarehouseInventories] = useState<any[]>([]);
     const [isLoadingInventory, setIsLoadingInventory] = useState(false);
+
+    console.log('name', name);
 
     // Inicializar o formulário com valores padrão
     const form = useForm<ItemFormValues>({
@@ -81,7 +88,7 @@ export default function ItemForm({
             product_id: '',
             product_variant_id: '',
             warehouse_id: '',
-            name: '',
+            name: name || '',
             description: '',
             quantity: '1',
             unit: 'unit',
@@ -121,7 +128,7 @@ export default function ItemForm({
                     product_id: '',
                     product_variant_id: '',
                     warehouse_id: '',
-                    name: '',
+                    name: name || '',
                     description: '',
                     quantity: '1',
                     unit: 'unit',
@@ -129,6 +136,7 @@ export default function ItemForm({
                     discount_percentage: '0',
                     tax_percentage: taxRates.find((tax) => tax.is_default == true)?.value + '' || '16', // Taxa padrão de IVA em Moçambique
                 });
+                setOnSearch('');
                 setSelectedProduct(null);
             }
         } else {
@@ -213,15 +221,15 @@ export default function ItemForm({
     };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange} >
-            <DialogContent className="sm:max-w-[600px]  max-h-10/12 overflow-y-auto">
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-h-10/12 overflow-y-auto sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                         {/* Mostrar informações do produto selecionado em vez de um select */}
-                        {selectedProduct ? (
+                        {selectedProduct && (
                             <div className="bg-muted relative rounded-lg p-4">
                                 <div className="absolute top-2 right-2">
                                     <Button
@@ -231,7 +239,7 @@ export default function ItemForm({
                                         onClick={clearSelectedProduct}
                                         className="h-6 w-6 rounded-full p-0"
                                     >
-                                        ×
+                                        <X className="h-6 w-6" />
                                     </Button>
                                 </div>
                                 <h3 className="font-medium">Produto selecionado</h3>
@@ -257,25 +265,24 @@ export default function ItemForm({
                                     )}
                                 />
                             </div>
-                        ) : (
-                            <FormField
-                                control={form.control}
-                                name="name"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Nome do Item <span className="text-destructive">*</span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
                         )}
-
                         <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Nome do Item <span className="text-destructive">*</span>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* <FormField
                             control={form.control}
                             name="warehouse_id"
                             render={({ field }) => (
@@ -304,23 +311,32 @@ export default function ItemForm({
                                     <FormMessage />
                                 </FormItem>
                             )}
-                        />
+                        /> */}
 
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Descrição</FormLabel>
-                                    <FormControl>
-                                        <Textarea {...field} placeholder="Descrição detalhada do item" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+                        <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-3">
+                            <FormField
+                                control={form.control}
+                                name="unit_price"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Preço Unitário <span className="text-destructive">*</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                {...field}
+                                                className={isLoadingInventory ? 'animate-pulse' : ''}
+                                            />
+                                        </FormControl>
+                                        {isLoadingInventory && <FormDescription>A carregar preço atualizado...</FormDescription>}
+                                        {selectedProduct && <FormDescription>O preço é definido pelo produto selecionado</FormDescription>}
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <FormField
                                 control={form.control}
                                 name="quantity"
@@ -366,33 +382,21 @@ export default function ItemForm({
                                     </FormItem>
                                 )}
                             />
-
-                            <FormField
-                                control={form.control}
-                                name="unit_price"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>
-                                            Preço Unitário <span className="text-destructive">*</span>
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                {...field}
-                                                className={isLoadingInventory ? 'animate-pulse' : ''}
-                                            />
-                                        </FormControl>
-                                        {isLoadingInventory && <FormDescription>A carregar preço atualizado...</FormDescription>}
-                                        {selectedProduct && <FormDescription>O preço é definido pelo produto selecionado</FormDescription>}
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
                         </div>
-
-                        <div className="grid md:grid-cols-2 items-start gap-4">
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Descrição</FormLabel>
+                                    <FormControl>
+                                        <Textarea {...field} placeholder="Descrição detalhada do item" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <div className="grid items-start gap-4 md:grid-cols-2">
                             <FormField
                                 control={form.control}
                                 name="discount_percentage"

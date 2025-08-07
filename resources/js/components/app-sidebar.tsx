@@ -9,16 +9,19 @@ import AppLogo from './app-logo';
 
 const mainNavItems = [
     {
+        permissions: [],
         items: [
             {
                 title: 'Dashboard',
                 href: '/dashboard',
                 icon: LayoutGrid,
                 activeRoutes: ['dashboard'],
+                permission: '',
             },
         ],
     },
     {
+        permissions: ['admin-quotation.index', 'admin-sale.index'],
         group: 'Vendas',
         items: [
             // {
@@ -37,12 +40,14 @@ const mainNavItems = [
                 href: '/admin/quotations',
                 icon: Calculator,
                 activeRoutes: ['admin.quotations.index', 'admin.quotations.create', 'admin.quotations.edit', 'admin.quotations.show'],
+                permission: 'admin-quotation.index',
             },
             {
                 title: 'Vendas',
                 href: '/admin/sales',
                 icon: ShoppingCart,
                 activeRoutes: ['admin.sales.index', 'admin.sales.create', 'admin.sales.edit', 'admin.sales.show'],
+                permission: 'admin-sale.index',
             },
 
             // {
