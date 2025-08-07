@@ -10,7 +10,7 @@ export default function RecentQuotations({ quotations }: RecentQuotationsProps) 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Recent Quotations</CardTitle>
+                <CardTitle>Cotações Recentes</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-8">
                 {quotations.map((quotation) => (

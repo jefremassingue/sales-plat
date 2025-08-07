@@ -10,14 +10,14 @@ export default function RecentProducts({ products }: RecentProductsProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Recent Products</CardTitle>
+                <CardTitle>Produtos Recentes</CardTitle>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Price</TableHead>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Preço</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

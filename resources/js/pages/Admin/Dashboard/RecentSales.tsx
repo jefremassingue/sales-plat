@@ -10,7 +10,7 @@ export default function RecentSales({ sales }: RecentSalesProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Recent Sales</CardTitle>
+                <CardTitle>Vendas Recentes</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-8">
                 {sales.map((sale) => (
