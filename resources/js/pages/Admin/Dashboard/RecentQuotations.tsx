@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Quotation } from '@/types';
+import { Link } from '@inertiajs/react';
 
 interface RecentQuotationsProps {
     quotations: Quotation[];
@@ -19,10 +20,11 @@ export default function RecentQuotations({ quotations }: RecentQuotationsProps) 
                             <AvatarImage src={`/avatars/${quotation.id}.png`} alt="Avatar" />
                             <AvatarFallback>Q</AvatarFallback>
                         </Avatar>
-                        <div className="grid gap-1">
+                        <Link href={route('admin.quotations.show', quotation.id)} className="grid gap-1">
+                            <p className="text-sm font-medium leading-none">{quotation.quotation_number }</p>
                             <p className="text-sm font-medium leading-none">{quotation.customer_name}</p>
                             <p className="text-sm text-muted-foreground">{quotation.status}</p>
-                        </div>
+                        </Link>
                         <div className="ml-auto font-medium">{quotation.total_amount}</div>
                     </div>
                 ))}
