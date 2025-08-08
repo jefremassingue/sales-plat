@@ -101,7 +101,7 @@ class QuotationController extends Controller implements HasMiddleware
             $query->orderBy($sortField, $sortOrder);
         }
 
-        $quotations = $query->paginate(15)->withQueryString();
+        $quotations = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
 
         // Calcular estatísticas
         $stats = $this->calculateQuotationStats();

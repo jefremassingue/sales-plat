@@ -88,6 +88,29 @@ export interface Sale {
     [key: string]: unknown;
 }
 
+export interface Currency {
+    code: string;
+    name: string;
+    symbol: string;
+    exchange_rate: number;
+    decimal_separator: string;
+    thousand_separator: string;
+    decimal_places: number;
+    is_default?: boolean;
+}
+
+export interface TaxRate {
+    id: number;
+    name: string;
+    value: number;
+    is_default: boolean;
+}
+
+export interface Unit {
+    value: string;
+    label: string;
+}
+
 export interface PageProps {
   auth: {
     user: {

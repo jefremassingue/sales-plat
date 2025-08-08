@@ -96,7 +96,7 @@ class SaleController extends Controller implements HasMiddleware
                 $query->orderBy($sortField, $sortOrder);
             }
 
-            $sales = $query->paginate(15)->withQueryString();
+            $sales = $query->orderByDesc('created_at')->paginate(15)->withQueryString();
 
             // Dados para filtros
             $customers = Customer::select('id', 'name', 'email')->orderBy('name')->get();
