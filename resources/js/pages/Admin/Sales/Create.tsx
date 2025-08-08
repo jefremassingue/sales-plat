@@ -497,7 +497,7 @@ export default function Create({
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Ponto de Venda - Nova Venda" />
 
-      <div className="container py-6">
+      <div className="container px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button variant="outline" size="icon" asChild>

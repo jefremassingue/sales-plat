@@ -5,9 +5,6 @@ export function usePermission() {
     const { auth } = usePage<PageProps>().props;
 
     const can = (permission: string): boolean => {
-
-        console.log(permission, auth.user.can.includes(permission));
-        
         return auth.user.can.includes(permission);
     };
 

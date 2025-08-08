@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Currency;
 use App\Models\Category;
+use App\Models\Warehouse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class HandleInertiaRequests extends Middleware
         // Cache key definitions
         $currencyCacheKey = 'default_currency';
         $categoriesCacheKey = 'top_categories_with_subs';
+        $defaultWarehouseCacheKey = 'default_warehouse';
 
         // Carregar a moeda padrão do sistema com cache
         $defaultCurrency = Cache::remember($currencyCacheKey, now()->addMinutes(60), function () {
@@ -93,9 +95,14 @@ class HandleInertiaRequests extends Middleware
                 });
         });
 
+        // Carregar categorias apenas se necessário, com cache
+        $defaultWarehouse = Cache::remember($defaultWarehouseCacheKey, now()->addDay(), function () {
+            return Warehouse::where('is_main', true)->first();
+        });
+
         return [
             ...parent::share($request),
-
+            'defaultWarehouse' => $defaultWarehouse,
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
@@ -106,7 +113,7 @@ class HandleInertiaRequests extends Middleware
                     'can' => $request->user()->getAllPermissions()->pluck('name')->toArray(),
                 ] : null,
             ],
-            'ziggy' => fn (): array => [
+            'ziggy' => fn(): array => [
                 ...(new Ziggy())->toArray(),
                 'location' => $request->url(),
             ],

@@ -802,6 +802,7 @@ class QuotationController extends Controller implements HasMiddleware
                 'shipping_amount' => $quotation->shipping_amount,
                 'total' => $quotation->total,
                 'amount_paid' => 0,
+                'shipping_amount' => 0,
                 'amount_due' => $quotation->total,
                 'notes' => $quotation->notes,
                 'terms' => $quotation->terms,

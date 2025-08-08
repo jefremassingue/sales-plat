@@ -59,7 +59,7 @@ export default function SaleSummary({
   }, [paymentAmount, totals.total]);
 
   return (
-    <Card>
+    <Card className='sticky top-14'>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Resumo da Venda</span>

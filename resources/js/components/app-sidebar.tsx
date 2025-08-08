@@ -64,6 +64,7 @@ const mainNavItems = [
         ],
     },
     {
+        permissions: ['admin-category.index', 'admin-product.index', 'admin-inventory.index'],
         group: 'Produtos',
         items: [
             {
@@ -71,22 +72,26 @@ const mainNavItems = [
                 href: '/admin/categories',
                 icon: ListTree,
                 activeRoutes: ['admin.categories.index', 'admin.categories.create', 'admin.categories.edit', 'admin.categories.show'],
+                permission: 'admin-category.index',
             },
             {
                 title: 'Produtos',
                 href: '/admin/products',
                 icon: Tag,
                 activeRoutes: ['admin.products.index', 'admin.products.create', 'admin.products.edit', 'admin.products.show'],
+                permission: 'admin-product.index',
             },
             {
                 title: 'Inventário',
                 href: '/admin/inventories',
                 icon: Package,
                 activeRoutes: ['admin.inventories.index', 'admin.inventories.create', 'admin.inventories.edit', 'admin.inventories.show'],
+                permission: 'admin-inventory.index',
             },
         ],
     },
     {
+        permissions: ['admin-blogcategory.index', 'admin-blog.index'],
         group: 'Blog',
         items: [
             {
@@ -99,17 +104,30 @@ const mainNavItems = [
                     'admin.blog-categories.edit',
                     'admin.blog-categories.show',
                 ],
+                permission: 'admin-blogcategory.index',
             },
             {
                 title: 'Blog',
                 href: '/admin/blog',
                 icon: Tag,
                 activeRoutes: ['admin.blog.index', 'admin.blog.create', 'admin.blog.edit', 'admin.blog.show'],
+                permission: 'admin-blog.index',
             },
         ],
     },
 
     {
+        permissions: [
+            'admin-user.index',
+            'admin-role.index',
+            'admin-permission.index',
+            'admin-sale.index',
+            'admin-warehouse.index',
+            'admin-supplier.index',
+            'admin-sale.index',
+            'admin-sale.index',
+            'admin-customer.index',
+        ],
         group: 'Entidades',
         items: [
             {
@@ -117,18 +135,21 @@ const mainNavItems = [
                 href: '/admin/users',
                 icon: UserCog,
                 activeRoutes: ['admin.users.index', 'admin.users.create', 'admin.users.edit', 'admin.users.show'],
+                permission: 'admin-user.index',
             },
             {
                 title: 'Funções',
                 href: '/admin/roles',
                 icon: Shield,
                 activeRoutes: ['admin.roles.index', 'admin.roles.create', 'admin.roles.edit', 'admin.roles.show'],
+                permission: 'admin-role.index',
             },
             {
                 title: 'Permissões',
                 href: '/admin/permissions',
                 icon: Settings,
                 activeRoutes: ['admin.permissions.index', 'admin.permissions.create', 'admin.permissions.edit', 'admin.permissions.show'],
+                permission: 'admin-permission.index',
             },
             // {
             //     title: 'Funcionários',
@@ -140,6 +161,7 @@ const mainNavItems = [
             //         'admin.employees.edit',
             //         'admin.employees.show'
             //     ]
+            // permission: 'admin-sale.index',
             // },
 
             {
@@ -147,12 +169,14 @@ const mainNavItems = [
                 href: '/admin/warehouses',
                 icon: Warehouse,
                 activeRoutes: ['admin.warehouses.index', 'admin.warehouses.create', 'admin.warehouses.edit', 'admin.warehouses.show'],
+                permission: 'admin-warehouse.index',
             },
             {
                 title: 'Fornecedores',
                 href: '/admin/suppliers',
                 icon: Building,
                 activeRoutes: ['admin.suppliers.index', 'admin.suppliers.create', 'admin.suppliers.edit', 'admin.suppliers.show'],
+                permission: 'admin-supplier.index',
             },
             // {
             //     title: 'Transportadoras',
@@ -163,7 +187,9 @@ const mainNavItems = [
             //         'admin.carriers.create',
             //         'admin.carriers.edit',
             //         'admin.carriers.show'
-            //     ]
+            //     ],
+            // permission: 'admin-sale.index',
+
             // },
             // {
             //     title: 'Parceiros',
@@ -174,17 +200,20 @@ const mainNavItems = [
             //         'admin.partners.create',
             //         'admin.partners.edit',
             //         'admin.partners.show'
-            //     ]
+            //     ],
+            // permission: 'admin-sale.index',
             // },
             {
                 title: 'Clientes',
                 href: '/admin/customers',
                 icon: User,
                 activeRoutes: ['admin.customers.index', 'admin.customers.create', 'admin.customers.edit', 'admin.customers.show'],
+                permission: 'admin-customer.index',
             },
         ],
     },
     // {
+    // permissions: ['admin-quotation.index', 'admin-sale.index'],
     //     group: 'Gestão',
     //     items: [
     //         // {
@@ -197,6 +226,7 @@ const mainNavItems = [
     //         //         'admin.settings.edit',
     //         //         'admin.settings.show'
     //         //     ]
+    // permission: 'admin-sale.index',
     //         // },
     //         {
     //             title: 'Relatórios',
@@ -207,7 +237,9 @@ const mainNavItems = [
     //                 'admin.reports.create',
     //                 'admin.reports.edit',
     //                 'admin.reports.show'
-    //             ]
+    //             ],
+    // permission: 'admin-sale.index',
+
     //         },
     //     ]
     // }
@@ -221,7 +253,7 @@ const footerNavItems: NavItem[] = [
     // },
     {
         title: 'PDV',
-        href: 'https://laravel.com/docs/starter-kits#react',
+        href: 'admin/sales',
         icon: ShoppingCart,
     },
 ];

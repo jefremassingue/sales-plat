@@ -1,6 +1,27 @@
 import { type LucideIcon } from 'lucide-react';
 import { type Config } from 'ziggy-js';
 
+
+export interface Warehouse {
+    id: number;
+    name: string;
+    code: string | null;
+    email: string | null;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    province: string | null;
+    postal_code: string | null;
+    country: string;
+    active: boolean;
+    is_main: boolean;
+    description: string | null;
+    manager_id: number | null;
+    manager?: User;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Auth {
     user: User;
 }
@@ -75,6 +96,7 @@ export interface PageProps {
       email: string;
     } | null;
   };
+  defaultWarehouse: Warehouse,
   categories: {
     id: number;
     name: string;
