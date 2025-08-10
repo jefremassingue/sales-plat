@@ -1,201 +1,233 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { FormControl, FormField, FormItem, FormLabel, FormMessage, Form } from '@/components/ui/form';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { useForm } from 'react-hook-form';
+import { cn } from '@/lib/utils';
+import { router } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
+import { pt } from 'date-fns/locale';
+import { CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { useState, useEffect } from 'react';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+interface Sale {
+    id: number;
+    amount_due: number;
+    currency?: {
+        code: string;
+        name: string;
+        symbol: string;
+        decimal_places: number;
+        decimal_separator: string;
+        thousand_separator: string;
+    };
+}
+
+interface PaymentMethod {
+    value: string;
+    label: string;
+}
 
 interface PaymentDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  totalAmount: number;
-  formatCurrency: (value: number) => string;
-  paymentMethods: { value: string; label: string }[];
-  onSubmit: (data: PaymentData) => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    sale: Sale;
+    paymentMethods: PaymentMethod[];
 }
 
-export interface PaymentData {
-  amount_paid: number;
-  payment_method: string;
-  change_amount: number;
-  status: 'paid' | 'partial';
-}
+const paymentSchema = z.object({
+    amount: z.string().refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+        message: 'O valor deve ser um número maior que zero',
+    }),
+    payment_date: z.date({
+        required_error: 'Data de pagamento é obrigatória',
+    }),
+    payment_method: z.string({
+        required_error: 'Método de pagamento é obrigatório',
+    }),
+    reference: z.string().optional(),
+    notes: z.string().optional(),
+});
 
-export default function PaymentDialog({
-  open,
-  onOpenChange,
-  totalAmount,
-  formatCurrency,
-  paymentMethods,
-  onSubmit
-}: PaymentDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+type PaymentFormValues = z.infer<typeof paymentSchema>;
 
-  const formSchema = z.object({
-    amount_paid: z.string()
-      .min(1, { message: "Valor é obrigatório" })
-      .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-      .refine(val => parseFloat(val) > 0, { message: "Deve ser maior que zero" }),
-    payment_method: z.string().min(1, { message: "Método de pagamento é obrigatório" }),
-  });
+export function PaymentDialog({ open, onOpenChange, sale, paymentMethods }: PaymentDialogProps) {
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      amount_paid: totalAmount.toString(),
-      payment_method: paymentMethods.length > 0 ? paymentMethods[0].value : '',
-    }
-  });
+    const paymentForm = useForm<PaymentFormValues>({
+        resolver: zodResolver(paymentSchema),
+        defaultValues: {
+            amount: sale.amount_due.toString(),
+            payment_date: new Date(),
+            payment_method: '',
+            reference: '',
+            notes: '',
+        },
+    });
 
-  useEffect(() => {
-    if (open) {
-      form.setValue('amount_paid', totalAmount.toString());
-    }
-  }, [open, totalAmount, form]);
+    const onSubmitPayment = (values: PaymentFormValues) => {
+        setIsSubmitting(true);
 
-  const amountPaid = parseFloat(form.watch('amount_paid') || '0');
-  const changeAmount = amountPaid - totalAmount;
-  const paymentStatus = amountPaid >= totalAmount ? 'paid' : 'partial';
+        const data = {
+            ...values,
+            amount: parseFloat(values.amount),
+            payment_date: format(values.payment_date, 'yyyy-MM-dd'),
+        };
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    try {
-      const amountValue = parseFloat(values.amount_paid);
-
-      if (amountValue <= 0) {
-        toast({
-          title: "Valor inválido",
-          description: "O valor pago deve ser maior que zero",
-          variant: "destructive",
+        router.post(`/admin/sales/${sale.id}/payment`, data, {
+            onSuccess: () => {
+                onOpenChange(false);
+                setIsSubmitting(false);
+                toast({
+                    title: 'Pagamento registrado',
+                    description: 'O pagamento foi registrado com sucesso.',
+                    variant: 'success',
+                });
+            },
+            onError: (errors) => {
+                setIsSubmitting(false);
+                console.error(errors);
+                toast({
+                    title: 'Erro',
+                    description: 'Ocorreu um erro ao registrar o pagamento.',
+                    variant: 'destructive',
+                });
+            },
         });
-        return;
-      }
+    };
 
-      onSubmit({
-        amount_paid: amountValue,
-        payment_method: values.payment_method,
-        change_amount: Math.max(0, amountValue - totalAmount),
-        status: amountValue >= totalAmount ? 'paid' : 'partial'
-      });
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Registrar Pagamento</DialogTitle>
+                    <DialogDescription>Informe os dados do pagamento para esta venda.</DialogDescription>
+                </DialogHeader>
 
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Erro ao processar pagamento:", error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao processar o pagamento",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+                <Form {...paymentForm}>
+                    <form onSubmit={paymentForm.handleSubmit(onSubmitPayment)} className="space-y-4 py-4">
+                        <FormField
+                            control={paymentForm.control}
+                            name="amount"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Valor</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} type="number" step="0.01" min="0.01" max={sale.amount_due} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px]">
-        <DialogHeader>
-          <DialogTitle>Registrar Pagamento</DialogTitle>
-        </DialogHeader>
+                        <FormField
+                            control={paymentForm.control}
+                            name="payment_date"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Data do Pagamento</FormLabel>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button
+                                                    variant={'outline'}
+                                                    className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
+                                                >
+                                                    {field.value ? (
+                                                        format(field.value, 'dd/MM/yyyy', { locale: pt })
+                                                    ) : (
+                                                        <span>Selecione uma data</span>
+                                                    )}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={field.value}
+                                                onSelect={field.onChange}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <div className="mb-5 text-lg font-bold">
-              Total a Pagar: {formatCurrency(totalAmount)}
-            </div>
+                        <FormField
+                            control={paymentForm.control}
+                            name="payment_method"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Método de Pagamento</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione um método" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {paymentMethods.map((method) => (
+                                                <SelectItem key={method.value} value={method.value}>
+                                                    {method.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-            <FormField
-              control={form.control}
-              name="payment_method"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Método de Pagamento</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o método de pagamento" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {paymentMethods.map(method => (
-                        <SelectItem key={method.value} value={method.value}>
-                          {method.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        <FormField
+                            control={paymentForm.control}
+                            name="reference"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Referência</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} placeholder="Número de comprovante ou referência" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-            <FormField
-              control={form.control}
-              name="amount_paid"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Valor Recebido</FormLabel>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      autoFocus
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        <FormField
+                            control={paymentForm.control}
+                            name="notes"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Notas</FormLabel>
+                                    <FormControl>
+                                        <Textarea {...field} placeholder="Observações sobre este pagamento" />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-            {changeAmount !== 0 && (
-              <div className={`py-3 px-4 rounded-md ${changeAmount >= 0 ? 'bg-emerald-50' : 'bg-amber-50'}`}>
-                {changeAmount > 0 ? (
-                  <div className="text-emerald-600 font-medium">
-                    Troco: {formatCurrency(changeAmount)}
-                  </div>
-                ) : (
-                  <div className="text-amber-600 font-medium">
-                    Em falta: {formatCurrency(Math.abs(changeAmount))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {paymentStatus === 'partial' && (
-              <Alert variant="warning">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Pagamento Parcial</AlertTitle>
-                <AlertDescription>
-                  O valor pago é inferior ao total da venda. A venda será marcada como "Pagamento Parcial".
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <DialogFooter className="pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {paymentStatus === 'paid' ? 'Finalizar Venda' : 'Registrar Pagamento Parcial'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-  );
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? 'Processando...' : 'Registrar Pagamento'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
 }

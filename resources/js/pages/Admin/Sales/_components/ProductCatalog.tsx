@@ -253,7 +253,7 @@ export default function ProductCatalog({
 
         {paginatedProducts.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[500px] overflow-y-auto pr-2">
               {paginatedProducts.map((product) => {
                 const stockQuantity = getStockQuantity(product.id);
                 const productPrice = getProductPrice(product);
