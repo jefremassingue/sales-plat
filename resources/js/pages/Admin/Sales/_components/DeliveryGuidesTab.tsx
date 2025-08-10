@@ -32,6 +32,7 @@ import { Eye, MoreHorizontal, Pencil, Plus, Printer, Trash2, Upload } from 'luci
 import { FormEvent, useState } from 'react';
 // Importe seu dialog de criação/edição já existente
 import DeliveryGuideDialog from './DeliveryGuideDialog';
+import { UploadAttachmentDialog } from './UploadAttachmentDialog';
 
 // =================================================================================
 // 1. DEFINIÇÕES DE TIPO (TYPESCRIPT)
@@ -136,52 +137,7 @@ interface UploadAttachmentDialogProps {
     deliveryGuide: DeliveryGuide | null;
 }
 
-function UploadAttachmentDialog({ open, onOpenChange, deliveryGuide }: UploadAttachmentDialogProps) {
-    const { toast } = useToast();
-    const [file, setFile] = useState<File | null>(null);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
-        if (!file || !deliveryGuide) return;
-        setIsSubmitting(true);
-        router.post(`/admin/delivery-guides/${deliveryGuide.id}/attachment`, { attachment: file }, {
-            onSuccess: () => {
-                toast({ title: 'Upload bem-sucedido!', variant: 'success' });
-                onOpenChange(false);
-            },
-            onError: (errors) => toast({ title: 'Erro no Upload', description: errors.attachment, variant: 'destructive' }),
-            onFinish: () => setIsSubmitting(false),
-        });
-    };
-
-    return (
-        <Dialog open={open} onOpenChange={(isOpen) => { onOpenChange(isOpen); if (!isOpen) setFile(null); }}>
-            <DialogContent>
-                {!deliveryGuide ? (
-                    <DialogHeader><DialogTitle>Carregando...</DialogTitle></DialogHeader>
-                ) : (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle>Anexar Documento à Guia {deliveryGuide.code}</DialogTitle>
-                            <DialogDesc>Selecione o documento para associar a esta guia.</DialogDesc>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmit}>
-                            <div className="grid gap-4 py-4">
-                                <Label htmlFor="attachment-file">Arquivo</Label>
-                                <Input id="attachment-file" type="file" onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)} disabled={isSubmitting} />
-                            </div>
-                            <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>Cancelar</Button>
-                                <Button type="submit" disabled={!file || isSubmitting}>{isSubmitting ? 'Enviando...' : 'Salvar Anexo'}</Button>
-                            </DialogFooter>
-                        </form>
-                    </>
-                )}
-            </DialogContent>
-        </Dialog>
-    );
-}
 
 // =================================================================================
 // 4. COMPONENTE PRINCIPAL (DeliveryGuidesTab) COM O NOVO CARD
@@ -281,6 +237,7 @@ export function DeliveryGuidesTab({ sale, formatDate }: DeliveryGuidesTabProps) 
                                                     <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setViewingGuide(guide)}><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setViewingGuide(guide)}><Printer className="mr-2 h-4 w-4" /> Gerar PDF</DropdownMenuItem>
                                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleEdit(guide)}><Pencil className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
                                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setUploadingGuide(guide)}><Upload className="mr-2 h-4 w-4" /> Anexar Doc.</DropdownMenuItem>
                                                         <DropdownMenuItem className="text-red-600 focus:text-red-600" onSelect={(e) => e.preventDefault()} onClick={() => setDeletingGuide(guide)}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
