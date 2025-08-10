@@ -277,7 +277,7 @@ export function DeliveryGuidesTab({ sale, formatDate }: DeliveryGuidesTabProps) 
                                                 {guide.verified_file ? (<a href={guide.verified_file} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Ver Anexo</a>) : '-'}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                <DropdownMenu>
+                                                <DropdownMenu modal={false}>
                                                     <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setViewingGuide(guide)}><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
