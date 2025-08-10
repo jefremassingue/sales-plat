@@ -43,6 +43,7 @@ class DeliveryGuideController extends Controller
         try {
             $deliveryGuide = $sale->deliveryGuides()->create([
                 'notes' => $request->notes,
+                'code' => $this->generateUniqueDeliveryNumber()
             ]);
 
             foreach ($request->items as $itemData) {
@@ -59,9 +60,37 @@ class DeliveryGuideController extends Controller
             return redirect()->route('admin.sales.show', $sale);
         } catch (\Exception $e) {
             DB::rollBack();
-            dd($e);
+            // dd($e);
             return redirect()->back()->with('error', 'Ocorreu um erro ao criar a guia de entrega: ' . $e->getMessage())->withInput();
         }
+    }
+
+      /**
+     * Gera um número de venda único com bloqueio para evitar duplicação
+     */
+    private function generateUniqueDeliveryNumber()
+    {
+        $prefix = 'ENT-' . date('Ym') . '-';
+        $lastSale = DeliveryGuide::where('code', 'LIKE', $prefix . '%')
+            ->orderByRaw('CAST(SUBSTRING(code, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
+            ->first();
+
+        if ($lastSale) {
+            $lastNumber = substr($lastSale->code, strlen($prefix));
+            $nextNumber = intval($lastNumber) + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        // Verificar se o número gerado já existe
+        while (Sale::where('code', $saleNumber)->exists()) {
+            $nextNumber++;
+            $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+        }
+
+        return $saleNumber;
     }
 
     /**

@@ -144,6 +144,7 @@ class Sale extends Model
         $subtotal = $items->sum('subtotal');
         $taxAmount = $items->sum('tax_amount');
         $discountAmount = $items->sum('discount_amount');
+        // $costAmount = $items->sum('cost');
 
         $total = $subtotal - $discountAmount;
         if ($this->include_tax) {
@@ -158,7 +159,8 @@ class Sale extends Model
             'tax_amount' => $taxAmount,
             'discount_amount' => $discountAmount,
             'total' => $total,
-            'amount_due' => $amountDue
+            'amount_due' => $amountDue,
+            // 'cost' => $costAmount
         ]);
     }
 

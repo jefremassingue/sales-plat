@@ -20,6 +20,7 @@ class SaleItem extends Model
         'quantity',
         'unit',
         'unit_price',
+        'cost',
         'discount_percentage',
         'discount_amount',
         'tax_percentage',
