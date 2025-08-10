@@ -456,7 +456,8 @@ class SaleController extends Controller implements HasMiddleware
                 $query->with(['product', 'productVariant', 'warehouse', 'deliveryGuideItems']);
             },
             'payments',
-            'deliveryGuides.items.saleItem'
+            'deliveryGuides.items.saleItem',
+            'deliveryGuides' => fn($q) => $q->orderByDesc('created_at')
         ]);
         // return $sale;
         return Inertia::render('Admin/Sales/Show', [
@@ -801,7 +802,7 @@ class SaleController extends Controller implements HasMiddleware
 
             $documentTitle = match (true) {
                 ($sale->status === 'paid' && count($sale->payments) === 1) || ($sale->status === 'paid' && $sale->amount_paid >= $sale->amount_due) => 'RECIBO',
-                $sale->status === 'partial' && count($sale->payments) => 'RECIBO',
+                $sale->status === 'partial' && count($sale->payments) => 'FATURA',
                 default => 'FATURA'
             };
 

@@ -10,34 +10,7 @@ import { router } from '@inertiajs/react';
 import { useEffect, useMemo } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
-
-// Definindo os tipos que virão do backend (ajuste conforme necessário)
-interface SaleItem {
-    id: string;
-    name: string;
-    quantity: number;
-    notes?: string;
-    delivered_quantity: number;
-    pending_quantity: number;
-}
-
-interface DeliveryGuideItem {
-    id: string;
-    sale_item_id: string;
-    quantity: number;
-    notes?: string;
-}
-
-interface DeliveryGuide {
-    id: string;
-    notes: string | null;
-    items: DeliveryGuideItem[];
-}
-
-interface Sale {
-    id: string;
-    items: SaleItem[];
-}
+import { Sale, DeliveryGuide } from '@/types';
 
 // Props do componente
 interface DeliveryGuideDialogProps {
@@ -47,25 +20,15 @@ interface DeliveryGuideDialogProps {
     deliveryGuide?: DeliveryGuide | null; // Opcional, para modo de edição
 }
 
-// CORREÇÃO: Schema de validação com os tipos e campos corretos
 const deliveryGuideSchema = z.object({
     notes: z.string().optional(),
-    items: z
-        .array(
-            z.object({
-                // CORREÇÃO 1: O ID do item da venda é uma string, não um número.
-                sale_item_id: z.string(),
-                quantity: z.coerce
-                    .number({ invalid_type_error: 'Deve ser um número' })
-                    .min(0, 'A quantidade não pode ser negativa')
-                    .default(0),
-                // CORREÇÃO 2: Adicionado o campo de notas do item, que estava faltando.
-                notes: z.string().optional(),
-            }),
-        )
-        .refine((items) => items.some((item) => item.quantity > 0), {
-            message: 'Pelo menos um item deve ter uma quantidade maior que zero.',
-        }),
+    items: z.array(
+        z.object({
+            sale_item_id: z.string(),
+            quantity: z.coerce.number().min(0).default(0),
+            notes: z.string().optional(),
+        })
+    ).min(1, 'Adicione pelo menos um item.'),
 });
 
 type DeliveryGuideFormValues = z.infer<typeof deliveryGuideSchema>;
@@ -73,14 +36,6 @@ type DeliveryGuideFormValues = z.infer<typeof deliveryGuideSchema>;
 export default function DeliveryGuideDialog({ open, onOpenChange, sale, deliveryGuide }: DeliveryGuideDialogProps) {
     const { toast } = useToast();
     const isEditMode = !!deliveryGuide;
-
-    const pendingItems = useMemo(() => {
-        if (!sale?.items) return [];
-        if (isEditMode) {
-            return sale.items;
-        }
-        return sale.items.filter((item) => item.pending_quantity > 0);
-    }, [sale, isEditMode]);
 
     const form = useForm<DeliveryGuideFormValues>({
         resolver: zodResolver(deliveryGuideSchema),
@@ -96,26 +51,23 @@ export default function DeliveryGuideDialog({ open, onOpenChange, sale, delivery
         name: 'items',
     });
 
-    // CORREÇÃO: Lógica de `useEffect` ajustada e simplificada.
     useEffect(() => {
         if (open) {
-            const formItems = pendingItems.map((item) => {
-                const existingItem = deliveryGuide?.items.find((dgItem) => dgItem.sale_item_id === item.id);
+            const items = (isEditMode ? sale.items : sale.items.filter(item => item.pending_quantity > 0));
+            const formItems = items.map(item => {
+                const existingItem = deliveryGuide?.items.find(dgItem => dgItem.sale_item_id === item.id);
                 return {
                     sale_item_id: item.id,
                     quantity: existingItem?.quantity || 0,
-                    // CORREÇÃO 3: Popular as notas com os dados da guia (se existirem).
                     notes: existingItem?.notes || '',
                 };
             });
-
-            // CORREÇÃO 4: `form.reset` é suficiente para atualizar todo o formulário.
             form.reset({
                 notes: deliveryGuide?.notes || '',
                 items: formItems,
             });
         }
-    }, [open, sale, deliveryGuide, pendingItems, form]); // `replace` removido das dependências
+    }, [open, sale, deliveryGuide, isEditMode, form]);
 
     const onSubmit = (values: DeliveryGuideFormValues) => {
         const itemsToSubmit = values.items.filter((item) => item.quantity > 0);
@@ -133,7 +85,9 @@ export default function DeliveryGuideDialog({ open, onOpenChange, sale, delivery
             })),
         };
 
-        const url = isEditMode ? `/admin/sales/${sale.id}/delivery-guides/${deliveryGuide.id}` : `/admin/sales/${sale.id}/delivery-guides`;
+        const url = isEditMode
+            ? route('admin.delivery-guides.update', { sale: sale.id, delivery_guide: deliveryGuide.id })
+            : route('admin.delivery-guides.store', { sale: sale.id });
 
         router.visit(url, {
             method: isEditMode ? 'put' : 'post',
@@ -142,7 +96,6 @@ export default function DeliveryGuideDialog({ open, onOpenChange, sale, delivery
                 toast({
                     title: `Guia de entrega ${isEditMode ? 'atualizada' : 'criada'}!`,
                     description: `A guia foi salva com sucesso.`,
-                    variant: 'success',
                 });
                 onOpenChange(false);
             },
@@ -184,19 +137,17 @@ export default function DeliveryGuideDialog({ open, onOpenChange, sale, delivery
                                 </TableHeader>
                                 <TableBody>
                                     {fields.map((field, index) => {
-                                        const saleItem = pendingItems.find((i) => i.id === field.sale_item_id);
+                                        const saleItem = sale.items.find((i) => i.id === field.sale_item_id);
                                         if (!saleItem) return null;
 
-                                        const pendingForInput = isEditMode
-                                            ? saleItem.pending_quantity +
-                                              (deliveryGuide?.items.find((i) => i.sale_item_id === saleItem.id)?.quantity || 0)
-                                            : saleItem.pending_quantity;
+                                        const originalDeliveredQty = deliveryGuide?.items.find(i => i.sale_item_id === saleItem.id)?.quantity || 0;
+                                        const maxAllowed = saleItem.pending_quantity + originalDeliveredQty;
 
                                         return (
                                             <TableRow key={field.id}>
                                                 <TableCell className="font-medium">{saleItem.name}</TableCell>
                                                 <TableCell className="text-center">{saleItem.quantity}</TableCell>
-                                                <TableCell className="text-destructive text-center font-bold">{pendingForInput}</TableCell>
+                                                <TableCell className="text-destructive text-center font-bold">{maxAllowed}</TableCell>
                                                 <TableCell className="text-right">
                                                     <FormField
                                                         control={form.control}
@@ -210,7 +161,7 @@ export default function DeliveryGuideDialog({ open, onOpenChange, sale, delivery
                                                                         className="text-right"
                                                                         min={0}
                                                                         step="0.01"
-                                                                        max={pendingForInput}
+                                                                        max={maxAllowed}
                                                                     />
                                                                 </FormControl>
                                                                 <FormMessage />

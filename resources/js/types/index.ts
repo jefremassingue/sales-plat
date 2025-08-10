@@ -33,6 +33,8 @@ export interface SaleItem {
         name: string;
     };
     available_quantity?: number;
+    delivered_quantity: number;
+    pending_quantity: number;
 }
 
 export interface Sale {
@@ -81,6 +83,7 @@ export interface Sale {
         thousand_separator: string;
     };
     items: SaleItem[];
+    delivery_guides: DeliveryGuide[];
     payments?: Array<{
         id: string;
         sale_id: string;
@@ -90,10 +93,27 @@ export interface Sale {
         reference: string | null;
         notes: string | null;
     }>;
-    delivery_guides: Record<string, unknown>[];
     quotation?: {
         id: string;
         quotation_number: string;
         issue_date: string;
     };
+}
+
+export interface DeliveryGuide {
+    id: string;
+    code: string;
+    notes: string | null;
+    created_at: string;
+    verified_file: string | null;
+    items: {
+        id: string;
+        sale_item_id: string;
+        quantity: number;
+        notes: string | null | undefined;
+        sale_item: {
+            id: string;
+            name: string;
+        };
+    }[];
 }

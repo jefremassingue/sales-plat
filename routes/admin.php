@@ -71,6 +71,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->except(['index', 'show', 'create', 'edit'])
         ->shallow();
 
+    // Rotas adicionais para guias de entrega
+    Route::get('delivery-guides/{delivery_guide}/print', [DeliveryGuideController::class, 'print'])->name('delivery-guides.print');
+    Route::post('delivery-guides/{delivery_guide}/upload-attachment', [DeliveryGuideController::class, 'uploadAttachment'])->name('delivery-guides.upload-attachment');
+
 
     // Rotas para métodos de pagamento
     Route::prefix('settings')->name('settings.')->group(function () {

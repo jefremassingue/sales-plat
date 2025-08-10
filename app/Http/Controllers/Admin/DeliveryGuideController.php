@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Setting;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DeliveryGuideController extends Controller
 {
@@ -98,6 +101,12 @@ class DeliveryGuideController extends Controller
      */
     public function update(Request $request, Sale $sale, DeliveryGuide $deliveryGuide)
     {
+        // Check if this is the last delivery guide for the sale
+        $lastGuide = $sale->deliveryGuides()->latest('id')->first();
+        if ($lastGuide && $deliveryGuide->id !== $lastGuide->id) {
+            return redirect()->back()->with('error', 'Apenas a última guia de entrega pode ser editada.');
+        }
+
         $validator = Validator::make($request->all(), [
             'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
@@ -156,11 +165,87 @@ class DeliveryGuideController extends Controller
      */
     public function destroy(Sale $sale, DeliveryGuide $deliveryGuide)
     {
+        // Check if this is the last delivery guide for the sale
+        $lastGuide = $sale->deliveryGuides()->latest('id')->first();
+        if ($lastGuide && $deliveryGuide->id !== $lastGuide->id) {
+            return redirect()->back()->with('error', 'Apenas a última guia de entrega pode ser eliminada.');
+        }
+
+        DB::beginTransaction();
         try {
+            // Delete the associated file if it exists
+            if ($deliveryGuide->verified_file) {
+                // Assuming the path is relative to the 'public' disk's root
+                $filePath = str_replace('/storage/', '', $deliveryGuide->verified_file);
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
+            }
+
             $deliveryGuide->delete();
+            DB::commit();
+
             return redirect()->route('admin.sales.show', $sale)->with('success', 'Guia de entrega eliminada com sucesso!');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->back()->with('error', 'Ocorreu um erro ao eliminar a guia de entrega: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Handle file upload for a delivery guide.
+     */
+    public function uploadAttachment(Request $request, DeliveryGuide $deliveryGuide)
+    {
+        $request->validate([
+            'attachment' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            // Delete the old file if it exists
+            if ($deliveryGuide->verified_file) {
+                $oldFilePath = str_replace('/storage/', '', $deliveryGuide->verified_file);
+                if (Storage::disk('public')->exists($oldFilePath)) {
+                    Storage::disk('public')->delete($oldFilePath);
+                }
+            }
+
+            $file = $request->file('attachment');
+            $path = $file->store('delivery-guides', 'public');
+
+            $deliveryGuide->update([
+                'verified_file' => Storage::url($path),
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Anexo carregado com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Falha ao carregar o anexo: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate a PDF for the delivery guide.
+     */
+    public function print(DeliveryGuide $deliveryGuide)
+    {
+        $sale = $deliveryGuide->sale()->with('customer', 'items.product')->firstOrFail();
+        $companySettings = Setting::whereIn('key', ['company_name', 'company_address', 'company_phone', 'company_email', 'company_tax_number', 'header_image', 'footer_image', 'footer_text'])->get()->keyBy('key');
+        $bankSettings = Setting::whereIn('key', ['bank_name', 'account_number', 'nib'])->get()->keyBy('key');
+
+        $data = [
+            'sale' => $sale,
+            'deliveryGuide' => $deliveryGuide,
+            'company' => $companySettings,
+            'bank' => $bankSettings,
+            'documentTitle' => 'GUIA DE ENTREGA',
+            'documentNumber' => $deliveryGuide->code,
+        ];
+
+        $pdf = Pdf::loadView('pdf.delivery_guide', $data);
+        return $pdf->stream('guia_entrega_' . $deliveryGuide->code . '.pdf');
     }
 }

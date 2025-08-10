@@ -14,6 +14,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -27,41 +28,13 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/components/ui/use-toast';
-import { router, Sale } from '@inertiajs/react'; // O tipo 'Sale' do Inertia já deve ter a estrutura de 'items' que precisamos
+import { router, useForm } from '@inertiajs/react';
 import { Eye, MoreHorizontal, Pencil, Plus, Printer, Trash2, Upload } from 'lucide-react';
 import { FormEvent, useState } from 'react';
+import { Sale, DeliveryGuide } from '@/types';
 // Importe seu dialog de criação/edição já existente
 import DeliveryGuideDialog from './DeliveryGuideDialog';
-import { UploadAttachmentDialog } from './UploadAttachmentDialog';
 
-// =================================================================================
-// 1. DEFINIÇÕES DE TIPO (TYPESCRIPT)
-// =================================================================================
-interface SaleItemForGuide {
-    id: string;
-    name: string;
-}
-
-interface DeliveryGuideItem {
-    id: string;
-    sale_item_id: string;
-    quantity: number;
-    notes: string | null;
-    sale_item: SaleItemForGuide;
-}
-
-interface DeliveryGuide {
-    id: string;
-    code: string;
-    notes: string | null;
-    created_at: string;
-    items: DeliveryGuideItem[];
-    verified_file: string | null;
-}
-
-// O tipo 'Sale' importado do Inertia/types já deve incluir a lista de items com os campos:
-// id, name, quantity, delivered_quantity, pending_quantity.
-// Este tipo abaixo apenas garante que 'delivery_guides' também esteja presente.
 type SaleWithDeliveryGuides = Sale & {
     delivery_guides: DeliveryGuide[];
 };
@@ -137,12 +110,72 @@ interface UploadAttachmentDialogProps {
     deliveryGuide: DeliveryGuide | null;
 }
 
+function UploadAttachmentDialog({ open, onOpenChange, deliveryGuide }: UploadAttachmentDialogProps) {
+    const { toast } = useToast();
+    const { data, setData, post, processing, errors, reset } = useForm({
+        attachment: null as File | null,
+    });
 
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        if (!deliveryGuide) return;
+
+        post(route('admin.delivery-guides.upload-attachment', deliveryGuide.id), {
+            onSuccess: () => {
+                toast({ title: 'Sucesso', description: 'Anexo carregado com sucesso!' });
+                onOpenChange(false);
+                reset();
+            },
+            onError: (err) => {
+                console.error(err);
+                toast({
+                    variant: 'destructive',
+                    title: 'Erro ao carregar anexo',
+                    description: err.attachment || 'Ocorreu um erro inesperado.',
+                });
+            },
+        });
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Anexar Documento à Guia: {deliveryGuide?.code}</DialogTitle>
+                    <DialogDesc>
+                        Carregue um ficheiro (PDF, JPG, PNG) para associar a esta guia de entrega.
+                    </DialogDesc>
+                </DialogHeader>
+                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                    <div>
+                        <Label htmlFor="attachment">Ficheiro</Label>
+                        <Input
+                            id="attachment"
+                            type="file"
+                            onChange={(e) => setData('attachment', e.target.files ? e.target.files[0] : null)}
+                            className="mt-1"
+                        />
+                        {errors.attachment && <p className="mt-1 text-sm text-red-600">{errors.attachment}</p>}
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={processing}>
+                            Cancelar
+                        </Button>
+                        <Button type="submit" disabled={!data.attachment || processing}>
+                            {processing ? 'A carregar...' : 'Carregar'}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 // =================================================================================
 // 4. COMPONENTE PRINCIPAL (DeliveryGuidesTab) COM O NOVO CARD
 // =================================================================================
 export function DeliveryGuidesTab({ sale, formatDate }: DeliveryGuidesTabProps) {
+    const { toast } = useToast();
     const [isCreateEditDialogOpen, setCreateEditDialogOpen] = useState(false);
     const [editingGuide, setEditingGuide] = useState<DeliveryGuide | null>(null);
     const [viewingGuide, setViewingGuide] = useState<DeliveryGuide | null>(null);
@@ -157,6 +190,27 @@ export function DeliveryGuidesTab({ sale, formatDate }: DeliveryGuidesTabProps) 
     const handleAddNew = () => {
         setEditingGuide(null);
         setCreateEditDialogOpen(true);
+    };
+
+    const handlePrint = (guide: DeliveryGuide) => {
+        window.open(route('admin.delivery-guides.print', guide.id));
+    };
+
+    const handleDelete = () => {
+        if (!deletingGuide) return;
+        router.delete(route('admin.delivery-guides.destroy', deletingGuide.id), {
+            onSuccess: () => {
+                setDeletingGuide(null);
+                toast({ title: 'Sucesso', description: 'Guia de entrega eliminada com sucesso!' });
+            },
+            onError: (err: any) => {
+                toast({
+                    variant: 'destructive',
+                    title: 'Erro ao eliminar',
+                    description: err.message || 'Ocorreu um erro inesperado.',
+                });
+            },
+        });
     };
 
     return (
@@ -184,7 +238,7 @@ export function DeliveryGuidesTab({ sale, formatDate }: DeliveryGuidesTabProps) 
                             </TableHeader>
                             <TableBody>
                                 {sale.items && sale.items.length > 0 ? (
-                                    sale.items.map((item: any) => ( // Usando 'any' para flexibilidade com a prop `sale`
+                                    sale.items.map((item) => (
                                         <TableRow key={item.id}>
                                             <TableCell className="font-medium">{item.name}</TableCell>
                                             <TableCell className="text-center">{item.quantity}</TableCell>
@@ -224,28 +278,32 @@ export function DeliveryGuidesTab({ sale, formatDate }: DeliveryGuidesTabProps) 
                             <TableHeader><TableRow><TableHead>Código</TableHead><TableHead>Nota</TableHead><TableHead>Data</TableHead><TableHead>Anexo</TableHead><TableHead className="text-right"></TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {sale.delivery_guides?.length > 0 ? (
-                                    sale.delivery_guides.map((guide) => (
-                                        <TableRow key={guide.id}>
-                                            <TableCell className="font-mono">{guide.code}</TableCell>
-                                            <TableCell>{guide.notes || 'Sem nota'}</TableCell>
-                                            <TableCell>{formatDate(guide.created_at)}</TableCell>
-                                            <TableCell className="font-medium">
-                                                {guide.verified_file ? (<a href={guide.verified_file} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Ver Anexo</a>) : '-'}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu modal={false}>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setViewingGuide(guide)}><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setViewingGuide(guide)}><Printer className="mr-2 h-4 w-4" /> Gerar PDF</DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => handleEdit(guide)}><Pencil className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} onClick={() => setUploadingGuide(guide)}><Upload className="mr-2 h-4 w-4" /> Anexar Doc.</DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-red-600 focus:text-red-600" onSelect={(e) => e.preventDefault()} onClick={() => setDeletingGuide(guide)}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
+                                    sale.delivery_guides.map((guide, index) => {
+                                        const isLastGuide = index === 0; // Assuming guides are sorted descending by creation date
+                                        return (
+                                            <TableRow key={guide.id}>
+                                                <TableCell className="font-mono">{guide.code}</TableCell>
+                                                <TableCell>{guide.notes || 'Sem nota'}</TableCell>
+                                                <TableCell>{formatDate(guide.created_at)}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    {guide.verified_file ? (<a href={guide.verified_file} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Ver Anexo</a>) : '-'}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu modal={false}>
+                                                        <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => setViewingGuide(guide)}><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handlePrint(guide)}><Printer className="mr-2 h-4 w-4" /> Gerar PDF</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => setUploadingGuide(guide)}><Upload className="mr-2 h-4 w-4" /> Anexar Doc.</DropdownMenuItem>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem onClick={() => handleEdit(guide)} disabled={!isLastGuide}><Pencil className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                                                            <DropdownMenuItem className="text-red-600 focus:text-red-600" onClick={() => setDeletingGuide(guide)} disabled={!isLastGuide}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
                                 ) : (
                                     <TableRow><TableCell colSpan={5} className="py-4 text-center text-muted-foreground">Nenhuma guia de entrega encontrada.</TableCell></TableRow>
                                 )}
@@ -273,6 +331,22 @@ export function DeliveryGuidesTab({ sale, formatDate }: DeliveryGuidesTabProps) 
                 onOpenChange={(isOpen) => { if (!isOpen) setUploadingGuide(null); }}
                 deliveryGuide={uploadingGuide}
             />
+
+            {/* Confirmation Dialog for Deletion */}
+            <Dialog open={!!deletingGuide} onOpenChange={(isOpen) => { if (!isOpen) setDeletingGuide(null); }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirmar Eliminação</DialogTitle>
+                        <DialogDesc>
+                            Tem a certeza que deseja eliminar a guia de entrega <strong>{deletingGuide?.code}</strong>? Esta ação não pode ser revertida.
+                        </DialogDesc>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDeletingGuide(null)}>Cancelar</Button>
+                        <Button variant="destructive" onClick={handleDelete}>Eliminar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
