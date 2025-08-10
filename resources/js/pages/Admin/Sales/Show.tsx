@@ -1,51 +1,38 @@
 import { DeleteAlert } from '@/components/delete-alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 // IMPORTAÇÃO ADICIONADA: Componentes de Tabs
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem } from '@/types';
+import { BreadcrumbItem } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import {
-    AlertCircle,
-    ArrowLeft,
-    Banknote,
     Calendar,
-    Copy,
     CreditCard,
-    Download,
-    Edit,
-    Eye,
-    FileBox,
     FileText,
-    Plus,
-    Printer,
-    Send,
-    Trash,
-    Trash2,
     TrendingUp,
     Truck,
-    Upload,
-    User,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import DeliveryGuideDialog from './_components/DeliveryGuideDialog';
+import { SaleHeader } from './_components/SaleHeader';
+import { SaleDetailsCard } from './_components/SaleDetailsCard';
+import { PaymentsTab } from './_components/PaymentsTab';
+import { DeliveryGuidesTab } from './_components/DeliveryGuidesTab';
+import { RevenueTab } from './_components/RevenueTab';
+import { FinancialSummary } from './_components/FinancialSummary';
 
 // ... (Interfaces Sale, PaymentMethod, etc. permanecem as mesmas)
 interface Sale {
@@ -182,7 +169,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
     const [deletingDeliveryGuide, setDeletingDeliveryGuide] = useState<DeliveryGuide | null>(null);
 
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-    const [selectedStatus, setSelectedStatus] = useState(sale.status);
+    const [selectedStatus, setSelectedStatus] = useState<typeof sale.status>(sale.status);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
     const { flash } = usePage().props as any;
@@ -319,9 +306,9 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
         return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
     };
 
-    const getStatusBadgeVariant = (status: string) => {
+    const getStatusBadgeVariant = (status: string): "default" | "destructive" | "secondary" | "outline" | null | undefined => {
         const statusObj = statuses.find((s) => s.value === status);
-        return statusObj?.color || 'secondary';
+        return statusObj?.color as "default" | "destructive" | "secondary" | "outline" | null | undefined || 'secondary';
     };
 
     const isOverdue = () => {
@@ -345,68 +332,16 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
             <Head title={`Venda ${sale.sale_number}`} />
 
             <div className="container px-4 py-6">
-                {/* CABEÇALHO DA PÁGINA (Permanece o mesmo) */}
-                <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                    <div className="flex items-center gap-4">
-                        <Button variant="outline" size="icon" asChild>
-                            <Link href="/admin/sales">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                        <div>
-                            <h1 className="flex items-center gap-2 text-2xl font-bold">Venda {sale.sale_number}</h1>
-                            <p className="text-muted-foreground">
-                                {sale.status === 'draft' && 'Rascunho - '}
-                                {isOverdue() && 'Vencida - '}
-                                Emitida em {formatDate(sale.issue_date)}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Select value={sale.status} onValueChange={handleStatusChange}>
-                            <SelectTrigger className="w-[160px]">
-                                <SelectValue>
-                                    <div className="flex items-center">
-                                        <Badge variant={getStatusBadgeVariant(sale.status)} className="mr-2">
-                                            {statuses.find((s) => s.value === sale.status)?.label || sale.status}
-                                        </Badge>
-                                    </div>
-                                </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                                {statuses.map((status) => (
-                                    <SelectItem key={status.value} value={status.value} disabled={sale.status === status.value}>
-                                        <Badge variant={status.color} className="mr-2">
-                                            {status.label}
-                                        </Badge>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-
-                        <Button variant="outline" asChild>
-                            <a href={`/admin/sales/${sale.id}/pdf`} target="_blank">
-                                <Printer className="mr-2 h-4 w-4" />
-                                PDF
-                            </a>
-                        </Button>
-
-                        {isEditable() && (
-                            <Button variant="outline" asChild>
-                                <Link href={`/admin/sales/${sale.id}/edit`}>
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Editar
-                                </Link>
-                            </Button>
-                        )}
-
-                        <Button onClick={() => setDeleteAlertOpen(true)} variant="destructive">
-                            <Trash className="mr-2 h-4 w-4" />
-                            Eliminar
-                        </Button>
-                    </div>
-                </div>
+                <SaleHeader
+                    sale={sale}
+                    statuses={statuses}
+                    isEditable={isEditable}
+                    isOverdue={isOverdue}
+                    formatDate={formatDate}
+                    getStatusBadgeVariant={getStatusBadgeVariant}
+                    handleStatusChange={handleStatusChange}
+                    setDeleteAlertOpen={setDeleteAlertOpen}
+                />
 
                 {/* Conteúdo principal */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -434,542 +369,56 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
 
                             {/* ABA 1: DETALHES */}
                             <TabsContent value="details">
-                                <div className="space-y-6 pt-6">
-                                    {/* Cabeçalho com dados do cliente e informações gerais */}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Detalhes da Venda</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="grid gap-4 text-sm md:grid-cols-2 md:text-base">
-                                            <div>
-                                                <h3 className="text-lg font-medium">Cliente</h3>
-                                                {sale.customer ? (
-                                                    <div className="mt-1 space-y-1">
-                                                        <p className="font-medium">{sale.customer.name}</p>
-                                                        <p className="text-muted-foreground text-sm">{sale.customer.email}</p>
-                                                        {sale.customer.phone && (
-                                                            <p className="text-muted-foreground text-sm">{sale.customer.phone}</p>
-                                                        )}
-                                                        {sale.customer.address && (
-                                                            <p className="text-muted-foreground text-sm whitespace-pre-line">
-                                                                {sale.customer.address}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-muted-foreground mt-1">Sem cliente associado</p>
-                                                )}
-                                            </div>
-
-                                            <div>
-                                                <h3 className="text-lg font-medium">Informações da Venda</h3>
-                                                <div className="mt-1 space-y-1">
-                                                    <div className="flex justify-between">
-                                                        <span className="text-muted-foreground">Número:</span>
-                                                        <span className="font-medium">{sale.sale_number}</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-muted-foreground">Emitida em:</span>
-                                                        <span>{formatDate(sale.issue_date)}</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-muted-foreground">Vencimento:</span>
-                                                        <span>{formatDate(sale.due_date)}</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-muted-foreground">Moeda:</span>
-                                                        <span>
-                                                            {sale.currency?.code} ({sale.currency?.symbol})
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-muted-foreground">Taxa de Câmbio:</span>
-                                                        <span>{sale.exchange_rate}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-
-                                    {/* Se vier de uma cotação, mostrar a informação */}
-                                    {sale.quotation && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Cotação Original</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="flex items-center">
-                                                    <FileBox className="text-muted-foreground mr-2 h-5 w-5" />
-                                                    <p>
-                                                        Esta venda foi criada a partir da cotação{' '}
-                                                        <Link href={`/admin/quotations/${sale.quotation.id}`} className="font-medium hover:underline">
-                                                            {sale.quotation.quotation_number}
-                                                        </Link>{' '}
-                                                        emitida em {formatDate(sale.quotation.issue_date)}
-                                                    </p>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
-
-                                    {/* Tabela de itens */}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Itens</CardTitle>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="overflow-x-auto">
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead>Produto</TableHead>
-                                                            <TableHead className="text-right">Quantidade</TableHead>
-                                                            <TableHead className="text-right">Preço Unitário</TableHead>
-                                                            <TableHead className="text-right">Desconto</TableHead>
-                                                            <TableHead className="text-right">Subtotal</TableHead>
-                                                            <TableHead className="text-right">Imposto</TableHead>
-                                                            <TableHead className="text-right">Total</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {sale.items && sale.items.length > 0 ? (
-                                                            sale.items.map((item, index) => (
-                                                                <TableRow key={item.id || index}>
-                                                                    <TableCell>
-                                                                        <div className="font-medium">{item.name}</div>
-                                                                        {item.description && (
-                                                                            <div className="text-muted-foreground text-sm">
-                                                                                {item.description.replace(/<[^>]*>/g, '').length > 50
-                                                                                    ? `${item.description.replace(/<[^>]*>/g, '').substring(0, 50)}...`
-                                                                                    : item.description.replace(/<[^>]*>/g, '')}
-                                                                            </div>
-                                                                        )}
-                                                                        {item.warehouse && (
-                                                                            <div className="text-muted-foreground mt-1 text-xs">
-                                                                                Armazém: {item.warehouse.name}
-                                                                                {hasStockWarning(item) && (
-                                                                                    <span className="text-destructive ml-1 font-medium">
-                                                                                        (Stock insuficiente: {item.available_quantity} disponível)
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        )}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-right">
-                                                                        {item.quantity} {item.unit ? item.unit : ''}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-right">{formatCurrency(item.unit_price)}</TableCell>
-                                                                    <TableCell className="text-right">
-                                                                        {item.discount_percentage > 0 ? (
-                                                                            <div>
-                                                                                <div>{item.discount_percentage}%</div>
-                                                                                <div className="text-muted-foreground text-xs">
-                                                                                    ({formatCurrency(item.discount_amount)})
-                                                                                </div>
-                                                                            </div>
-                                                                        ) : (
-                                                                            '-'
-                                                                        )}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-right">{formatCurrency(item.subtotal)}</TableCell>
-                                                                    <TableCell className="text-right">
-                                                                        {item.tax_percentage > 0 ? (
-                                                                            <div>
-                                                                                <div>{item.tax_percentage}%</div>
-                                                                                <div className="text-muted-foreground text-xs">
-                                                                                    ({formatCurrency(item.tax_amount)})
-                                                                                </div>
-                                                                            </div>
-                                                                        ) : (
-                                                                            'Isento'
-                                                                        )}
-                                                                    </TableCell>
-                                                                    <TableCell className="text-right font-medium">
-                                                                        {formatCurrency(item.total)}
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ))
-                                                        ) : (
-                                                            <TableRow>
-                                                                <TableCell colSpan={7} className="py-4 text-center">
-                                                                    Nenhum item encontrado nesta venda
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        )}
-                                                    </TableBody>
-                                                </Table>
-                                            </div>
-                                        </CardContent>
-                                        <CardFooter className="flex flex-col items-end">
-                                            <div className="w-full max-w-xs space-y-2">
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">Subtotal:</span>
-                                                    <span>{formatCurrency(sale.subtotal)}</span>
-                                                </div>
-
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">Desconto:</span>
-                                                    <span>{formatCurrency(sale.discount_amount)}</span>
-                                                </div>
-
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">IVA ({sale.include_tax ? 'incluído' : 'excluído'}):</span>
-                                                    <span>{formatCurrency(sale.tax_amount)}</span>
-                                                </div>
-
-                                                {sale.shipping_amount > 0 && (
-                                                    <div className="flex justify-between">
-                                                        <span className="text-muted-foreground">Envio:</span>
-                                                        <span>{formatCurrency(sale.shipping_amount)}</span>
-                                                    </div>
-                                                )}
-
-                                                <Separator />
-                                                <div className="flex justify-between">
-                                                    <span className="font-medium">Total:</span>
-                                                    <span className="text-lg font-bold">{formatCurrency(sale.total)}</span>
-                                                </div>
-                                                {(sale.amount_paid > 0 || sale.amount_due > 0) && (
-                                                    <>
-                                                        <div className="flex justify-between">
-                                                            <span className="text-muted-foreground">Pago:</span>
-                                                            <span className="text-emerald-600">{formatCurrency(sale.amount_paid)}</span>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <span className="font-medium">Em dívida:</span>
-                                                            <span
-                                                                className={cn(
-                                                                    'font-bold',
-                                                                    sale.amount_due > 0 ? 'text-destructive' : 'text-emerald-600',
-                                                                )}
-                                                            >
-                                                                {formatCurrency(sale.amount_due)}
-                                                            </span>
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </CardFooter>
-                                    </Card>
-
-                                    {/* Notas e termos */}
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>Notas e Termos</CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            {sale.notes ? (
-                                                <div>
-                                                    <h3 className="font-medium">Notas</h3>
-                                                    <p className="mt-1 whitespace-pre-line">{sale.notes}</p>
-                                                </div>
-                                            ) : null}
-
-                                            {sale.terms ? (
-                                                <div>
-                                                    <h3 className="font-medium">Termos e Condições</h3>
-                                                    <p className="mt-1 whitespace-pre-line">{sale.terms}</p>
-                                                </div>
-                                            ) : null}
-
-                                            {!sale.notes && !sale.terms && <p className="text-muted-foreground">Nenhuma nota ou termo adicional</p>}
-                                        </CardContent>
-                                    </Card>
-                                </div>
+                                <SaleDetailsCard
+                                    sale={sale}
+                                    formatDate={formatDate}
+                                    formatCurrency={formatCurrency}
+                                    hasStockWarning={hasStockWarning}
+                                />
                             </TabsContent>
 
                             {/* ABA 2: PAGAMENTOS */}
                             <TabsContent value="payments">
-                                <div className="space-y-6 pt-6">
-                                    {sale.payments && sale.payments.length > 0 ? (
-                                        <Card>
-                                            <CardHeader>
-                                                <div className="flex flex-wrap justify-between gap-4">
-                                                    <CardTitle>Histórico de Pagamentos</CardTitle>
-                                                    <span>
-                                                        {sale.amount_due > 0 && (
-                                                            <Button
-                                                                className="w-full"
-                                                                onClick={() => setPaymentDialogOpen(true)}
-                                                                disabled={['draft', 'canceled'].includes(sale.status)}
-                                                            >
-                                                                <Banknote className="mr-2 h-4 w-4" />
-                                                                Registrar Pagamento
-                                                            </Button>
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead>Data</TableHead>
-                                                            <TableHead>Método</TableHead>
-                                                            <TableHead>Referência</TableHead>
-                                                            <TableHead>Notas</TableHead>
-                                                            <TableHead className="text-right">Valor</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {sale.payments.map((payment) => (
-                                                            <TableRow key={payment.id}>
-                                                                <TableCell>{formatDate(payment.payment_date)}</TableCell>
-                                                                <TableCell>
-                                                                    {paymentMethods.find((m) => m.value === payment.payment_method)?.label ||
-                                                                        payment.payment_method}
-                                                                </TableCell>
-                                                                <TableCell>{payment.reference || '-'}</TableCell>
-                                                                <TableCell>
-                                                                    {payment.notes
-                                                                        ? payment.notes.length > 50
-                                                                            ? `${payment.notes.substring(0, 50)}...`
-                                                                            : payment.notes
-                                                                        : '-'}
-                                                                </TableCell>
-                                                                <TableCell className="text-right font-medium">
-                                                                    {formatCurrency(payment.amount)}
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                            </CardContent>
-                                        </Card>
-                                    ) : (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Histórico de Pagamentos</CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <p className="text-muted-foreground py-4 text-center">Nenhum pagamento registrado para esta venda.</p>
-                                            </CardContent>
-                                        </Card>
-                                    )}
-                                </div>
+                                <PaymentsTab
+                                    sale={sale}
+                                    paymentMethods={paymentMethods}
+                                    formatDate={formatDate}
+                                    formatCurrency={formatCurrency}
+                                    setPaymentDialogOpen={setPaymentDialogOpen}
+                                />
                             </TabsContent>
 
                             {/* ABA 3: GUIAS DE ENTREGA */}
                             <TabsContent value="delivery-guides">
-                                <div className="space-y-6 pt-6">
-                                    <Card>
-                                        <CardHeader>
-                                            <div className="flex items-center justify-between gap-4">
-                                                <CardTitle>Guias de Entrega</CardTitle>
-                                                <Button onClick={() => setDeliveryGuideDialogOpen(true)}>
-                                                    <Plus className="mr-2 h-4 w-4" />
-                                                    <span>Adicionar Nova Guia</span>
-                                                </Button>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="overflow-x-auto">
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead>#</TableHead>
-                                                            <TableHead>Nota</TableHead>
-                                                            <TableHead>Data</TableHead>
-                                                            <TableHead>Anexo</TableHead>
-                                                            <TableHead className="text-right"></TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {sale.delivery_guides && sale.delivery_guides.length > 0 ? (
-                                                            sale.delivery_guides.map((delivery_guide: any) => (
-                                                                <TableRow key={delivery_guide.id}>
-                                                                    <TableCell>{delivery_guide.id || '-'}</TableCell>
-                                                                    <TableCell>{delivery_guide.notes || 'Sem nota'}</TableCell>
-                                                                    <TableCell>{formatDate(delivery_guide.created_at)}</TableCell>
-                                                                    <TableCell className="font-medium">-</TableCell>
-                                                                    <TableCell className="flex gap-1 text-right font-medium">
-                                                                        <Button>
-                                                                            <Upload className="mr-2 h-4 w-4" />
-                                                                            Carregar Doc.
-                                                                        </Button>
-                                                                        <Button variant="outline">
-                                                                            <Printer className="h-4 w-4" />
-                                                                        </Button>
-                                                                        <Button variant="outline">
-                                                                            <Eye className="h-4 w-4" />
-                                                                        </Button>
-                                                                        <Button variant="outline" className="text-red-600">
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ))
-                                                        ) : (
-                                                            <TableRow>
-                                                                <TableCell colSpan={5} className="text-muted-foreground py-4 text-center">
-                                                                    Nenhuma guia de entrega encontrada.
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        )}
-                                                    </TableBody>
-                                                </Table>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                </div>
+                                <DeliveryGuidesTab
+                                    sale={sale}
+                                    formatDate={formatDate}
+                                    setDeliveryGuideDialogOpen={setDeliveryGuideDialogOpen}
+                                />
+                            </TabsContent>
+
+                            {/* ABA 4: RECEITA */}
+                            <TabsContent value="revenue">
+                                <RevenueTab
+                                    sale={sale}
+                                    formatCurrency={formatCurrency}
+                                />
                             </TabsContent>
                         </Tabs>
                     </div>
 
-                    {/* Coluna da direita - Informações e ações globais (Permanece a mesma) */}
-                    <div className="space-y-6">
-                        {/* Resumo Financeiro */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Resumo Financeiro</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground">Valor Total:</span>
-                                    <span className="font-bold">{formatCurrency(sale.total)}</span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-muted-foreground">Valor Pago:</span>
-                                    <span className="text-emerald-600">{formatCurrency(sale.amount_paid)}</span>
-                                </div>
-
-                                <Separator />
-
-                                <div className="flex items-center justify-between">
-                                    <span className="font-medium">Valor em Dívida:</span>
-                                    <span className={cn('text-lg font-bold', sale.amount_due > 0 ? 'text-destructive' : 'text-emerald-600')}>
-                                        {formatCurrency(sale.amount_due)}
-                                    </span>
-                                </div>
-
-                                {/* Botão de registrar pagamento */}
-                                {sale.amount_due > 0 && (
-                                    <Button
-                                        className="w-full"
-                                        onClick={() => setPaymentDialogOpen(true)}
-                                        disabled={['draft', 'canceled'].includes(sale.status)}
-                                    >
-                                        <Banknote className="mr-2 h-4 w-4" />
-                                        Registrar Pagamento
-                                    </Button>
-                                )}
-                            </CardContent>
-                        </Card>
-                        {/* Status e informações */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Status</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <h3 className="text-muted-foreground text-sm font-medium">Status atual</h3>
-                                    <Badge variant={getStatusBadgeVariant(sale.status)} className="mt-1">
-                                        {statuses.find((s) => s.value === sale.status)?.label || sale.status}
-                                    </Badge>
-
-                                    {isOverdue() && (
-                                        <div className="text-destructive mt-2 flex items-center">
-                                            <AlertCircle className="mr-1 h-4 w-4" />
-                                            <span className="text-sm">Esta venda está vencida</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <Separator />
-
-                                <div>
-                                    <h3 className="text-muted-foreground text-sm font-medium">Utilizador</h3>
-                                    <div className="mt-1 flex items-center">
-                                        <User className="text-muted-foreground mr-2 h-4 w-4" />
-                                        <span>{sale.user?.name || 'Sistema'}</span>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h3 className="text-muted-foreground text-sm font-medium">Datas</h3>
-                                    <div className="mt-1 space-y-1">
-                                        <div className="flex items-center">
-                                            <Calendar className="text-muted-foreground mr-2 h-4 w-4" />
-                                            <span>Emitida em {formatDate(sale.issue_date)}</span>
-                                        </div>
-                                        {sale.due_date && (
-                                            <div className="flex items-center">
-                                                <Calendar className="text-muted-foreground mr-2 h-4 w-4" />
-                                                <span>Vencimento em {formatDate(sale.due_date)}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                <div>
-                                    <h3 className="text-muted-foreground text-sm font-medium">Moeda</h3>
-                                    <div className="mt-1 flex items-center">
-                                        <CreditCard className="text-muted-foreground mr-2 h-4 w-4" />
-                                        <span>
-                                            {sale.currency?.code} ({sale.currency?.name})
-                                        </span>
-                                    </div>
-                                    <div className="text-muted-foreground mt-1 flex items-center text-sm">
-                                        <span>Taxa de câmbio: {sale.exchange_rate}</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Ações */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Ações</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                <Button className="w-full justify-start" asChild>
-                                    <a href={`/admin/sales/${sale.id}/pdf?download=true`} target="_blank">
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Descarregar PDF
-                                    </a>
-                                </Button>
-
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-start"
-                                    disabled={!sale.customer || !sale.customer.email}
-                                    onClick={() => router.post(`/admin/sales/${sale.id}/send-email`)}
-                                >
-                                    <Send className="mr-2 h-4 w-4" />
-                                    Enviar por Email
-                                    {(!sale.customer || !sale.customer.email) && <span className="text-destructive ml-1 text-xs">(Sem email)</span>}
-                                </Button>
-
-                                <Button
-                                    variant="outline"
-                                    className="w-full justify-start"
-                                    onClick={() => router.post(`/admin/sales/${sale.id}/duplicate`)}
-                                >
-                                    <Copy className="mr-2 h-4 w-4" />
-                                    Duplicar Venda
-                                </Button>
-
-                                {isEditable() && (
-                                    <>
-                                        <Button variant="outline" className="w-full justify-start" asChild>
-                                            <Link href={`/admin/sales/${sale.id}/edit`}>
-                                                <Edit className="mr-2 h-4 w-4" />
-                                                Editar Venda
-                                            </Link>
-                                        </Button>
-
-                                        <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)} className="w-full justify-start">
-                                            <Trash className="mr-2 h-4 w-4" />
-                                            Eliminar Venda
-                                        </Button>
-                                    </>
-                                )}
-                            </CardContent>
-                        </Card>
-                    </div>
+                    {/* Coluna da direita - Informações e ações globais */}
+                    <FinancialSummary
+                        sale={sale}
+                        formatCurrency={formatCurrency}
+                        isEditable={isEditable}
+                        isOverdue={isOverdue}
+                        formatDate={formatDate}
+                        getStatusBadgeVariant={getStatusBadgeVariant}
+                        statuses={statuses}
+                        setPaymentDialogOpen={setPaymentDialogOpen}
+                        setDeleteAlertOpen={setDeleteAlertOpen}
+                    />
                 </div>
             </div>
 
