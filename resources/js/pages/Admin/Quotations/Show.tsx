@@ -131,7 +131,7 @@ export default function Show({ quotation, statuses }: Props) {
           description: 'A cotação foi convertida em venda com sucesso!',
           variant: 'success',
         });
-        router.visit('/admin/sales'); // Redirecionar para a lista de vendas após a conversão
+        // router.visit('/admin/sales'); // Redirecionar para a lista de vendas após a conversão
       },
       onError: (errors) => {
         toast({
@@ -523,7 +523,7 @@ export default function Show({ quotation, statuses }: Props) {
                   Duplicar Cotação
                 </Button>
 
-                {quotation.status === 'approved' && (
+                {(quotation.status === 'approved' || quotation.status === 'draft') && (
                   <Button
                     variant="default"
                     className="w-full justify-start"

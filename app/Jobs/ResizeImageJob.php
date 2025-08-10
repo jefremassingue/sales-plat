@@ -58,18 +58,39 @@ class ResizeImageJob implements ShouldQueue
 
             if ($originalWidth > $this->data['width'] && $originalHeight > $this->data['height']) {
 
+                // Redimensionar
                 $image->scale(
                     $this->data['width'],
                     $this->data['height']
                 );
 
+                // Marca d’água sempre aplicada
+                $watermark = $manager->read(public_path('logo.png'));
+
+                // Ajusta a largura da marca d’água para 25% da imagem
+                $watermark->scale(
+                    intval($image->width() * 0.25),
+                    null
+                );
+
+                // Insere no canto inferior direito com margem de 10px
+                $image->place($watermark, 'bottom-right', 10, 10);
+
+                // Criar caminho para a nova imagem
+                $new_path = str_replace(
+                    $this->data['file'],
+                    $this->data['prefix'] . '-' . $this->data['file'],
+                    $this->data['path']
+                );
+
                 $new_path =
-                   str_replace($this->data['file'],  $this->data['prefix'] .
-                   '-' .
-                   $this->data['file'], $this->data['path']
-                    )
-                   ;
-                ;
+                    str_replace(
+                        $this->data['file'],
+                        $this->data['prefix'] .
+                            '-' .
+                            $this->data['file'],
+                        $this->data['path']
+                    );;
 
                 Storage::disk($this->data['storage'])->put($new_path, $image->toJpeg()->__toString());
 
@@ -86,7 +107,6 @@ class ResizeImageJob implements ShouldQueue
                 $image->typeable_id = $this->imageId;
                 $image->typeable_type = Image::class;
                 $image->save();
-
             }
         } catch (\Exception $e) {
             ImageResizeLog::create([

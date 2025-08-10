@@ -19,16 +19,19 @@ class DeliveryGuide extends Model
      */
     protected $fillable = [
         'sale_id',
+        'code',
         'notes',
-        'reference'
+        'reference',
+        'verified_file'
     ];
 
-    
-    /**
-     * Relação com a venda
-     */
     public function sale()
     {
         return $this->belongsTo(Sale::class);
     }
+    public function items()
+    {
+        return $this->hasMany(DeliveryGuideItem::class);
+    }
+
 }

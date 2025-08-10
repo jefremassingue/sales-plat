@@ -776,7 +776,7 @@ class QuotationController extends Controller implements HasMiddleware
     {
         try {
             // Verificar se a cotação pode ser convertida
-            if (!in_array($quotation->status, ['sent', 'approved'])) {
+            if (!in_array($quotation->status, ['sent', 'draft', 'approved'])) {
                 return redirect()->back()->with('error', 'Apenas cotações enviadas ou aprovadas podem ser convertidas em venda.');
             }
 

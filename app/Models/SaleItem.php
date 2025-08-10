@@ -38,6 +38,8 @@ class SaleItem extends Model
         'subtotal' => 'float',
         'total' => 'float',
     ];
+    
+    protected $appends = ['delivered_quantity', 'pending_quantity'];
 
     /**
      * Relação com a venda
@@ -69,6 +71,23 @@ class SaleItem extends Model
     public function warehouse()
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function deliveryGuideItems()
+    {
+        return $this->hasMany(DeliveryGuideItem::class);
+    }
+
+    // Calcula o total já entregue para este item
+    public function getDeliveredQuantityAttribute()
+    {
+        return $this->deliveryGuideItems()->sum('quantity');
+    }
+
+    // Calcula o que falta entregar
+    public function getPendingQuantityAttribute()
+    {
+        return $this->quantity - $this->getDeliveredQuantityAttribute();
     }
 
     /**

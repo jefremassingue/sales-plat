@@ -1,0 +1,137 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\DeliveryGuide;
+use App\Models\Sale;
+use App\Models\SaleItem;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+class DeliveryGuideController extends Controller
+{
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request, Sale $sale)
+    {
+        $validator = Validator::make($request->all(), [
+            'notes' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.sale_item_id' => 'required|exists:sale_items,id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Custom validation to check pending quantities
+        foreach ($request->items as $itemData) {
+            $saleItem = SaleItem::find($itemData['sale_item_id']);
+            if ($itemData['quantity'] > $saleItem->pending_quantity) {
+                return redirect()->back()->withErrors([
+                    'items' => "A quantidade para o item '{$saleItem->name}' excede a quantidade pendente de {$saleItem->pending_quantity}."
+                ])->withInput();
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $deliveryGuide = $sale->deliveryGuides()->create([
+                'notes' => $request->notes,
+            ]);
+
+            foreach ($request->items as $itemData) {
+                // dd($itemData['sale_item_id']);
+                $deliveryGuide->items()->create([
+                    'sale_item_id' => $itemData['sale_item_id'],
+                    'quantity' => $itemData['quantity'],
+                    'notes' => $itemData['notes'] ?? '',
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.sales.show', $sale);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            dd($e);
+            return redirect()->back()->with('error', 'Ocorreu um erro ao criar a guia de entrega: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Sale $sale, DeliveryGuide $deliveryGuide)
+    {
+        $validator = Validator::make($request->all(), [
+            'notes' => 'nullable|string|max:1000',
+            'items' => 'required|array|min:1',
+            'items.*.sale_item_id' => 'required|exists:sale_items,id',
+            'items.*.quantity' => 'required|numeric|min:0', // 0 is allowed to remove an item
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Custom validation for update
+        foreach ($request->items as $itemData) {
+            $saleItem = SaleItem::find($itemData['sale_item_id']);
+            $originalGuideItem = $deliveryGuide->items()->where('sale_item_id', $saleItem->id)->first();
+            $originalQuantity = $originalGuideItem ? $originalGuideItem->quantity : 0;
+            
+            // The max allowed quantity is the current pending quantity plus what was originally on this guide
+            $maxAllowed = $saleItem->pending_quantity + $originalQuantity;
+
+            if ($itemData['quantity'] > $maxAllowed) {
+                return redirect()->back()->withErrors([
+                    'items' => "A quantidade para o item '{$saleItem->name}' excede o máximo permitido de {$maxAllowed}."
+                ])->withInput();
+            }
+        }
+
+        DB::beginTransaction();
+        try {
+            $deliveryGuide->update([
+                'notes' => $request->notes,
+            ]);
+
+            // Sync items
+            $deliveryGuide->items()->delete(); // Remove old items
+            foreach ($request->items as $itemData) {
+                if ($itemData['quantity'] > 0) { // Only add items with quantity > 0
+                    $deliveryGuide->items()->create([
+                        'sale_item_id' => $itemData['sale_item_id'],
+                        'quantity' => $itemData['quantity'],
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.sales.show', $sale)->with('success', 'Guia de entrega atualizada com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Ocorreu um erro ao atualizar a guia de entrega: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Sale $sale, DeliveryGuide $deliveryGuide)
+    {
+        try {
+            $deliveryGuide->delete();
+            return redirect()->route('admin.sales.show', $sale)->with('success', 'Guia de entrega eliminada com sucesso!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Ocorreu um erro ao eliminar a guia de entrega: ' . $e->getMessage());
+        }
+    }
+}

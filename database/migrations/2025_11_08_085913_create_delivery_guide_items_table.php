@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignUlid('delivery_guide_id')->constrained()->cascadeOnDelete();
             $table->foreignUlid('sale_item_id')->constrained()->cascadeOnDelete();
             $table->decimal('quantity', 10, 2)->comment('Quantidade');
+            $table->text('notes')->nullable()->comment('Notas adicionais');
             $table->timestamps();
             $table->softDeletes();
         });

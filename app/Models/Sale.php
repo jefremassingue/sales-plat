@@ -105,7 +105,7 @@ class Sale extends Model
     public function warehouses()
     {
         return $this->belongsToMany(Warehouse::class, 'sale_items')
-                    ->distinct();
+            ->distinct();
     }
 
     /**
@@ -127,6 +127,12 @@ class Sale extends Model
     {
         return in_array($this->status, ['draft', 'pending']);
     }
+
+    public function deliveryGuides()
+    {
+        return $this->hasMany(DeliveryGuide::class);
+    }
+
 
     /**
      * Calcular os totais da venda

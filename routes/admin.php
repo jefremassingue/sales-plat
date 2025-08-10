@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\Admin\DeliveryGuideController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -64,6 +65,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('sales/{sale}/pdf', [SaleController::class, 'generatePdf'])->name('sales.pdf');
     Route::post('sales/{sale}/send-email', [SaleController::class, 'sendEmail'])->name('sales.send-email');
     Route::post('sales/{sale}/duplicate', [SaleController::class, 'duplicate'])->name('sales.duplicate');
+
+    // Rotas para guias de entrega
+    Route::resource('sales.delivery-guides', DeliveryGuideController::class)
+        ->except(['index', 'show', 'create', 'edit'])
+        ->shallow();
+
 
     // Rotas para métodos de pagamento
     Route::prefix('settings')->name('settings.')->group(function () {

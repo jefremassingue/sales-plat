@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('delivery_guides', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('code')->nullable();
             $table->foreignUlid('sale_id')->constrained()->cascadeOnDelete();
             $table->text('notes')->nullable()->comment('Notas adicionais');
+            $table->string('verified_file')->nullable();
             $table->string('reference')->nullable()->comment('Referência do pagamento');
             $table->timestamps();
             $table->softDeletes();

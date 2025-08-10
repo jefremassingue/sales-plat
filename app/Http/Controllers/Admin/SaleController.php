@@ -448,10 +448,17 @@ class SaleController extends Controller implements HasMiddleware
      */
     public function show(Sale $sale)
     {
-        $sale->load(['customer', 'user', 'currency', 'items' => function ($query) {
-            $query->with(['product', 'productVariant', 'warehouse']);
-        }, 'payments']);
-
+        $sale->load([
+            'customer',
+            'user',
+            'currency',
+            'items' => function ($query) {
+                $query->with(['product', 'productVariant', 'warehouse', 'deliveryGuideItems']);
+            },
+            'payments',
+            'deliveryGuides.items.saleItem'
+        ]);
+        // return $sale;
         return Inertia::render('Admin/Sales/Show', [
             'sale' => $sale,
             'statuses' => $this->getSaleStatuses(),
