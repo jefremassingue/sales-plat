@@ -19,7 +19,6 @@ interface SummaryProps {
   status: string;
   isSubmitting: boolean;
   formatCurrency: (value: number) => string;
-  onSubmit: () => void;
   paymentMethods: {value: string; label: string}[];
   onPaymentMethodChange: (method: string) => void;
   onPaymentAmountChange: (amount: string) => void;
@@ -33,7 +32,6 @@ export default function SaleSummary({
   status,
   isSubmitting,
   formatCurrency,
-  onSubmit,
   paymentMethods,
   onPaymentMethodChange,
   onPaymentAmountChange,
@@ -49,7 +47,7 @@ export default function SaleSummary({
     const difference = amountValue - totals.total;
     setChangeAmount(difference);
 
-    if (amountValue >= totals.total) {
+    if (totals.total > 0 && amountValue >= totals.total) {
       setPaymentStatus('paid');
     } else if (amountValue > 0) {
       setPaymentStatus('partial');
@@ -149,8 +147,7 @@ export default function SaleSummary({
             className="w-full"
             size="lg"
             disabled={isSubmitting || itemCount === 0}
-            onClick={onSubmit}
-            type="button"
+            type="submit" // << CORREÇÃO: Tipo 'submit' para acionar o form
           >
             {isSubmitting ? (
               <>

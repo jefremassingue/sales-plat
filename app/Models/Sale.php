@@ -35,6 +35,11 @@ class Sale extends Model
         'quotation_id',
         'shipping_address',
         'billing_address',
+        'commission_rate',
+        'backup_rate',
+        'total_cost',
+        'commission_amount',
+        'backup_amount'
     ];
 
     protected $casts = [
@@ -81,6 +86,14 @@ class Sale extends Model
     public function payments()
     {
         return $this->hasMany(SalePayment::class);
+    }
+
+    /**
+     * Relação com as despesas
+     */
+    public function expenses()
+    {
+        return $this->hasMany(SaleExpense::class);
     }
 
     /**
@@ -141,26 +154,43 @@ class Sale extends Model
     {
         $items = $this->items;
 
+        // 1. Calcular os totais básicos a partir dos itens.
         $subtotal = $items->sum('subtotal');
         $taxAmount = $items->sum('tax_amount');
         $discountAmount = $items->sum('discount_amount');
-        // $costAmount = $items->sum('cost');
+        $totalCost = $items->sum(function ($item) {
+            return $item->quantity * $item->cost;
+        });
 
-        $total = $subtotal - $discountAmount;
+        // 2. Definir a base de cálculo para comissões.
+        // Este é o valor real da receita da empresa, sobre o qual a comissão incide.
+        // (Subtotal - Descontos). Não inclui IVA nem frete.
+        $commissionableValue = $subtotal - $discountAmount;
+
+        // 3. Calcular a comissão e o backup sobre a base de cálculo correta.
+        $commissionAmount = $commissionableValue * ($this->commission_rate / 100);
+        $backupAmount = $commissionableValue * ($this->backup_rate / 100);
+
+        // 4. Calcular o valor total final da fatura (o que o cliente paga).
+        $total = $commissionableValue; // Começa com a base
         if ($this->include_tax) {
-            $total += $taxAmount;
+            $total += $taxAmount; // Adiciona o IVA
         }
+        $total += $this->shipping_amount ?? 0; // Adiciona o frete
 
-        $total += $this->shipping_amount ?? 0;
+        // 5. Calcular o valor pendente com base no total da fatura.
         $amountDue = $total - $this->amount_paid;
 
+        // 6. Atualizar o registo da venda com todos os valores corretos.
         $this->update([
             'subtotal' => $subtotal,
             'tax_amount' => $taxAmount,
             'discount_amount' => $discountAmount,
-            'total' => $total,
+            'total' => $total,                      // Valor final da fatura
             'amount_due' => $amountDue,
-            // 'cost' => $costAmount
+            'total_cost' => $totalCost,
+            'commission_amount' => $commissionAmount, // Valor de comissão corrigido
+            'backup_amount' => $backupAmount        // Valor de backup corrigido
         ]);
     }
 

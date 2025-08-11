@@ -21,6 +21,8 @@ class SaleItem extends Model
         'unit',
         'unit_price',
         'cost',
+        'commission_rate',
+        'backup_rate',
         'discount_percentage',
         'discount_amount',
         'tax_percentage',

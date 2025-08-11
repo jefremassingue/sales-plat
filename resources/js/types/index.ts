@@ -20,6 +20,9 @@ export interface SaleItem {
     quantity: number;
     unit: string | null;
     unit_price: number;
+    cost: number;
+    commission_rate: number;
+    backup_rate: number;
     discount_percentage: number;
     discount_amount: number;
     tax_percentage: number;
@@ -62,6 +65,11 @@ export interface Sale {
     payment_method: string | null;
     reference: string | null;
     quotation_id: string | null;
+    commission_rate: number;
+    backup_rate: number;
+    total_cost: number;
+    commission_amount: number;
+    backup_amount: number;
     customer?: {
         id: string;
         name: string;
@@ -84,6 +92,7 @@ export interface Sale {
     };
     items: SaleItem[];
     delivery_guides: DeliveryGuide[];
+    expenses?: SaleExpense[];
     payments?: Array<{
         id: string;
         sale_id: string;
@@ -116,4 +125,13 @@ export interface DeliveryGuide {
             name: string;
         };
     }[];
+}
+
+export interface SaleExpense {
+    id: string;
+    sale_id: string;
+    description: string;
+    amount: number;
+    created_at: string;
+    updated_at: string;
 }

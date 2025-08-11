@@ -13,7 +13,10 @@ use App\Models\Quotation;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\SalePayment;
+use App\Models\SaleExpense;
 use App\Models\Warehouse;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -373,6 +376,11 @@ class SaleController extends Controller implements HasMiddleware
                                 $itemData['description'] = $product->description;
                             }
 
+                            // Definir custo padrão do produto se não foi fornecido
+                            if (!isset($itemData['cost']) || $itemData['cost'] == 0) {
+                                $itemData['cost'] = $product->cost ?? 0;
+                            }
+
                             // Verificar se há inventário suficiente
                             if (!empty($itemData['warehouse_id'])) {
                                 $inventory = Inventory::where('product_id', $itemData['product_id'])
@@ -456,10 +464,13 @@ class SaleController extends Controller implements HasMiddleware
                 $query->with(['product', 'productVariant', 'warehouse', 'deliveryGuideItems']);
             },
             'payments',
+            'expenses',
             'deliveryGuides.items.saleItem',
             'deliveryGuides' => fn($q) => $q->orderByDesc('created_at')
         ]);
         // return $sale;
+        $sale->calculateTotals();
+
         return Inertia::render('Admin/Sales/Show', [
             'sale' => $sale,
             'statuses' => $this->getSaleStatuses(),
@@ -742,6 +753,132 @@ class SaleController extends Controller implements HasMiddleware
     }
 
     /**
+     * Atualizar o custo de um item da venda
+     */
+    public function updateItemCost(Request $request, Sale $sale, SaleItem $item)
+    {
+        $validator = Validator::make($request->all(), [
+            'cost' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Verificar se o item pertence à venda
+            if ($item->sale_id !== $sale->id) {
+                return redirect()->back()->with('error', 'Item não pertence a esta venda.');
+            }
+
+            // Atualizar o custo do item
+            $item->cost = $request->cost;
+            $item->save();
+
+            // Recalcular totais da venda (assumindo que este método existe no modelo Sale)
+            $sale->calculateTotals();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Custo do item atualizado com sucesso.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao atualizar custo do item: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'sale_id' => $sale->id,
+                'item_id' => $item->id,
+                'request' => $request->all()
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao atualizar o custo do item: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Adicionar despesa à venda
+     */
+    public function addExpense(Request $request, Sale $sale)
+    {
+        $validator = Validator::make($request->all(), [
+            'description' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Criar a despesa
+            $sale->expenses()->create([
+                'description' => $request->description,
+                'amount' => $request->amount,
+            ]);
+
+            // Recalcular totais da venda (assumindo que este método existe no modelo Sale)
+            $sale->calculateTotals();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Despesa adicionada com sucesso.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao adicionar despesa: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'sale_id' => $sale->id,
+                'request' => $request->all()
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao adicionar a despesa: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Remover despesa da venda
+     */
+    public function removeExpense(Sale $sale, SaleExpense $expense)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Verificar se a despesa pertence à venda
+            if ($expense->sale_id !== $sale->id) {
+                return redirect()->back()->with('error', 'Despesa não pertence a esta venda.');
+            }
+
+            // Remover a despesa
+            $expense->delete();
+
+            // Recalcular totais da venda (assumindo que este método existe no modelo Sale)
+            $sale->calculateTotals();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Despesa removida com sucesso.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao remover despesa: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'sale_id' => $sale->id,
+                'expense_id' => $expense->id
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao remover a despesa: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Alterar o status da venda
      */
     public function updateStatus(Request $request, Sale $sale)
@@ -819,7 +956,7 @@ class SaleController extends Controller implements HasMiddleware
                 $sufix = 'R';
             }
             // Gerar o PDF
-            $pdf = \PDF::setOptions([
+            $pdf = Pdf::setOptions([
                 'isPhpEnabled' => true,
                 'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled' => true,
@@ -837,7 +974,7 @@ class SaleController extends Controller implements HasMiddleware
             // Definir nome do arquivo
             $filename = match (true) {
                 $type === 'receipt' && $sale->status === 'paid' => 'recibo_' . $sale->sale_number . '_R',
-                $type === 'payment_proof' && $payment !== null => 'pagamento_' . $sale->sale_number . '_P' . $payment->id,
+                $type === 'payment_proof' && isset($paymentId) => 'pagamento_' . $sale->sale_number . '_P' . $paymentId,
                 default => 'fatura_' . $sale->sale_number
             };
             $filename .= '.pdf';
@@ -860,6 +997,63 @@ class SaleController extends Controller implements HasMiddleware
             }
 
             return redirect()->back()->with('error', 'Ocorreu um erro ao gerar o PDF: ' . $e->getMessage());
+        }
+    }
+
+        /**
+     * Atualizar as taxas de comissão e reserva (backup) da venda.
+     */
+    public function updateRates(Request $request, Sale $sale)
+    {
+        // Valida os dados recebidos do frontend
+        $validator = Validator::make($request->all(), [
+            'commission_rate' => 'required|numeric|min:0|max:100',
+            'backup_rate' => 'required|numeric|min:0|max:100',
+        ]);
+
+        // Se a validação falhar, retorna para a página anterior com os erros
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            // Inicia uma transação para garantir a consistência dos dados
+            DB::beginTransaction();
+
+            // Atribui as novas taxas ao modelo da venda
+            $sale->commission_rate = $request->input('commission_rate', 1.5);
+            $sale->backup_rate = $request->input('backup_rate', 10);
+
+            // Chama o método para recalcular todos os totais da venda.
+            // É importante que seu método `Sale::calculateTotals()` inclua a lógica para
+            // recalcular `commission_amount` e `backup_amount` com base nas novas taxas.
+            $sale->calculateTotals();
+
+            // Salva as alterações no banco de dados.
+            // Opcional se `calculateTotals()` já chamar o método save().
+            $sale->save();
+
+            // Confirma as alterações no banco de dados
+            DB::commit();
+
+            // Retorna com uma mensagem de sucesso
+            return redirect()->back()->with('success', 'Taxas de comissão e reserva atualizadas com sucesso.');
+
+        } catch (\Exception $e) {
+            // Em caso de erro, desfaz todas as operações da transação
+            DB::rollBack();
+
+            // Registra o erro para depuração
+            Log::error('Erro ao atualizar taxas da venda: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'sale_id' => $sale->id,
+                'request' => $request->all()
+            ]);
+
+            // Retorna com uma mensagem de erro
+            return redirect()->back()->with('error', 'Ocorreu um erro ao atualizar as taxas: ' . $e->getMessage());
         }
     }
 
@@ -886,7 +1080,7 @@ class SaleController extends Controller implements HasMiddleware
             $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
 
             // Gerar PDF anexo
-            $pdf = \PDF::setOptions([
+            $pdf = Pdf::setOptions([
                 'isPhpEnabled' => true,
                 'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled' => true,
@@ -902,7 +1096,7 @@ class SaleController extends Controller implements HasMiddleware
             $pdfFilename = 'venda_' . $sale->sale_number . '.pdf';
 
             // Enviar email com o PDF anexo
-            \Mail::send('emails.sale', [
+            Mail::send('emails.sale', [
                 'sale' => $sale,
                 'company' => $company,
             ], function ($message) use ($sale, $pdfContent, $pdfFilename, $company) {

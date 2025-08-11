@@ -82,7 +82,7 @@ export default function ShoppingCartComponent({
               items.map((item, index) => {
                 const itemValues = calculateItemValues(item);
                 return (
-                  <TableRow key={item.id || index}>
+                  <TableRow key={item.id}>
                     <TableCell>
                       <div className="font-medium">{item.name}</div>
                       {item.description && (
