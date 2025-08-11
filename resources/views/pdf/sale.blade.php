@@ -736,7 +736,7 @@
 
             <div class="footer-text" style="position: relative; z-index: 1;">
                 <p style="margin: 5px 0;">Documento gerado em {{ now()->format('d/m/Y H:i') }}</p>
-                <p style="margin: 5px 0;">{{ $company['company_name']->value ?? 'Nome da Empresa' }} &copy;
+                <p style="margin: 5px 0;">{{ $company['company_name']->value ?? 'Matony Serviços' }} &copy;
                     {{ date('Y') }}</p>
                 @if (!empty($company['footer_text']->value))
                     <p style="margin: 5px 0;">{!! $company['footer_text']->value !!}</p>

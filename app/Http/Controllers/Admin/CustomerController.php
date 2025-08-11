@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -19,7 +20,7 @@ class CustomerController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:admin-customer.index', only: ['index']),
+            new Middleware('permission:admin-customer.index', only: ['index', 'exportPDF']),
             new Middleware('permission:admin-customer.create', only: ['create', 'store']),
             new Middleware('permission:admin-customer.edit', only: ['edit', 'update']),
             new Middleware('permission:admin-customer.show', only: ['show']),
@@ -344,5 +345,56 @@ class CustomerController extends Controller implements HasMiddleware
         } catch (\Exception $e) {
             return response()->json(['error' => 'Ocorreu um erro ao obter o utilizador'], 500);
         }
+    }
+
+    /**
+     * Export a listing of the resource to PDF.
+     */
+    public function exportPDF(Request $request)
+    {
+        $query = Customer::query();
+
+        // Filtro de busca
+        if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('company_name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('tax_id', 'like', '%' . $search . '%')
+                    ->orWhere('phone', 'like', '%' . $search . '%')
+                    ->orWhere('mobile', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filtro de tipo de cliente
+        if ($request->has('client_type') && $request->client_type !== null) {
+            $query->where('client_type', $request->client_type);
+        }
+
+        // Filtro de estado (ativo/inativo)
+        if ($request->has('active') && $request->active !== null) {
+            $query->where('active', $request->active === 'true');
+        }
+
+        // Ordenação
+        $sortField = $request->input('sort_field', 'name');
+        $sortOrder = $request->input('sort_order', 'asc');
+        $query->orderBy($sortField, $sortOrder);
+
+        // Obter todos os clientes que correspondem aos filtros
+        $customers = $query->get();
+// return view('admin.customers.pdf', compact('customers'));
+        // Gerar o PDF
+        $pdf = Pdf::setOptions([
+            'isPhpEnabled'        => true,
+            'isHtml5ParserEnabled'=> true,
+            'isRemoteEnabled'        => true,            // <-- permite URLs remotas (http/https)
+            'enable_local_file_access'=> true,           // <-- permite file:// e acessos locais
+            'chroot'                 => public_path(),
+        ])->loadView('admin.customers.pdf', compact('customers'));
+
+        // Fazer o download do PDF
+        return $pdf->stream('lista_de_clientes.pdf');
     }
 }

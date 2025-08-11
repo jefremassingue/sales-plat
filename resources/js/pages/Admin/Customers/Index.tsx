@@ -9,20 +9,19 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
+import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type PageProps, type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Building, Contact, Edit, Eye, Filter, GridIcon, ListIcon, MoreHorizontal, Plus, Trash } from 'lucide-react';
+import { Building, Contact, Edit, Eye, FileDown, Filter, GridIcon, ListIcon, Plus, Trash } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface User {
@@ -98,7 +97,19 @@ export default function Index({ customers, filters = {} }: Props) {
     const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
     const { toast } = useToast();
-    const { flash } = usePage().props as any;
+    const { flash } = usePage<PageProps>().props;
+
+    const handleExportPDF = () => {
+        const params = new URLSearchParams();
+        if (searchQuery) params.append('search', searchQuery);
+        if (clientTypeFilter) params.append('client_type', clientTypeFilter);
+        if (activeFilter) params.append('active', activeFilter);
+        if (sortField) params.append('sort_field', sortField);
+        if (sortOrder) params.append('sort_order', sortOrder);
+
+        const url = `/admin/customers/export/pdf?${params.toString()}`;
+        window.open(url, '_blank');
+    };
 
     // Mostrar mensagens flash vindas do backend
     useEffect(() => {
@@ -244,7 +255,7 @@ export default function Index({ customers, filters = {} }: Props) {
                                 </span>
                             </div>
                         </CardTitle>
-                        <Badge variant={customer.active ? 'success' : 'secondary'}>{customer.active ? 'Activo' : 'Inactivo'}</Badge>
+                        <Badge variant={customer.active ? 'default' : 'secondary'}>{customer.active ? 'Activo' : 'Inactivo'}</Badge>
                     </div>
                     <div className="text-muted-foreground text-sm">
                         {customer.email && <div>{customer.email}</div>}
@@ -309,6 +320,10 @@ export default function Index({ customers, filters = {} }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Gerir Clientes</h1>
                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={handleExportPDF}>
+                            <FileDown className="mr-2 h-4 w-4" />
+                            <span>Exportar PDF</span>
+                        </Button>
                         <Button asChild>
                             <Link href="/admin/customers/create">
                                 <Plus className="mr-2 h-4 w-4" />
@@ -499,7 +514,7 @@ export default function Index({ customers, filters = {} }: Props) {
                                                             )}
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant={customer.active ? 'success' : 'secondary'}>
+                                                            <Badge variant={customer.active ? 'default' : 'secondary'}>
                                                                 {customer.active ? 'Activo' : 'Inactivo'}
                                                             </Badge>
                                                         </TableCell>

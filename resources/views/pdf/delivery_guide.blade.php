@@ -332,7 +332,7 @@
             <!-- Rodapé de texto no final do conteúdo -->
             <div class="footer-text">
                 <p style="margin: 5px 0;">Documento gerado em {{ now()->format('d/m/Y H:i') }}</p>
-                <p style="margin: 5px 0;">{{ $company['company_name']->value ?? 'Nome da Empresa' }} &copy; {{ date('Y') }}</p>
+                <p style="margin: 5px 0;">{{ $company['company_name']->value ?? 'Matony Serviços' }} &copy; {{ date('Y') }}</p>
                 @if (!empty($company['footer_text']->value))
                     <p style="margin: 5px 0;">{!! $company['footer_text']->value !!}</p>
                 @else
