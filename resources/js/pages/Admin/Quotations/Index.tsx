@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Calendar, Eye, FileText, Filter, MoreHorizontal, Pencil, Plus, Printer, Trash, Send, Copy, Download, ArrowUpRight } from 'lucide-react';
+import { Calendar, Eye, FileText, Filter, MoreHorizontal, Pencil, Plus, Trash, Send, Copy, Download, ArrowUpRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Customer, Quotation, QuotationStatus } from './_components/types';
@@ -87,7 +87,7 @@ export default function Index({ quotations, customers, statuses, currency, filte
   const [statusUpdating, setStatusUpdating] = useState<boolean>(false);
 
   const { toast } = useToast();
-  const { flash } = usePage().props as any;
+  const { flash } = usePage().props as { flash?: { success?: string; error?: string } };
 
   // Mostrar mensagens flash vindas do backend
   useEffect(() => {
@@ -292,6 +292,27 @@ export default function Index({ quotations, customers, statuses, currency, filte
     });
   };
 
+  // Função para converter cotação em venda
+  const handleConvertToSale = (quotationId: number) => {
+    router.post(`/admin/quotations/${quotationId}/convert-to-sale`, {}, {
+      onBefore: () => confirm('Tem certeza que deseja converter esta cotação em venda?'),
+      onSuccess: () => {
+        toast({
+          title: 'Cotação convertida',
+          description: 'A cotação foi convertida em venda com sucesso!',
+          variant: 'success',
+        });
+      },
+      onError: (errors: Record<string, string>) => {
+        toast({
+          title: 'Erro',
+          description: errors.message || 'Ocorreu um erro ao converter a cotação em venda',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Gestão de Cotações" />
@@ -340,7 +361,7 @@ export default function Index({ quotations, customers, statuses, currency, filte
             <CardContent>
               <div className="flex items-center">
                 <div className="text-2xl font-bold mr-2">{stats?.approved || 0}</div>
-                <Badge variant="success" className="ml-auto">
+                <Badge variant="default" className="ml-auto bg-green-500 text-white">
                   {((stats?.approved || 0) / (stats?.total || 1) * 100).toFixed(1)}%
                 </Badge>
               </div>
@@ -613,6 +634,12 @@ export default function Index({ quotations, customers, statuses, currency, filte
                                 <Copy className="mr-2 h-4 w-4" />
                                 <span>Duplicar Cotação</span>
                               </DropdownMenuItem>
+                              {(quotation.status === 'approved' || quotation.status === 'draft') && (
+                                <DropdownMenuItem onClick={() => handleConvertToSale(quotation.id)}>
+                                  <ArrowUpRight className="mr-2 h-4 w-4" />
+                                  <span>Converter em Venda</span>
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleDeleteClick(quotation.id)}>
                                 <Trash className="mr-2 h-4 w-4" />

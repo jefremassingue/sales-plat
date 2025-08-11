@@ -478,6 +478,182 @@ class SaleController extends Controller implements HasMiddleware
         ]);
     }
 
+    // Adicione este método ao seu App\Http\Controllers\Admin\SaleController.php
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Sale $sale)
+    {
+        try {
+            // Carrega as relações necessárias para preencher o formulário
+            $sale->load(['items', 'customer']);
+
+            // Carrega os dados necessários para os componentes do formulário (dropdowns, catálogos, etc.)
+            // Esta parte é idêntica à do método `create`
+            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit', 'stock_quantity')
+                ->with('category')
+                ->get();
+            $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
+            $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
+            $defaultCurrency = Currency::where('is_default', true)->first();
+            $units = UnitEnum::toArray();
+            $paymentMethods = $this->getPaymentMethods();
+            // Renderiza a página de edição, passando a venda e os outros dados
+            return Inertia::render('Admin/Sales/Edit', [
+                'sale' => $sale, // A venda a ser editada
+                'customers' => $customers,
+                'products' => $products,
+                'warehouses' => $warehouses,
+                'currencies' => $currencies,
+                'defaultCurrency' => $defaultCurrency,
+                'taxRates' => $this->getTaxRates(),
+                'statuses' => $this->getSaleStatuses(),
+                'discountTypes' => $this->getDiscountTypes(),
+                'units' => $units,
+                'paymentMethods' => $paymentMethods,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erro ao carregar formulário de edição de venda: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário de edição: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Sale $sale)
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_id' => 'nullable|exists:customers,id',
+            'issue_date' => 'required|date',
+            'due_date' => 'nullable|date|after_or_equal:issue_date',
+            'status' => 'required|string|in:draft,pending,paid,partial,cancelled',
+            'currency_code' => 'required|string|size:3|exists:currencies,code',
+            'exchange_rate' => 'required|numeric|gt:0',
+            'notes' => 'nullable|string',
+            'terms' => 'nullable|string',
+            'include_tax' => 'boolean',
+            'shipping_amount' => 'nullable|numeric|min:0',
+            'amount_paid' => 'nullable|numeric|min:0',
+            'payment_method' => 'nullable|string',
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'nullable|exists:sale_items,id', // ID do item existente
+            'items.*.name' => 'required|string',
+            'items.*.quantity' => 'required|numeric|gt:0',
+            'items.*.unit_price' => 'required|numeric|gte:0',
+            'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.warehouse_id' => 'nullable|exists:warehouses,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        DB::beginTransaction();
+        try {
+            // --- 1. GERENCIAR ITENS ---
+            $incomingItems = collect($request->items);
+            $incomingItemIds = $incomingItems->pluck('id')->filter();
+
+            $existingItemIds = $sale->items()->pluck('id');
+
+            // Itens a serem removidos (existem no DB, mas não vieram do formulário)
+            $itemsToDeleteIds = $existingItemIds->diff($incomingItemIds);
+
+            foreach ($itemsToDeleteIds as $itemIdToDelete) {
+                $itemToDelete = SaleItem::find($itemIdToDelete);
+                if ($itemToDelete && $itemToDelete->product_id && $itemToDelete->warehouse_id) {
+                    // Devolve a quantidade ao inventário
+                    $inventory = Inventory::where('product_id', $itemToDelete->product_id)
+                        ->where('warehouse_id', $itemToDelete->warehouse_id)
+                        ->first();
+                    if ($inventory) {
+                        $inventory->quantity += $itemToDelete->quantity;
+                        $inventory->save();
+                    }
+                }
+                $itemToDelete->delete();
+            }
+
+            // Atualizar itens existentes e criar novos
+            foreach ($incomingItems as $itemData) {
+                if (isset($itemData['id']) && $itemData['id']) {
+                    // Atualizar item existente
+                    $item = SaleItem::find($itemData['id']);
+                    $originalQuantity = $item->quantity;
+
+                    // Atualiza os dados do item
+                    $item->update($itemData);
+                    $item->calculateValues(); // Recalcula valores do item
+                    $item->save();
+
+
+                    // Ajusta o inventário com base na diferença de quantidade
+                    if ($item->product_id && $item->warehouse_id) {
+                        $quantityDifference = $item->quantity - $originalQuantity;
+                        if ($quantityDifference != 0) {
+                            $inventory = Inventory::where('product_id', $item->product_id)
+                                ->where('warehouse_id', $item->warehouse_id)
+                                ->first();
+                            if ($inventory) {
+                                $inventory->quantity -= $quantityDifference; // Subtrai a diferença
+                                $inventory->save();
+                            }
+                        }
+                    }
+                } else {
+                    // Criar novo item (lógica similar ao store)
+                    $newItem = new SaleItem($itemData);
+                    $newItem->sale_id = $sale->id;
+                    $newItem->calculateValues();
+                    $newItem->save();
+
+                    if ($newItem->product_id && $newItem->warehouse_id) {
+                        // Remove a quantidade do inventário
+                        $inventory = Inventory::where('product_id', $newItem->product_id)
+                            ->where('warehouse_id', $newItem->warehouse_id)
+                            ->first();
+                        if ($inventory) {
+                            $inventory->quantity -= $newItem->quantity;
+                            $inventory->save();
+                        }
+                    }
+                }
+            }
+
+            // --- 2. ATUALIZAR A VENDA PRINCIPAL ---
+            $sale->fill($request->except(['items', 'sale_number'])); // Evita atualizar o número da venda
+
+            // --- 3. RECALCULAR TOTAIS E STATUS ---
+            // É crucial que seu método `calculateTotals` no modelo Sale faça todos os cálculos necessários
+            $sale->calculateTotals(); // Este método deve recalcular subtotal, impostos, descontos, total e valor devido.
+                                     // E também deve chamar o $this->save() no final.
+
+            DB::commit();
+
+            return redirect()->route('admin.sales.show', $sale)
+                ->with('success', 'Venda atualizada com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao atualizar venda: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'sale_id' => $sale->id,
+                'request' => $request->all()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Ocorreu um erro ao atualizar a venda: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
     /**
      * Registrar um novo pagamento para a venda
      */
@@ -1000,7 +1176,7 @@ class SaleController extends Controller implements HasMiddleware
         }
     }
 
-        /**
+    /**
      * Atualizar as taxas de comissão e reserva (backup) da venda.
      */
     public function updateRates(Request $request, Sale $sale)
@@ -1040,7 +1216,6 @@ class SaleController extends Controller implements HasMiddleware
 
             // Retorna com uma mensagem de sucesso
             return redirect()->back()->with('success', 'Taxas de comissão e reserva atualizadas com sucesso.');
-
         } catch (\Exception $e) {
             // Em caso de erro, desfaz todas as operações da transação
             DB::rollBack();

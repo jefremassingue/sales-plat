@@ -22,10 +22,10 @@ export function formatPrice(price: number): string {
 
 export function can(permission: string): boolean {
     const { auth } = usePage<PageProps>().props;
-    return auth.user.can[permission] ?? false;
+    return auth.user.can?.includes(permission) || false;
 }
 
 export function canany(permissions: string[]): boolean {
     const { auth } = usePage<PageProps>().props;
-    return permissions.some((permission) => auth.user.can[permission] ?? false);
+    return permissions.some((permission) => auth.user.can?.includes(permission) ?? false);
 }

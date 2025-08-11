@@ -54,6 +54,8 @@ class Sale extends Model
         'amount_due' => 'float',
         'exchange_rate' => 'float',
         'include_tax' => 'boolean',
+        'shipping_address' => 'string',
+        'billing_address' => 'string',
     ];
 
     /**

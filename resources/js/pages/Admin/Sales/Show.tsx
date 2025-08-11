@@ -1,13 +1,14 @@
 import { DeleteAlert } from '@/components/delete-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { Head, usePage } from '@inertiajs/react';
+import { can } from '@/lib/utils';
 import { BreadcrumbItem } from '@/types/index';
+import { Head, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { CreditCard, FileText, TrendingUp, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import DeliveryGuideDialog from './_components/DeliveryGuideDialog';
 import { DeliveryGuidesTab } from './_components/DeliveryGuidesTab';
 import { FinancialSummary } from './_components/FinancialSummary';
 import { PaymentDialog } from './_components/PaymentDialog';
@@ -16,7 +17,6 @@ import { RevenueTab } from './_components/RevenueTab';
 import { SaleDetailsCard } from './_components/SaleDetailsCard';
 import { SaleHeader } from './_components/SaleHeader';
 import { StatusChangeDialog } from './_components/StatusChangeDialog';
-import { useToast } from '@/components/ui/use-toast';
 
 interface Sale {
     id: number;
@@ -113,7 +113,6 @@ interface Props {
     paymentMethods: PaymentMethod[];
 }
 
-
 export default function Show({ sale, statuses, paymentMethods }: Props) {
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -187,9 +186,9 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
         return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
     };
 
-    const getStatusBadgeVariant = (status: string): "default" | "destructive" | "secondary" | "outline" | null | undefined => {
+    const getStatusBadgeVariant = (status: string): 'default' | 'destructive' | 'secondary' | 'outline' | null | undefined => {
         const statusObj = statuses.find((s) => s.value === status);
-        return statusObj?.color as "default" | "destructive" | "secondary" | "outline" | null | undefined || 'secondary';
+        return (statusObj?.color as 'default' | 'destructive' | 'secondary' | 'outline' | null | undefined) || 'secondary';
     };
 
     const isOverdue = () => {
@@ -227,9 +226,10 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                 {/* Conteúdo principal */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                     {/* Coluna da esquerda - Informações organizadas em ABAS */}
+
                     <div className="col-span-2">
-                        <Tabs defaultValue="details" className="w-full">
-                            <TabsList className="grid w-full grid-cols-4">
+                        <Tabs defaultValue="details" className="">
+                            <TabsList className="flex w-full max-w-[calc(100vw-60px)] justify-between overflow-x-auto">
                                 <TabsTrigger value="details">
                                     <FileText className="mr-2 h-4 w-4" />
                                     Detalhes
@@ -242,10 +242,12 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                                     <Truck className="mr-2 h-4 w-4" />
                                     Guias de Entrega ({sale.delivery_guides?.length || 0})
                                 </TabsTrigger>
-                                <TabsTrigger value="revenue">
-                                    <TrendingUp className="mr-2 h-4 w-4" />
-                                    Receita
-                                </TabsTrigger>
+                                {can('admin-sale.viewrevenue') && (
+                                    <TabsTrigger value="revenue">
+                                        <TrendingUp className="mr-2 h-4 w-4" />
+                                        Receita
+                                    </TabsTrigger>
+                                )}
                             </TabsList>
 
                             {/* ABA 1: DETALHES */}
@@ -271,19 +273,15 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
 
                             {/* ABA 3: GUIAS DE ENTREGA */}
                             <TabsContent value="delivery-guides">
-                                <DeliveryGuidesTab
-                                    sale={sale}
-                                    formatDate={formatDate}
-                                />
+                                <DeliveryGuidesTab sale={sale} formatDate={formatDate} />
                             </TabsContent>
 
                             {/* ABA 4: RECEITA */}
-                            <TabsContent value="revenue">
-                                <RevenueTab
-                                    sale={sale}
-                                    formatCurrency={formatCurrency}
-                                />
-                            </TabsContent>
+                            {can('admin-sale.viewrevenue') && (
+                                <TabsContent value="revenue">
+                                    <RevenueTab sale={sale} formatCurrency={formatCurrency} />
+                                </TabsContent>
+                            )}
                         </Tabs>
                     </div>
 
@@ -310,12 +308,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                 statuses={statuses}
             />
 
-            <PaymentDialog
-                open={paymentDialogOpen}
-                onOpenChange={setPaymentDialogOpen}
-                sale={sale}
-                paymentMethods={paymentMethods}
-            />
+            <PaymentDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen} sale={sale} paymentMethods={paymentMethods} />
 
             <DeleteAlert
                 isOpen={deleteAlertOpen}

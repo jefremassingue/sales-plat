@@ -707,14 +707,14 @@ export default function Index({ sales, customers, warehouses, statuses, currency
                                   <span>Ver Detalhes</span>
                                 </Link>
                               </DropdownMenuItem>
-                              {/* {["draft", "pending"].includes(sale.status) && (
+                              {["draft", "pending"].includes(sale.status) && (
                                 <DropdownMenuItem asChild>
                                   <Link href={`/admin/sales/${sale.id}/edit`}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     <span>Editar</span>
                                   </Link>
                                 </DropdownMenuItem>
-                              )} */}
+                              )}
                               <DropdownMenuItem asChild>
                                 <a href={`/admin/sales/${sale.id}/pdf`} target="_blank">
                                   <FileText className="mr-2 h-4 w-4" />

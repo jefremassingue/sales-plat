@@ -32,7 +32,6 @@ interface ShoppingCartProps {
         total: number;
     };
     onEditItem: (index: number) => void;
-    onUpdateItem: (index: number, field: string, value: string) => void;
 }
 
 export default function ShoppingCartComponent({
@@ -96,7 +95,7 @@ export default function ShoppingCartComponent({
                             <TableHead>Armazém</TableHead>
                             <TableHead className="w-20 text-center">Qtd.</TableHead>
                             <TableHead className="w-24 text-right">Preço</TableHead>
-                            <TableHead className="w-24 text-right">Desconto (%)</TableHead>
+                            <TableHead className="w-24 text-right">Desconto</TableHead>
                             <TableHead className="w-24 text-right">Total</TableHead>
                             <TableHead className="w-16"></TableHead>
                         </TableRow>
@@ -171,7 +170,7 @@ export default function ShoppingCartComponent({
                                         </TableCell>
                                         <TableCell>
                                             <Input
-                                                className="h-7 w-24  text-right"
+                                                className="h-7 text-right"
                                                 ref={(el) => (priceRefs.current[index] = el)}
                                                 value={item.unit_price}
                                                 onChange={(e) => handleLocalChange(index, 'unit_price', e.target.value)}
@@ -179,7 +178,7 @@ export default function ShoppingCartComponent({
                                         </TableCell>
                                         <TableCell>
                                             <Input
-                                                className="h-7 w-16  text-right"
+                                                className="h-7 text-right"
                                                 ref={(el) => (discountRefs.current[index] = el)}
                                                 value={item.discount_percentage || '0'}
                                                 onChange={(e) => handleLocalChange(index, 'discount_percentage', e.target.value)}
