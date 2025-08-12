@@ -3,24 +3,25 @@ import HeroSlider from './_components/HeroSlider';
 import {
     ShieldCheck, Wrench, Truck, ThumbsUp, ChevronDown, ChevronUp, ArrowRight, HelpCircle, BookOpen,
 } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ProductSection from './_components/ProductSection';
 import CategorySection from './_components/CategorySection';
 import { Head } from '@inertiajs/react';
 
 // Types
-interface Product {
+interface ImageVersion { id: string | number; url: string; version: string }
+interface ProductFromServer {
     id: string;
     name: string;
-    category: string;
-    price: string;
-    oldPrice: string | null;
-    imageUrl: string;
-    rating: number;
-    reviews: number;
-    tags: string[];
-    isNew: boolean;
+    slug: string;
+    price: number | string;
+    old_price?: number | string | null; // backend usa old_price
+    category?: { id: string; name: string } | null;
+    main_image?: { id: string | number; versions?: ImageVersion[]; url: string } | null;
+    brand?: string | null;
+    isNew?: boolean;
 }
+interface InlineImage { id: string | number; url?: string; versions?: { id: string | number; url: string; version: string }[] }
 
 interface Category {
     name: string;
@@ -34,11 +35,23 @@ interface FaqItem {
     answer: string;
 }
 
+interface BlogPost {
+    id: string | number;
+    title: string;
+    date: string;
+    excerpt: string;
+    imageUrl: string;
+    link: string;
+    category?: string;
+    author?: string;
+}
+
 interface HomeProps {
-    featuredProducts: Product[] | null;
-    popularProducts: Product[] | null;
-    newProducts: Product[] | null;
-    categories: Category[] | null;
+    featuredProducts: ProductFromServer[] | null;
+    popularProducts: ProductFromServer[] | null;
+    newProducts: ProductFromServer[] | null;
+    _categories: Category[] | null;
+    blogPosts?: BlogPost[] | null;
 }
 
 // --- DADOS MOCKADOS INTERNOS PARA AS NOVAS SEÇÕES (TEMA CLARO) ---
@@ -48,12 +61,6 @@ const featuresData = [
     { icon: <Truck size={36} className="text-green-600" />, title: 'Entrega Rápida', description: 'Receba seus equipamentos com agilidade em todo o país.' },
     { icon: <Wrench size={36} className="text-orange-500" />, title: 'Suporte Especializado', description: 'Nossa equipe está pronta para te ajudar a escolher o EPI ideal.' },
     { icon: <ThumbsUp size={36} className="text-purple-600" />, title: 'Satisfação Comprovada', description: 'Milhares de clientes confiam na nossa qualidade e serviço.' },
-];
-
-const blogPostsData = [
-    { id: 1, title: 'Como Escolher o Capacete de Segurança Ideal para Sua Atividade', date: '15 de Julho, 2024', excerpt: 'Entenda os tipos de capacetes e suas certificações para garantir a máxima proteção...', imageUrl: 'https://picsum.photos/seed/blog_helmet/400/250', link: '/blog/escolher-capacete' },
-    { id: 2, title: 'A Importância das Luvas de Proteção Corretas na Indústria', date: '10 de Julho, 2024', excerpt: 'Luvas não são todas iguais. Saiba como selecionar a luva certa para cada risco...', imageUrl: 'https://picsum.photos/seed/blog_gloves/400/250', link: '/blog/importancia-luvas' },
-    { id: 3, title: 'Novas Normas para Proteção Respiratória: O que Mudou?', date: '05 de Julho, 2024', excerpt: 'Fique por dentro das atualizações nas NRs e como elas afetam a escolha de respiradores...', imageUrl: 'https://picsum.photos/seed/blog_masks/400/250', link: '/blog/normas-respiratoria' },
 ];
 
 const faqData: FaqItem[] = [
@@ -85,7 +92,7 @@ const FaqItem: React.FC<{ faq: FaqItem; isOpen: boolean; onToggle: () => void }>
     </div>
 );
 
-export default function Home({ featuredProducts, popularProducts, newProducts, _categories }: HomeProps) {
+export default function Home({ featuredProducts, popularProducts, newProducts, _categories, blogPosts }: HomeProps) {
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
     const toggleFaq = (index: number) => {
@@ -124,16 +131,43 @@ export default function Home({ featuredProducts, popularProducts, newProducts, _
             </section>
 
             {/* Produtos em Destaque */}
-            <ProductSection title="Produtos em Destaque" products={featuredProducts} bgColor="bg-white" />
+            <ProductSection title="Produtos em Destaque" products={featuredProducts?.map(p => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                category: p.category ? { name: p.category.name } : { name: '' },
+                price: String(p.price ?? ''),
+                old_price: p.old_price ? String(p.old_price) : null,
+                isNew: p.isNew,
+                main_image: p.main_image as unknown as InlineImage
+            }))} bgColor="bg-white" />
 
             {/* Slide categories / Categorias em Destaque */}
             <CategorySection categories={_categories} />
 
             {/* Produtos Populares */}
-            <ProductSection title="Mais Populares" products={popularProducts} bgColor="bg-white" />
+            <ProductSection title="Mais Populares" products={popularProducts?.map(p => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                category: p.category ? { name: p.category.name } : { name: '' },
+                price: String(p.price ?? ''),
+                old_price: p.old_price ? String(p.old_price) : null,
+                isNew: p.isNew,
+                main_image: p.main_image as unknown as InlineImage
+            }))} bgColor="bg-white" />
 
             {/* Novos Produtos */}
-            <ProductSection title="Novidades na Loja" products={newProducts} bgColor="bg-slate-50" />
+            <ProductSection title="Novidades na Loja" products={newProducts?.map(p => ({
+                id: p.id,
+                name: p.name,
+                slug: p.slug,
+                category: p.category ? { name: p.category.name } : { name: '' },
+                price: String(p.price ?? ''),
+                old_price: p.old_price ? String(p.old_price) : null,
+                isNew: p.isNew,
+                main_image: p.main_image as unknown as InlineImage
+            }))} bgColor="bg-slate-50" />
 
             {/* Blog */}
             <section className="py-16 md:py-24 bg-slate-50">
@@ -143,7 +177,7 @@ export default function Home({ featuredProducts, popularProducts, newProducts, _
                         <p className="text-lg text-slate-600 max-w-xl mx-auto">Artigos, dicas e novidades do mundo da segurança no trabalho.</p>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {blogPostsData.map((post) => (
+                        {(blogPosts || []).map((post) => (
                             <a
                                 key={post.id}
                                 href={post.link}

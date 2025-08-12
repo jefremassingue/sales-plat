@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import { Eye, PackageSearch, ShoppingBag, ShoppingCart, Star } from 'lucide-react';
+import { Eye, PackageSearch, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 interface Image {
-    id: string;
+    id: string | number;
     name: string;
     original_name: string;
     size: number;
@@ -15,26 +15,26 @@ interface Image {
 }
 
 interface Product {
-    id: string;
+    id: string | number;
     name: string;
     slug: string;
-    category: { name: string };
+    category?: { id?: string | number; name: string } | null;
     isNew?: boolean;
-    main_image?: Image;
-    mainImage?: Image;
+    main_image?: Image | null;
+    mainImage?: Image | null; // fallback naming
 }
 interface ProductCardProps {
     product: Product;
 }
 
-const formatPrice = (price: string) => {
-    return new Intl.NumberFormat('pt-MZ', {
-        style: 'currency',
-        currency: 'MZN',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(Number(price));
-};
+// const formatPrice = (price: string | number) => {
+//     return new Intl.NumberFormat('pt-MZ', {
+//         style: 'currency',
+//         currency: 'MZN',
+//         minimumFractionDigits: 2,
+//         maximumFractionDigits: 2
+//     }).format(Number(price));
+// };
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     const { addItem } = useCart();
@@ -43,7 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         e.preventDefault(); // Evitar navegação para a página do produto
 
         addItem({
-            id: product.id,
+            id: String(product.id),
             name: product.name,
             quantity: 1,
             image: product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
@@ -102,13 +102,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                             <ShoppingCart size={16} />
                             Adicionar a Cotação
                         </button>
-                        <button
+                        <Link
                             href={`/products/${product.slug}`}
                             className="w-full bg-orange-600 hover:bg-orange-700 text-white cursor-pointer font-medium py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 flex items-center justify-center gap-2"
                         >
-                            <Eye size={16} /> 
+                            <Eye size={16} />
                             Ver Detalhes
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </Link>

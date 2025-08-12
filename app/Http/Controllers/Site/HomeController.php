@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Blog;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
@@ -102,11 +103,32 @@ class HomeController extends Controller
                 ]);
         });
 
+        // Posts de blog recentes (cache)
+        $blogPosts = Cache::remember('home:blog_posts', now()->addMinutes(30), function () {
+            return Blog::with(['category', 'user'])
+                ->where('status', true)
+                ->whereNotNull('published_at')
+                ->orderByDesc('published_at')
+                ->take(4)
+                ->get()
+                ->map(fn($b) => [
+                    'id' => $b->id,
+                    'title' => $b->title,
+                    'date' => optional($b->published_at)->format('d \d\e F, Y'),
+                    'excerpt' => $b->excerpt ?? str($b->content)->limit(120),
+                    'imageUrl' => $b->featured_image ?: ($b->image?->path ?? 'https://picsum.photos/seed/blog_'.$b->id.'/400/250'),
+                    'link' => '/blog/'.$b->slug,
+                    'category' => $b->category?->name,
+                    'author' => $b->user?->name,
+                ]);
+        });
+
         return Inertia::render('Site/Home', [
             'featuredProducts' => $featuredProducts,
             'popularProducts' => $popularProducts,
             'newProducts' => $newProducts,
             '_categories' => $categories,
+            'blogPosts' => $blogPosts,
         ]);
     }
 
