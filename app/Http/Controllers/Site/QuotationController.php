@@ -75,8 +75,8 @@ class QuotationController extends Controller
                 $unitPrice = (float) ($product->price ?? 0);
                 $itemSubtotal = $quantity * $unitPrice;
                 $itemDiscountAmount = 0;
-                $itemTaxPercentage = 0;
-                $itemTaxAmount = 0;
+                $itemTaxPercentage = 16;
+                $itemTaxAmount = ($itemSubtotal - $itemDiscountAmount) * ($itemTaxPercentage / 100);
                 $itemTotal = $itemSubtotal - $itemDiscountAmount + $itemTaxAmount;
 
                 QuotationItem::create([
