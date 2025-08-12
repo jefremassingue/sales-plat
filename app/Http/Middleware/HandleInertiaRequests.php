@@ -95,14 +95,19 @@ class HandleInertiaRequests extends Middleware
                 });
         });
 
-        // Carregar categorias apenas se necessário, com cache
-        $defaultWarehouse = Cache::remember($defaultWarehouseCacheKey, now()->addDay(), function () {
-            return Warehouse::where('is_main', true)->first();
-        });
+
+        // Só compartilhar defaultWarehouse em rotas de admin
+        $isAdminRoute = str($request->path())->startsWith('admin');
+        $defaultWarehouse = null;
+        if ($isAdminRoute) {
+            $defaultWarehouse = Cache::remember($defaultWarehouseCacheKey, now()->addDay(), function () {
+                return Warehouse::where('is_main', true)->first();
+            });
+        }
 
         return [
             ...parent::share($request),
-            'defaultWarehouse' => $defaultWarehouse,
+            ...( $isAdminRoute ? ['defaultWarehouse' => $defaultWarehouse] : [] ),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [

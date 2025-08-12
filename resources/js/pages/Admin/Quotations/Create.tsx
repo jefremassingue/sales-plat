@@ -114,6 +114,7 @@ export default function Create({
     units,
     discountTypes,
 }: Props) {
+    const { defaultWarehouse } = usePage().props as any;
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [productSelectorOpen, setProductSelectorOpen] = useState(false);
@@ -241,6 +242,7 @@ export default function Create({
                 unit: selectedProduct.unit || 'unit', // Usar a unidade do produto
                 discount_percentage: '0',
                 tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value || '16', // Taxa padrão de IVA em Moçambique
+                warehouse_id: defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : ""),
             };
             // Ensure tax_percentage is a string
             newItem.tax_percentage = String(newItem.tax_percentage);

@@ -107,10 +107,13 @@ export default function Create({
   quotation
 }: Props) {
   const { toast } = useToast();
+
+  const { defaultWarehouse } = usePage().props as any;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeView, setActiveView] = useState<'products' | 'details'>('products');
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>(
-    warehouses.length > 0 ? warehouses[0].id.toString() : "");
+    defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : "")
+  );
   const [itemBeingEdited, setItemBeingEdited] = useState<any | null>(null);
   const [itemEditDialogOpen, setItemEditDialogOpen] = useState(false);
   const [manualItemDialogOpen, setManualItemDialogOpen] = useState(false);
@@ -139,7 +142,7 @@ export default function Create({
       items: quotation?.items?.map((item: any) => ({
         product_id: item.product_id ? item.product_id.toString() : undefined,
         product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
-        warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : undefined,
+        warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : (defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : "")),
         name: item.name,
         description: item.description || '',
         quantity: item.quantity.toString(),
@@ -227,7 +230,7 @@ export default function Create({
           quantity: '1',
           unit: selectedProduct.unit || 'unit',
           unit_price: unitPrice,
-          warehouse_id: warehouseId,
+          warehouse_id: warehouseId || defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : ""),
           discount_percentage: '0',
           tax_percentage: taxRates.find(tax => tax.is_default == true)?.value.toString() || '16',
         });
