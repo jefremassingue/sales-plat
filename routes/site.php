@@ -5,6 +5,7 @@ use App\Http\Controllers\Site\BlogController;
 use App\Http\Controllers\Site\HomeController;
 use App\Http\Controllers\Site\ProductController;
 use App\Http\Controllers\Site\ContactController;
+use App\Http\Controllers\Site\QuotationController as SiteQuotationController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -24,3 +25,4 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 
 Route::inertia('/cart', 'Site/Cart/Index')->name('cart');
 Route::inertia('/quotation', 'Site/Checkout/Index')->name('quotation');
+Route::post('/quotation', [SiteQuotationController::class, 'store'])->name('quotation.store');

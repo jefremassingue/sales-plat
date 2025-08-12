@@ -1,83 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import SiteLayout from '@/layouts/site-layout'; // Assumindo que SiteLayout existe
 import { useCart } from '@/contexts/CartContext'; // Assumindo que CartContext existe
-import {
-    ShoppingBag,
-    User,
-    Mail,
-    Phone,
-    MapPin,
-    CreditCard, // Ícone genérico para pagamento
-    Landmark, // Ícone para banco
-    Package,
-    CheckCircle,
-    ArrowLeft,
-    ArrowRight,
-    AlertCircle,
-    Upload,
-    ChevronDown,
-    ChevronUp,
-    Truck
-} from 'lucide-react';
+import { ShoppingBag, User, Package, CheckCircle, ArrowLeft, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { z } from 'zod';
+import { useToast } from '@/components/ui/use-toast';
 
-// --- Dados Bancários e Métodos de Pagamento ---
-const BANK_DETAILS = {
-    bankName: "Banco ABC Moçambique",
-    accountHolder: "Sua Empresa Online Lda.",
-    accountNumber: "1234567890",
-    nib: "0001 0002 0003 0004 0005 1",
-    swift: "ABCBMZMX",
-};
-
-const PAYMENT_METHODS_DATA = [
-    {
-        id: 'mpesa',
-        name: 'M-Pesa',
-        icon: <Phone className="w-5 h-5 mr-3 text-orange-600" />,
-        description: 'Pague de forma rápida e segura com M-Pesa.',
-        instructions: (
-            <div className="text-sm text-gray-600 space-y-2">
-                <p>Ao finalizar o pedido, você receberá instruções detalhadas para o pagamento via M-Pesa.</p>
-                <p>Número para pagamento: <strong>+258 84 XXX XXXX</strong> (Este é um exemplo)</p>
-                <p>Por favor, use o ID do seu pedido como referência.</p>
-            </div>
-        ),
-        requiresProof: true,
-    },
-    {
-        id: 'bank_transfer',
-        name: 'Transferência Bancária',
-        icon: <Landmark className="w-5 h-5 mr-3 text-orange-600" />,
-        description: 'Realize o pagamento por transferência para nossa conta bancária.',
-        instructions: (
-            <div className="text-sm text-gray-600 space-y-3">
-                <p>Por favor, transfira o valor total para a seguinte conta:</p>
-                <ul className="list-disc list-inside pl-4 space-y-1 bg-gray-50 p-3 rounded-md">
-                    <li><strong>Banco:</strong> {BANK_DETAILS.bankName}</li>
-                    <li><strong>Titular:</strong> {BANK_DETAILS.accountHolder}</li>
-                    <li><strong>Nº da Conta:</strong> {BANK_DETAILS.accountNumber}</li>
-                    <li><strong>NIB:</strong> {BANK_DETAILS.nib}</li>
-                </ul>
-                <p>Use o ID do seu pedido como referência da transferência.</p>
-                <p className="font-semibold">Anexe o comprovativo abaixo para agilizar o processo.</p>
-            </div>
-        ),
-        requiresProof: true,
-    },
-    {
-        id: 'credit_card_on_delivery',
-        name: 'Pagamento na Entrega',
-        icon: <CreditCard className="w-5 h-5 mr-3 text-orange-600" />,
-        description: 'Pague em especie ou com cartão de crédito ou débito no momento da entrega.',
-        instructions: (
-            <p className="text-sm text-gray-600">
-                Tenha seu cartão pronto. Nosso entregador levará uma máquina POS.
-            </p>
-        )
-    }
-];
+// Métodos de pagamento removidos do MVP público (poderão ser reintroduzidos depois)
 
 // --- Esquema de Validação com Zod ---
 const phoneRegex = /^(?:\+?258\s?)?(8[2-7])\s?(\d{3})\s?(\d{4})$/; // Regex para telefones de Moçambique
@@ -86,30 +15,20 @@ const quotationSchema = z.object({
     fullName: z.string().min(3, "Nome completo deve ter pelo menos 3 caracteres.").max(100, "Nome muito longo."),
     phone: z.string().regex(phoneRegex, "Formato de telefone inválido (ex: 841234567 ou +258 841234567)."),
     email: z.string().email("Formato de email inválido."),
-    city: z.string().min(2, "Cidade é obrigatória."),
-    neighborhood: z.string().min(3, "Bairro é obrigatório."),
-    streetAndNumber: z.string().min(5, "Endereço (rua e número) é obrigatório e deve ter pelo menos 5 caracteres."),
+    city: z.string().min(2, "Cidade é obrigatória.").optional().or(z.literal('')),
+    neighborhood: z.string().min(3, "Bairro é obrigatório.").optional().or(z.literal('')),
+    streetAndNumber: z.string().min(5, "Endereço (rua e número) é obrigatório e deve ter pelo menos 5 caracteres.").optional().or(z.literal('')),
     notes: z.string().max(500, "Notas não podem exceder 500 caracteres.").optional(),
-    paymentMethod: z.string({ required_error: "Selecione um método de pagamento." }).min(1, "Selecione um método de pagamento."),
-    paymentProof: z.instanceof(File).optional(),
-})
-    .refine(data => {
-        const selectedMethod = PAYMENT_METHODS_DATA.find(m => m.id === data.paymentMethod);
-        if (selectedMethod?.requiresProof && !data.paymentProof) {
-            return false;
-        }
-        return true;
-    }, {
-        message: "Comprovativo de transferência é obrigatório para este método.",
-        path: ["paymentProof"], // Campo que falhou
-    });
+    paymentMethod: z.string().optional().or(z.literal('')),
+    // paymentProof removido (sem UI no momento)
+});
 
 
 // Componente principal de Checkout
 export default function Checkout() {
     const CheckoutContent = () => {
-        const { items, total: cartTotal, itemCount, clearCart } = useCart();
-        const fileInputRef = useRef(null);
+    const { items, itemCount, clearCart } = useCart();
+        const { toast } = useToast();
 
         const [formData, setFormData] = useState({
             fullName: '',
@@ -120,18 +39,14 @@ export default function Checkout() {
             streetAndNumber: '',
             notes: '',
         });
-        const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState('');
-        const [paymentProofFile, setPaymentProofFile] = useState(null);
-        const [errors, setErrors] = useState({});
-        const [orderPlaced, setOrderPlaced] = useState(false);
-        const [orderId, setOrderId] = useState(null);
-        const [activeAccordion, setActiveAccordion] = useState(null);
+    const [selectedPaymentMethodId] = useState(''); // sem seleção de método no MVP
+    const [errors, setErrors] = useState<Record<string, string | null>>({});
+    const [orderPlaced, setOrderPlaced] = useState(false);
+    const [orderId, setOrderId] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    // const [activeAccordion, setActiveAccordion] = useState<string | null>(null); // reservado para futura expansão
 
-        const formatCurrency = (value) => {
-            return new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(value);
-        };
-
-        const handleChange = (e) => {
+        const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             const { name, value } = e.target;
             setFormData(prev => ({ ...prev, [name]: value }));
             if (errors[name]) {
@@ -139,59 +54,19 @@ export default function Checkout() {
             }
         };
 
-        const handleFileChange = (e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-                // Validação básica do arquivo (ex: tamanho, tipo) pode ser adicionada aqui
-                if (file.size > 5 * 1024 * 1024) { // Max 5MB
-                    setErrors(prev => ({ ...prev, paymentProof: "Arquivo muito grande (máx 5MB)." }));
-                    setPaymentProofFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = ""; // Limpa o input
-                    return;
-                }
-                const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-                if (!allowedTypes.includes(file.type)) {
-                    setErrors(prev => ({ ...prev, paymentProof: "Tipo de arquivo inválido (permitido: JPG, PNG, PDF)." }));
-                    setPaymentProofFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = "";
-                    return;
-                }
-                setPaymentProofFile(file);
-                setErrors(prev => ({ ...prev, paymentProof: null }));
-            } else {
-                setPaymentProofFile(null);
-            }
-        };
-
-        const handlePaymentMethodSelect = (methodId) => {
-            setSelectedPaymentMethodId(methodId);
-            setActiveAccordion(activeAccordion === methodId ? null : methodId); // Toggle accordion
-            if (errors.paymentMethod) {
-                setErrors(prev => ({ ...prev, paymentMethod: null }));
-            }
-            // Reset proof if method doesn't require it or changes
-            const selectedMethod = PAYMENT_METHODS_DATA.find(m => m.id === methodId);
-            if (!selectedMethod?.requiresProof) {
-                setPaymentProofFile(null);
-                if (fileInputRef.current) fileInputRef.current.value = "";
-                setErrors(prev => ({ ...prev, paymentProof: null }));
-            }
-        };
-
-        const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
             setErrors({}); // Limpa erros anteriores
 
             const dataToValidate = {
                 ...formData,
-                paymentMethod: selectedPaymentMethodId,
-                paymentProof: paymentProofFile,
+                paymentMethod: selectedPaymentMethodId || undefined,
             };
 
             const validationResult = quotationSchema.safeParse(dataToValidate);
 
             if (!validationResult.success) {
-                const formattedErrors = {};
+                const formattedErrors: Record<string, string> = {};
                 validationResult.error.errors.forEach(err => {
                     if (err.path.length > 0) {
                         formattedErrors[err.path[0]] = err.message;
@@ -208,17 +83,55 @@ export default function Checkout() {
                 return;
             }
 
-            // Simular processamento do pedido
-            const newOrderId = `ORD-MZ-${Date.now()}`;
-            setOrderId(newOrderId);
-            setOrderPlaced(true);
-            if (typeof clearCart === 'function') {
-                clearCart();
-            } else {
-                console.warn("clearCart function is not available. Cart will not be cleared.");
-            }
-            window.scrollTo(0, 0);
+            // Enviar para backend para criar cotação
+            setSubmitting(true);
+            const postUrl = (typeof route === 'function') ? route('quotation.store') : '/quotation';
+            router.post(postUrl, {
+                ...formData,
+                paymentMethod: selectedPaymentMethodId || null,
+                items: items.map(i => ({
+                    product_id: i.id,
+                    quantity: i.quantity,
+                })),
+            }, {
+                forceFormData: true,
+                onSuccess: (page: unknown) => {
+                    type InertiaLike = { props?: { flash?: Record<string, unknown>; quotation_number?: unknown } };
+                    const inertiaPage = page as InertiaLike;
+                    const qn = (inertiaPage.props?.flash?.quotation_number as string) || (inertiaPage.props?.quotation_number as string);
+                    setOrderId(typeof qn === 'string' ? qn : null);
+                    setOrderPlaced(true);
+                    clearCart();
+                    window.scrollTo(0, 0);
+                },
+                onError: (errs) => {
+                    const formattedServer: Record<string, string> = {};
+                    Object.entries(errs).forEach(([k, v]) => {
+                       
+                    });
+                    setErrors(formattedServer);
+                    window.scrollTo(0, 0);
+                },
+                onFinish: () => setSubmitting(false),
+            });
         };
+
+        useEffect(() => {
+            type FlashStruct = { toast?: { title?: string; description?: string }; success?: string; quotation_number?: string };
+            const globalPage = (window as unknown as { __INERTIA_PAGE__?: { props?: { flash?: FlashStruct } } }).__INERTIA_PAGE__;
+            const flash: FlashStruct | undefined = globalPage?.props?.flash;
+            if (flash?.toast) {
+                toast({
+                    title: flash.toast.title || 'Sucesso',
+                    description: flash.toast.description,
+                });
+            } else if (flash?.success) {
+                toast({
+                    title: 'Sucesso',
+                    description: flash.success,
+                });
+            }
+        }, [toast]);
 
         // useEffect(() => {
         //     if (itemCount === 0 && !orderPlaced) {
@@ -231,7 +144,7 @@ export default function Checkout() {
                 <div className="container mx-auto px-4 py-16 text-center">
                     <ShoppingBag className="h-16 w-16 mx-auto text-gray-300 mb-4" />
                     <h1 className="text-3xl font-bold text-gray-900 mb-4">Seu carrinho está vazio</h1>
-                    <p className="text-gray-600 mb-8">Adicione produtos ao carrinho para finalizar a compra.</p>
+                    <p className="text-gray-600 mb-8">Adicione produtos ao carrinho para solicitar uma cotação.</p>
                     <Link
                         href="/products"
                         className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
@@ -246,30 +159,42 @@ export default function Checkout() {
             return (
                 <div className="container mx-auto px-4 py-16 text-center">
                     <CheckCircle className="h-20 w-20 mx-auto text-green-500 mb-6" />
-                    <h1 className="text-3xl font-bold text-gray-900 mb-4">Pedido Realizado com Sucesso!</h1>
-                    <p className="text-gray-700 mb-2">Obrigado pela sua compra, {formData.fullName.split(' ')[0]}.</p>
-                    <p className="text-gray-700 mb-6">Seu número de pedido é: <span className="font-semibold text-orange-600">{orderId}</span></p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-4">Cotação Solicitada!</h1>
+                    <p className="text-gray-700 mb-2">Obrigado, {formData.fullName.split(' ')[0]}.</p>
+                    {orderId && (
+                        <p className="text-gray-700 mb-6">Número da cotação: <span className="font-semibold text-orange-600">{orderId}</span></p>
+                    )}
                     <p className="text-gray-600 mb-4">
-                        Você receberá um email em <span className="font-semibold">{formData.email}</span> com os detalhes do pedido e informações de pagamento (se aplicável).
+                        Em breve entraremos em contacto através de <span className="font-semibold">{formData.email}</span> ou telefone para confirmar detalhes.
                     </p>
                     <p className="text-gray-500 text-sm mb-8">
-                        (Esta é uma simulação. Nenhum produto será enviado e nenhum pagamento foi processado.)
+                        (Guarde o número da sua cotação para referência.)
                     </p>
                     <div className="flex justify-center space-x-4">
                         <Link
                             href="/products"
                             className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700"
                         >
-                            <ShoppingBag className="mr-2 h-5 w-5" /> Continuar Comprando
+                            <ShoppingBag className="mr-2 h-5 w-5" /> Ver mais Produtos
                         </Link>
                     </div>
                 </div>
             );
         }
 
-        const totalOrderAmount = cartTotal; // Entrega "A calcular", então não adicionamos ao total aqui
+    // const totalOrderAmount = cartTotal; // (não usado no momento)
 
-        const InputField = ({ label, name, type = "text", placeholder, icon, value, onChange, error, ...props }) => (
+        interface InputFieldProps {
+            label: string;
+            name: string;
+            type?: string;
+            placeholder?: string;
+            icon?: React.ReactNode;
+            value: string;
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+            error?: string | null;
+        }
+        const InputField: React.FC<InputFieldProps & React.InputHTMLAttributes<HTMLInputElement>> = ({ label, name, type = "text", placeholder, icon, value, onChange, error, ...props }) => (
             <div>
                 <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
                 <div className="relative">
@@ -299,7 +224,7 @@ export default function Checkout() {
                 </div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center md:text-left">Solicitar Cotação</h1>
 
-                {Object.keys(errors).length > 0 && !errors.paymentProof && !errors.paymentMethod && ( /* Não mostrar erro geral se for só de pagamento */
+                {Object.keys(errors).length > 0 && (
                     <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700">
                         <div className="flex">
                             <div className="flex-shrink-0">
@@ -322,17 +247,17 @@ export default function Checkout() {
                                     <User className="w-6 h-6 mr-3 text-orange-600" /> Informações do cliente
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <InputField label="Nome Completo" name="fullName" value={formData.fullName} onChange={handleChange} error={errors.fullName} placeholder="Seu nome completo" />
-                                    <InputField label="Nome Da empresa" name="companyName" value={formData.companyName} onChange={handleChange} error={errors.fullName} placeholder="Seu nome completo" />
-                                    <InputField label="Telefone" name="phone" type="tel" value={formData.phone} onChange={handleChange} error={errors.phone} placeholder="8X XXX XXXX" />
-                                    <InputField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} error={errors.email} placeholder="seuemail@exemplo.com" />
+                                    <InputField label="Nome Completo" name="fullName" value={formData.fullName} onChange={(e) => handleChange(e)} error={errors.fullName || null} placeholder="Seu nome completo" />
+                                    <InputField label="Nome Da empresa" name="companyName" value={formData.companyName} onChange={(e) => handleChange(e)} error={errors.companyName || null} placeholder="Nome da empresa" />
+                                    <InputField label="Telefone" name="phone" type="tel" value={formData.phone} onChange={(e) => handleChange(e)} error={errors.phone || null} placeholder="8X XXX XXXX" />
+                                    <InputField label="Email" name="email" type="email" value={formData.email} onChange={(e) => handleChange(e)} error={errors.email || null} placeholder="seuemail@exemplo.com" />
                                 </div>
                                 <div className="md:col-span-2 mt-4">
                                         <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notas Adicionais <span className="text-xs text-gray-500">(Opcional)</span></label>
                                         <textarea
                                             name="notes"
                                             id="notes"
-                                            rows="3"
+                        rows={3}
                                             value={formData.notes}
                                             onChange={handleChange}
                                             placeholder="Ex: Deixar na portaria, ponto de referência..."
@@ -349,7 +274,7 @@ export default function Checkout() {
                         <div className="lg:col-span-1">
                             <div className="sticky top-28 bg-white p-6 rounded-lg shadow-sm">
                                 <h2 className="text-xl font-semibold text-gray-800 mb-6 border-b pb-3 flex items-center">
-                                    <Package className="w-6 h-6 mr-3 text-orange-600" /> Resumo do Pedido
+                                    <Package className="w-6 h-6 mr-3 text-orange-600" /> Resumo da Cotação
                                 </h2>
                                 <div className="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                                     {items.map((item, index) => (
@@ -381,14 +306,18 @@ export default function Checkout() {
                                 <div className="mt-8">
                                     <button
                                         type="submit"
-                                        className="w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                                        disabled={itemCount === 0}
+                                        className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                                        disabled={itemCount === 0 || submitting}
+                                        aria-busy={submitting}
+                                        aria-disabled={itemCount === 0 || submitting}
                                     >
-                                        Finalizar Pedido <ArrowRight className="ml-2 h-5 w-5" />
+                                        {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
+                                        {submitting ? 'Processando...' : 'Solicitar Cotação'}
+                                        {!submitting && <ArrowRight className="ml-1 h-5 w-5" />}
                                     </button>
                                 </div>
                                 <p className="mt-4 text-xs text-gray-500 text-center">
-                                    Ao clicar em "Finalizar Pedido", você concorda com nossos <Link href="/terms" className="underline hover:text-orange-600">Termos de Serviço</Link>
+                                    Ao clicar em "Solicitar Cotação", você concorda com nossos <Link href="/terms" className="underline hover:text-orange-600">Termos de Serviço</Link>
                                 </p>
                             </div>
                         </div>
@@ -400,7 +329,7 @@ export default function Checkout() {
 
     return (
         <SiteLayout>
-            <Head title="Finalizar Compra" />
+            <Head title="Solicitar Cotação" />
             {/* Adicione um estilo global para scrollbar customizado se desejar, ou use classes do Tailwind se disponíveis */}
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {

@@ -113,4 +113,7 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    // Lista de emails que receberão notificação quando uma cotação pública é criada
+    'quotation_notify' => array_filter(array_map('trim', explode(',', env('MAIL_QUOTATION_NOTIFY', '')))),
+
 ];

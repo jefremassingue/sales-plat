@@ -28,7 +28,7 @@ const ShoppingCart: React.FC = () => {
                 <div className="p-4 border-b flex items-center justify-between">
                     <h2 className="text-lg font-semibold flex items-center">
                         <ShoppingBag className="mr-2 h-5 w-5" />
-                        Carrinho de Compras
+                        Carrinho de Produtos
                         {itemCount > 0 && (
                             <span className="ml-2 text-sm bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
                                 {itemCount} {itemCount === 1 ? 'item' : 'itens'}
@@ -60,7 +60,7 @@ const ShoppingCart: React.FC = () => {
                     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                         <ShoppingBag className="h-16 w-16 text-gray-300 mb-4" />
                         <h3 className="text-lg font-medium text-gray-900 mb-1">Seu carrinho está vazio</h3>
-                        <p className="text-gray-500 mb-6">Adicione produtos para começar suas compras</p>
+                        <p className="text-gray-500 mb-6">Adicione produtos para solicitar uma cotação</p>
                         <button
                             onClick={() => setIsOpen(false)}
                             className="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors"
@@ -143,7 +143,7 @@ const ShoppingCart: React.FC = () => {
                                 <p>{formatCurrency(total)}</p>
                             </div>
                             <p className="text-sm text-gray-500">
-                                Frete e impostos calculados no quotation
+                                Portes e impostos calculados na cotação
                             </p>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
@@ -156,7 +156,7 @@ const ShoppingCart: React.FC = () => {
                                     href="/quotation"
                                     className="flex items-center justify-center rounded-md bg-orange-600 px-3 py-2 text-sm font-medium text-white hover:bg-orange-700"
                                 >
-                                    Finalizar Compra
+                                    Solicitar Cotação
                                     <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </div>
