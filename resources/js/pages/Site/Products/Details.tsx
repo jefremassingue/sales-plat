@@ -148,7 +148,7 @@ export default function ProductDetails({ product, relatedProducts }: Props) {
                         product.main_image.versions?.find((image) => image.version == 'md')?.url ||
                         product.main_image.versions?.find((image) => image.version == 'lg')?.url ||
                         product.main_image.url ||
-                        ''
+                        window.location.origin + '/og.png'
                     }
                 />
                 <meta property="og:image:alt" content={product.name} />
