@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { X } from 'lucide-react';
+import { PackageSearch, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -230,40 +230,57 @@ export default function ItemForm({
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                         {/* Mostrar informações do produto selecionado em vez de um select */}
                         {selectedProduct && (
-                            <div className="bg-muted relative rounded-lg p-4">
-                                <div className="absolute top-2 right-2">
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={clearSelectedProduct}
-                                        className="h-6 w-6 rounded-full p-0"
-                                    >
-                                        <X className="h-6 w-6" />
-                                    </Button>
-                                </div>
-                                <h3 className="font-medium">Produto selecionado</h3>
-                                <div className="mt-1 text-sm">
-                                    <strong>{selectedProduct.name}</strong>
-                                    <br />
-                                    <span className="text-muted-foreground">
-                                        SKU: {selectedProduct.sku} | Preço:{' '}
-                                        {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'MZN' }).format(selectedProduct.price)}
-                                    </span>
-                                </div>
+                            <div className="flex gap-2 bg-muted relative rounded-lg p-4">
+                                {selectedProduct.main_image ? (
+                                    <img
+                                        src={
+                                            selectedProduct.main_image.versions?.find((image) => image.version == 'md')?.url ||
+                                            selectedProduct.main_image.versions?.find((image) => image.version == 'lg')?.url ||
+                                            selectedProduct.main_image.url
+                                        }
+                                        alt={selectedProduct.name}
+                                        className="h-20 min-h-20 w-20 min-w-20 object-contain transition-all hover:scale-105"
+                                    />
+                                ) : (
+                                    <div className="flex h-20 min-h-20 w-20 min-w-20 items-center justify-center bg-gray-100 dark:bg-gray-800">
+                                        <PackageSearch className="h-10 w-10 text-gray-400" />
+                                    </div>
+                                )}
+                                <div className="w-full">
+                                    <div className="absolute top-2 right-2">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={clearSelectedProduct}
+                                            className="h-6 w-6 rounded-full p-0"
+                                        >
+                                            <X className="h-6 w-6" />
+                                        </Button>
+                                    </div>
+                                    <h3 className="font-medium">Produto selecionado</h3>
+                                    <div className="mt-1 text-sm">
+                                        <strong>{selectedProduct.name}</strong>
+                                        <br />
+                                        <span className="text-muted-foreground">
+                                            SKU: {selectedProduct.sku} | Preço:{' '}
+                                            {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'MZN' }).format(selectedProduct.price)}
+                                        </span>
+                                    </div>
 
-                                {/* Campo oculto para armazenar o product_id */}
-                                <FormField
-                                    control={form.control}
-                                    name="product_id"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormControl>
-                                                <input type="hidden" {...field} value={selectedProduct.id.toString()} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
+                                    {/* Campo oculto para armazenar o product_id */}
+                                    <FormField
+                                        control={form.control}
+                                        name="product_id"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <input type="hidden" {...field} value={selectedProduct.id.toString()} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </div>
                         )}
                         <FormField

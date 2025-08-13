@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { PackageSearch } from 'lucide-react';
 import { useState } from 'react';
 import { Product } from './types';
 
@@ -62,7 +63,10 @@ export default function ProductSelector({ open, onOpenChange, products, onSelect
                     <Input
                         placeholder="Pesquisar por nome ou SKU"
                         value={searchQuery}
-                        onChange={(e) => { setSearchQuery(e.target.value); setOnSearch(e.target.value) }}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setOnSearch(e.target.value);
+                        }}
                         className="mb-4"
                     />
 
@@ -76,20 +80,44 @@ export default function ProductSelector({ open, onOpenChange, products, onSelect
                                         className={`hover:bg-muted cursor-pointer transition-colors ${selectedProduct === product.id.toString() ? 'bg-primary/10' : ''}`}
                                     >
                                         <CardHeader>
-                                            <CardTitle>{product.name}</CardTitle>
-                                            <CardDescription>SKU: {product.sku || 'N/A'}</CardDescription>
+                                            <div className="flex gap-2">
+                                                {product.main_image ? (
+                                                    <img
+                                                        src={
+                                                            product.main_image.versions?.find((image) => image.version == 'md')?.url ||
+                                                            product.main_image.versions?.find((image) => image.version == 'lg')?.url ||
+                                                            product.main_image.url
+                                                        }
+                                                        alt={product.name}
+                                                        className="h-24 min-h-24 w-24 min-w-24 object-contain transition-all hover:scale-105"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-24 min-h-24 w-24 min-w-24 items-center justify-center bg-gray-100 dark:bg-gray-800">
+                                                        <PackageSearch className="h-10 w-10 text-gray-400" />
+                                                    </div>
+                                                )}
+                                                <div className="">
+                                                    <CardDescription>SKU: {product.sku || 'N/A'}</CardDescription>
+                                                    <p className="text-lg font-semibold">
+                                                        {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'MZN' }).format(product.price)}
+                                                    </p>
+                                                </div>
+                                            </div>
                                         </CardHeader>
                                         <CardContent>
-                                            <p className="text-lg font-semibold">
-                                                {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'MZN' }).format(product.price)}
-                                            </p>
+                                            <CardTitle>{product.name}</CardTitle>
                                         </CardContent>
                                     </Card>
                                 ))
                             ) : (
                                 <div className="text-muted-foreground col-span-full py-8 text-center">
                                     <p>Nenhum produto encontrado.</p>
-                                    <Button  onClick={() => { onAddItemManual(); setSearchQuery('')}}>
+                                    <Button
+                                        onClick={() => {
+                                            onAddItemManual();
+                                            setSearchQuery('');
+                                        }}
+                                    >
                                         Adicionar item manual
                                     </Button>
                                 </div>

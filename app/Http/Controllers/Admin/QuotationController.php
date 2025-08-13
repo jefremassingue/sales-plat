@@ -181,7 +181,7 @@ class QuotationController extends Controller implements HasMiddleware
         try {
             $placeholderNumber = 'AUTO-' . date('Ym');
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
-            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')->with('variants')->get();
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')->with('variants', 'mainImage')->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
             $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);

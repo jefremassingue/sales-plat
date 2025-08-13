@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('categories/tree', [CategoryController::class, 'tree'])->name('categories.tree');
     Route::resource('categories', CategoryController::class);
     Route::resource('blog-categories', BlogCategoryController::class);
@@ -65,12 +65,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('sales/{sale}/pdf', [SaleController::class, 'generatePdf'])->name('sales.pdf');
     Route::post('sales/{sale}/send-email', [SaleController::class, 'sendEmail'])->name('sales.send-email');
     Route::post('sales/{sale}/duplicate', [SaleController::class, 'duplicate'])->name('sales.duplicate');
-    
+
     // Rotas para gestão de custos e despesas
     Route::post('sales/{sale}/items/{item}/update-cost', [SaleController::class, 'updateItemCost'])->name('sales.items.update-cost');
     Route::post('sales/{sale}/add-expense', [SaleController::class, 'addExpense'])->name('sales.add-expense');
     Route::delete('sales/{sale}/expenses/{expense}', [SaleController::class, 'removeExpense'])->name('sales.remove-expense');
-Route::post('/sales/{sale}/update-rates', [SaleController::class, 'updateRates'])->name('sales.updateRates');
+    Route::post('/sales/{sale}/update-rates', [SaleController::class, 'updateRates'])->name('sales.updateRates');
     // Rotas para guias de entrega
     Route::resource('sales.delivery-guides', DeliveryGuideController::class)
         ->except(['index', 'show', 'create', 'edit'])

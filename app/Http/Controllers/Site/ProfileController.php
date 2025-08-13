@@ -69,6 +69,10 @@ class ProfileController extends Controller
      */
     public function index()
     {
+
+        if (auth()->user()->can('admin-dashboard.__invoke')) {
+            return redirect()->route('dashboard');
+        }
         $customer = $this->getOrCreateCustomer();
 
         // Se retornou um redirect (conflito), retorná-lo
@@ -123,6 +127,9 @@ class ProfileController extends Controller
      */
     public function edit()
     {
+        if (auth()->user()->can('admin-dashboard.__invoke')) {
+            return redirect()->route('dashboard');
+        }
         $customer = $this->getOrCreateCustomer();
 
         // Se retornou um redirect (conflito), retorná-lo
