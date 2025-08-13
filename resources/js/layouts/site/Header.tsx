@@ -12,6 +12,13 @@ interface Category {
 
 interface PageProps {
     categories: Category[] | null;
+    auth: {
+        user: {
+            id: string;
+            name: string;
+            email: string;
+        } | null;
+    };
     [key: string]: unknown;
 }
 
@@ -110,6 +117,11 @@ interface MainHeaderProps {
 const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }: MainHeaderProps) => {
     const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(false);
+    const { auth } = usePage<PageProps>().props;
+
+    const handleLogout = () => {
+        router.post(route('logout'));
+    };
 
     return (
         <div className="border-b border-gray-100 bg-white">
@@ -135,18 +147,40 @@ const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }:
                             </button>
                             {isAccountDropdownOpen && (
                                 <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-gray-100 bg-white py-1 shadow-lg">
-                                    <Link href="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
-                                        Entrar
-                                    </Link>
-                                    <Link href="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
-                                        Registrar
-                                    </Link>
-                                    <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
-                                        Minha Conta
-                                    </Link>
-                                    <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
-                                        Meus Pedidos
-                                    </Link>
+                                    {auth.user ? (
+                                        <>
+                                            <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
+                                                <p className="font-medium">{auth.user.name}</p>
+                                                <p className="text-gray-500 text-xs">{auth.user.email}</p>
+                                            </div>
+                                            <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                                Meu Perfil
+                                            </Link>
+                                            <Link href="/profile#sales" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                                Minhas Compras
+                                            </Link>
+                                            <Link href="/profile#quotations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                                Minhas Cotações
+                                            </Link>
+                                            <div className="border-t border-gray-100 mt-1 pt-1">
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600"
+                                                >
+                                                    Sair
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Link href="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                                Entrar
+                                            </Link>
+                                            <Link href="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                                Registrar
+                                            </Link>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -399,7 +433,6 @@ const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { itemCount } = useCart();
     const [showTopBar, setShowTopBar] = useState(true);
-    const [showNav, setShowNav] = useState(true);
     const [showScrollTop, setShowScrollTop] = useState(false);
     const lastScrollY = useRef(0);
     const scrollDirection = useRef<'up' | 'down' | 'none'>('none');
@@ -446,7 +479,6 @@ const Header = () => {
 
                 if (currentScrollY === 0) {
                     setShowTopBar(true);
-                    setShowNav(true);
                     scrollDirection.current = 'none';
                 } else {
                     const newDirection = currentScrollY > lastScrollY.current ? 'down' : 'up';
@@ -456,12 +488,10 @@ const Header = () => {
                         if (newDirection === 'down') {
                             setShowTopBar(false);
                             setTimeout(() => {
-                                setShowNav(false);
                                 scrollLock.current = false;
                             }, 50);
                             return;
                         } else {
-                            setShowNav(true);
                             if (currentScrollY <= 50) {
                                 setTimeout(() => {
                                     setShowTopBar(true);

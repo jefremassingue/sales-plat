@@ -1,0 +1,79 @@
+:root  {
+  --background: hsl(18 100% 95%);
+  --foreground: hsl(18 5% 0%);
+  --card: hsl(18 50% 90%);
+  --card-foreground: hsl(18 5% 10%);
+  --popover: hsl(18 100% 95%);
+  --popover-foreground: hsl(18 100% 0%);
+  --primary: hsl(18 100% 48%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(18 30% 70%);
+  --secondary-foreground: hsl(0 0% 0%);
+  --muted: hsl(-20 30% 85%);
+  --muted-foreground: hsl(18 5% 35%);
+  --accent: hsl(-20 30% 80%);
+  --accent-foreground: hsl(18 5% 10%);
+  --destructive: hsl(0 100% 30%);
+  --destructive-foreground: hsl(18 5% 90%);
+  --border: hsl(18 30% 50%);
+  --input: hsl(18 30% 18%);
+  --ring: hsl(18 100% 48%);
+  --radius: 0.5rem;
+
+  /* Charts (modo claro) */
+  --chart-1: hsl(18 90% 45%);   /* laranja (base) */
+  --chart-2: hsl(200 70% 45%);  /* azul */
+  --chart-3: hsl(140 50% 38%);  /* verde */
+  --chart-4: hsl(280 60% 55%);  /* roxo */
+  --chart-5: hsl(340 75% 50%);  /* magenta */
+
+  /* Sidebar (modo claro) */
+  --sidebar: hsl(18 100% 96%);
+  --sidebar-foreground: hsl(18 5% 10%);
+  --sidebar-primary: hsl(18 100% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(-20 30% 90%);
+  --sidebar-accent-foreground: hsl(18 5% 10%);
+  --sidebar-border: hsl(18 30% 50%);
+  --sidebar-ring: hsl(18 100% 48%);
+}
+
+.dark  {
+  --background: hsl(18 50% 5%);
+  --foreground: hsl(18 5% 90%);
+  --card: hsl(18 50% 0%);
+  --card-foreground: hsl(18 5% 90%);
+  --popover: hsl(18 50% 5%);
+  --popover-foreground: hsl(18 5% 90%);
+  --primary: hsl(18 100% 48%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(18 30% 10%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(-20 30% 15%);
+  --muted-foreground: hsl(18 5% 60%);
+  --accent: hsl(-20 30% 15%);
+  --accent-foreground: hsl(18 5% 90%);
+  --destructive: hsl(0 100% 30%);
+  --destructive-foreground: hsl(18 5% 90%);
+  --border: hsl(18 30% 18%);
+  --input: hsl(18 30% 18%);
+  --ring: hsl(18 100% 48%);
+  --radius: 0.5rem;
+
+  /* Charts (modo escuro) – mais claros para contraste no fundo escuro */
+  --chart-1: hsl(18 85% 60%);
+  --chart-2: hsl(200 70% 60%);
+  --chart-3: hsl(140 50% 60%);
+  --chart-4: hsl(280 60% 65%);
+  --chart-5: hsl(340 75% 65%);
+
+  /* Sidebar (modo escuro) */
+  --sidebar: hsl(18 50% 8%);
+  --sidebar-foreground: hsl(18 5% 90%);
+  --sidebar-primary: hsl(18 100% 48%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(-20 30% 20%);
+  --sidebar-accent-foreground: hsl(18 5% 90%);
+  --sidebar-border: hsl(18 30% 18%);
+  --sidebar-ring: hsl(18 100% 48%);
+}

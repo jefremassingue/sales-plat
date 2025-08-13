@@ -23,7 +23,7 @@ class CustomerController extends Controller implements HasMiddleware
             new Middleware('permission:admin-customer.index', only: ['index', 'exportPDF']),
             new Middleware('permission:admin-customer.create', only: ['create', 'store']),
             new Middleware('permission:admin-customer.edit', only: ['edit', 'update']),
-            new Middleware('permission:admin-customer.show', only: ['show']),
+            new Middleware('permission:admin-customer.show', only: ['show', 'salesExtract', 'quotationsExtract']),
             new Middleware('permission:admin-customer.destroy', only: ['destroy']),
         ];
     }
@@ -170,13 +170,211 @@ class CustomerController extends Controller implements HasMiddleware
      */
     public function show(Customer $customer)
     {
-
         // Carregar o utilizador associado, se existir
         $customer->load('user:id,name,email');
 
+        // Buscar estatísticas do cliente
+        $salesCount = $customer->sales()->count();
+        $salesTotal = $customer->sales()
+            ->whereIn('status', ['paid', 'partial'])
+            ->sum('total');
+
+        $quotationsCount = $customer->quotations()->count();
+        $quotationsTotal = $customer->quotations()
+            ->whereNotIn('status', ['draft'])
+            ->sum('total');
+
+        $stats = [
+            'salesCount' => $salesCount,
+            'salesTotal' => $salesTotal,
+            'quotationsCount' => $quotationsCount,
+            'quotationsTotal' => $quotationsTotal,
+        ];
+
+        // Buscar vendas recentes (últimas 5)
+        $recentSales = $customer->sales()
+            ->with(['currency'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($sale) {
+                return [
+                    'id' => $sale->id,
+                    'sale_number' => $sale->sale_number,
+                    'issue_date' => $sale->issue_date,
+                    'total' => $sale->total,
+                    'status' => $sale->status,
+                    'currency_code' => $sale->currency_code ?? 'MZN',
+                ];
+            });
+
+        // Buscar cotações recentes (últimas 5)
+        $recentQuotations = $customer->quotations()
+            ->with(['currency'])
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get()
+            ->map(function ($quotation) {
+                return [
+                    'id' => $quotation->id,
+                    'quotation_number' => $quotation->quotation_number,
+                    'issue_date' => $quotation->issue_date,
+                    'expiry_date' => $quotation->expiry_date,
+                    'total' => $quotation->total,
+                    'status' => $quotation->status,
+                    'currency_code' => $quotation->currency_code ?? 'MZN',
+                ];
+            });
+
         return Inertia::render('Admin/Customers/Show', [
             'customer' => $customer,
+            'stats' => $stats,
+            'recentSales' => $recentSales,
+            'recentQuotations' => $recentQuotations,
         ]);
+    }
+
+    /**
+     * Gerar extrato de vendas do cliente em PDF
+     */
+    public function salesExtract(Request $request, Customer $customer)
+    {
+        try {
+            $query = $customer->sales()->with(['currency']);
+
+            // Filtros
+            if ($request->filled('start_date')) {
+                $query->where('issue_date', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->where('issue_date', '<=', $request->end_date);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Ordenação
+            $sortField = $request->input('sort_field', 'issue_date');
+            $sortOrder = $request->input('sort_order', 'desc');
+            $query->orderBy($sortField, $sortOrder);
+
+            $sales = $query->get();
+
+            $totals = [
+                'count' => $sales->count(),
+                'total' => $sales->sum('total'),
+                'paid' => $sales->where('status', 'paid')->sum('total'),
+                'pending' => $sales->where('status', 'pending')->sum('total'),
+                'partial' => $sales->where('status', 'partial')->sum('total'),
+            ];
+
+            $filters = [
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'status' => $request->status,
+                'sort_field' => $sortField,
+                'sort_order' => $sortOrder,
+            ];
+
+            // Carregar informações da empresa e dados bancários
+            $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+            $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
+
+            $pdf = Pdf::setOptions([
+                'isPhpEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'enable_local_file_access' => true,
+                'chroot' => public_path(),
+            ])->loadView('exports.sales-statement', [
+                'customer' => $customer,
+                'sales' => $sales,
+                'totals' => $totals,
+                'filters' => $filters,
+                'generatedAt' => now(),
+                'company' => $company,
+                'bank' => $bank,
+            ]);
+
+            return $pdf->stream("extrato-vendas-{$customer->name}-" . now()->format('Y-m-d') . '.pdf');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao gerar extrato de vendas: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Gerar extrato de cotações do cliente em PDF
+     */
+    public function quotationsExtract(Request $request, Customer $customer)
+    {
+        try {
+            $query = $customer->quotations()->with(['currency']);
+
+            // Filtros
+            if ($request->filled('start_date')) {
+                $query->where('issue_date', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->where('issue_date', '<=', $request->end_date);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Ordenação
+            $sortField = $request->input('sort_field', 'issue_date');
+            $sortOrder = $request->input('sort_order', 'desc');
+            $query->orderBy($sortField, $sortOrder);
+
+            $quotations = $query->get();
+
+            $totals = [
+                'count' => $quotations->count(),
+                'total' => $quotations->whereNotIn('status', ['draft', 'pending'])->sum('total'),
+                'approved' => $quotations->where('status', 'approved')->sum('total'),
+                'sent' => $quotations->where('status', 'sent')->sum('total'),
+                'expired' => $quotations->where('status', 'expired')->sum('total'),
+                'converted' => $quotations->where('status', 'converted')->sum('total'),
+            ];
+
+            $filters = [
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'status' => $request->status,
+                'sort_field' => $sortField,
+                'sort_order' => $sortOrder,
+            ];
+
+            // Carregar informações da empresa e dados bancários
+            $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+            $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
+
+            $pdf = Pdf::setOptions([
+                'isPhpEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'enable_local_file_access' => true,
+                'chroot' => public_path(),
+            ])->loadView('exports.quotations-statement', [
+                'customer' => $customer,
+                'quotations' => $quotations,
+                'totals' => $totals,
+                'filters' => $filters,
+                'generatedAt' => now(),
+                'company' => $company,
+                'bank' => $bank,
+            ]);
+
+            return $pdf->stream("extrato-cotacoes-{$customer->name}-" . now()->format('Y-m-d') . '.pdf');
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Erro ao gerar extrato de cotações: ' . $e->getMessage());
+        }
     }
 
     /**

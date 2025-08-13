@@ -92,6 +92,8 @@ Route::post('/sales/{sale}/update-rates', [SaleController::class, 'updateRates']
 
     // Rotas para gestão de clientes
     Route::get('customers/export/pdf', [CustomerController::class, 'exportPDF'])->name('customers.export.pdf');
+    Route::get('customers/{customer}/sales-extract', [CustomerController::class, 'salesExtract'])->name('customers.sales-extract');
+    Route::get('customers/{customer}/quotations-extract', [CustomerController::class, 'quotationsExtract'])->name('customers.quotations-extract');
     Route::resource('customers', CustomerController::class);
 
     // Rotas para gestão de fornecedores

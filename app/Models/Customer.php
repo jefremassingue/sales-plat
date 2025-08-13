@@ -75,6 +75,22 @@ class Customer extends Model
     }
 
     /**
+     * Obter as vendas do cliente.
+     */
+    public function sales()
+    {
+        return $this->hasMany(Sale::class);
+    }
+
+    /**
+     * Obter as cotações do cliente.
+     */
+    public function quotations()
+    {
+        return $this->hasMany(Quotation::class);
+    }
+
+    /**
      * Verificar se o cliente é uma empresa.
      */
     public function isCompany(): bool
@@ -109,5 +125,37 @@ class Customer extends Model
             $address .= ', ' . $this->country;
         }
         return $address;
+    }
+
+    /**
+     * Obter o total de vendas do cliente.
+     */
+    public function getTotalSalesAttribute(): float
+    {
+        return $this->sales()->sum('total');
+    }
+
+    /**
+     * Obter o total de cotações do cliente.
+     */
+    public function getTotalQuotationsAttribute(): float
+    {
+        return $this->quotations()->sum('total');
+    }
+
+    /**
+     * Obter o número de vendas do cliente.
+     */
+    public function getSalesCountAttribute(): int
+    {
+        return $this->sales()->count();
+    }
+
+    /**
+     * Obter o número de cotações do cliente.
+     */
+    public function getQuotationsCountAttribute(): int
+    {
+        return $this->quotations()->count();
     }
 }
