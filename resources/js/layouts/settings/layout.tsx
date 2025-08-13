@@ -5,22 +5,28 @@ import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
+import { User, Key, Palette, Settings } from 'lucide-react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
         href: '/settings/profile',
-        icon: null,
+        icon: User,
     },
     {
         title: 'Password',
         href: '/settings/password',
-        icon: null,
+        icon: Key,
     },
     {
         title: 'Appearance',
         href: '/settings/appearance',
-        icon: null,
+        icon: Palette,
+    },
+    {
+        title: 'System Settings',
+        href: '/settings/system',
+        icon: Settings,
     },
 ];
 
@@ -31,6 +37,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     }
 
     const currentPath = window.location.pathname;
+    const isSystemSettings = currentPath === '/settings/system';
 
     return (
         <div className="px-4 py-6">
@@ -49,7 +56,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                     'bg-muted': currentPath === item.href,
                                 })}
                             >
-                                <Link href={item.href} prefetch>
+                                <Link href={item.href} prefetch className="flex items-center gap-2">
+                                    {item.icon && <item.icon className="w-4 h-4" />}
                                     {item.title}
                                 </Link>
                             </Button>
@@ -59,8 +67,8 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
                 <Separator className="my-6 md:hidden" />
 
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">{children}</section>
+                    <div className={cn('flex-1', !isSystemSettings && 'md:max-w-2xl')}>
+                    <section className={cn('space-y-12', !isSystemSettings && 'max-w-xl')}>{children}</section>
                 </div>
             </div>
         </div>
