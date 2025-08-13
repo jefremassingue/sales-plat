@@ -219,7 +219,7 @@ class SaleController extends Controller implements HasMiddleware
 
             $placeholderNumber = 'AUTO-' . date('Ym');
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
-            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit', 'stock_quantity')
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with('category')
                 ->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
@@ -492,7 +492,7 @@ class SaleController extends Controller implements HasMiddleware
             // Carrega os dados necessários para os componentes do formulário (dropdowns, catálogos, etc.)
             // Esta parte é idêntica à do método `create`
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
-            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit', 'stock_quantity')
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with('category')
                 ->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();

@@ -19,7 +19,6 @@ interface Product {
   price: number;
   sku?: string;
   unit?: string;
-  stock_quantity?: number;
   category?: Category;
   category_id?: number;
 }

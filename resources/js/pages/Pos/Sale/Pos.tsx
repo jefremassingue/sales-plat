@@ -21,7 +21,6 @@ interface Product {
     price: number;
     sku?: string;
     unit?: string;
-    stock_quantity?: number;
     category?: { id: number; name: string };
     inventories?: {
         warehouse_id: number;
