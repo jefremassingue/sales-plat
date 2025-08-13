@@ -119,13 +119,15 @@ class ProductController extends Controller
     public function show(string $id)
     {
         $product = Product::where('slug', $id)
-            ->whereHas('ecommerce_inventory')
-            ->firstOrFail();
+            // ->whereHas('ecommerce_inventory')
+            ->firstOrFail()
+            ?->makeHidden(['price', 'created_at', 'updated_at', 'old_price']);
 
         $product->load([
             'category.parent',
             'images.versions',
             // 'images.colors',
+            'mainImage.versions',
             'colors.images',
             'sizes',
             'attributes',
@@ -135,12 +137,12 @@ class ProductController extends Controller
             'inventories.warehouse' // Adicionar esta linha
         ]);
 
-        $product->price = $product->ecommerce_inventory->unit_cost ?? $product->price;
-        $product->old_price = $product->ecommerce_inventory->old_cost ?? $product->old_price;
+        // $product->price = $product->ecommerce_inventory->unit_cost ?? $product->price;
+        // $product->old_price = $product->ecommerce_inventory->old_cost ?? $product->old_price;
 
         // Buscar produtos relacionados
         $relatedProducts = Product::where('id', '!=', $product->id)
-            ->whereHas('ecommerce_inventory')
+            // ->whereHas('ecommerce_inventory')
             ->where(function ($query) use ($product) {
                 // Produtos da mesma categoria
                 $query->where('category_id', $product->category_id);

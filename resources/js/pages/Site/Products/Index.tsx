@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import SiteLayout from '@/layouts/site-layout';
-import {
-    SlidersHorizontal, Search, ChevronDown, ChevronUp, X, Star, ShoppingBag, ArrowUpDown, Grip, ListFilter, FilterX, Minus, Plus
-} from 'lucide-react';
-import { Link, router } from '@inertiajs/react';
 import ProductCard from '@/pages/Site/_components/ProductCard';
-
+import { Head, router } from '@inertiajs/react';
+import { ChevronDown, ChevronUp, FilterX, ListFilter, Minus, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface Category {
     id: number;
@@ -46,20 +43,20 @@ interface Props {
         data: Product[];
         current_page: number;
         last_page: number;
-    }
-    categories: Category[]
-    brands: string[]
+    };
+    categories: Category[];
+    brands: string[];
     filters: {
-        categories: number[]
-        brands: string[]
-        price_min: string
-        price_max: string
-        search: string
-        c: string
-        sort: string
-        order: string
-        page: number
-    }
+        categories: number[];
+        brands: string[];
+        price_min: string;
+        price_max: string;
+        search: string;
+        c: string;
+        sort: string;
+        order: string;
+        page: number;
+    };
 }
 
 // --- Componente Principal da Página da Loja (Refatorado) ---
@@ -87,7 +84,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
     // Calcular faixas de preço com base nos produtos disponíveis
     const priceRanges = useMemo(() => {
         if (!products.data || products.data.length === 0) return { min: 0, max: 1000 };
-        const prices = products.data.map(p => parseFloat(p.price?.toString()));
+        const prices = products.data.map((p) => parseFloat(p.price?.toString()));
         return {
             min: Math.floor(Math.min(...prices)),
             max: Math.ceil(Math.max(...prices)),
@@ -96,11 +93,11 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
     // Handler para mudanças nos filtros de texto/preço com debounce
     const handleFilterChange = (filterName: string, value) => {
-        setFilterData(prev => ({
+        setFilterData((prev) => ({
             ...prev,
             [filterName]: value,
             // Resetar página ao alterar filtros
-            page: filterName !== 'page' ? 1 : prev.page
+            page: filterName !== 'page' ? 1 : prev.page,
         }));
     };
 
@@ -122,7 +119,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
         if (currentValues.includes(id)) {
             // Remove se já existe (desmarcar)
-            newValues = currentValues.filter(value => value !== id);
+            newValues = currentValues.filter((value) => value !== id);
         } else {
             // Adiciona se não existe (marcar)
             newValues = [...currentValues, id];
@@ -132,7 +129,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
         const updatedFilterData = {
             ...filterData,
             [filterType]: newValues,
-            page: 1 // Resetar para a primeira página ao alterar filtros
+            page: 1, // Resetar para a primeira página ao alterar filtros
         };
 
         // Atualizar o estado
@@ -145,13 +142,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                 Object.entries(updatedFilterData).filter(([_, value]) => {
                     if (Array.isArray(value)) return value.length > 0;
                     return value !== '' && value !== null && value !== undefined;
-                })
+                }),
             );
 
             router.get('/products', params, {
                 preserveState: true,
                 preserveScroll: false,
-                replace: true
+                replace: true,
             });
         }, 0);
     };
@@ -168,13 +165,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             Object.entries(filterData).filter(([_, value]) => {
                 if (Array.isArray(value)) return value.length > 0;
                 return value !== '' && value !== null && value !== undefined;
-            })
+            }),
         );
 
         router.get('/products', params, {
             preserveState: true,
             preserveScroll: false,
-            replace: true
+            replace: true,
         });
 
         setIsFiltersOpenMobile(false);
@@ -193,18 +190,22 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             page: 1,
         });
 
-        router.get('/products', {}, {
-            preserveState: true,
-            preserveScroll: false,
-            replace: true
-        });
+        router.get(
+            '/products',
+            {},
+            {
+                preserveState: true,
+                preserveScroll: false,
+                replace: true,
+            },
+        );
 
         setIsFiltersOpenMobile(false);
     };
 
     // Toggle para abrir/fechar seções de filtro na sidebar
     const toggleFilterSection = (section) => {
-        setOpenFilterSections(prev => ({ ...prev, [section]: !prev[section] }));
+        setOpenFilterSections((prev) => ({ ...prev, [section]: !prev[section] }));
     };
 
     // Aplicar filtros quando o usuário pressionar Enter no campo de busca
@@ -246,7 +247,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             ...filterData,
             sort: sortField,
             order: sortOrder,
-            page: 1 // Resetar para a primeira página ao mudar a ordenação
+            page: 1, // Resetar para a primeira página ao mudar a ordenação
         };
 
         // Atualizar o estado
@@ -259,13 +260,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                 Object.entries(updatedFilterData).filter(([_, value]) => {
                     if (Array.isArray(value)) return value.length > 0;
                     return value !== '' && value !== null && value !== undefined;
-                })
+                }),
             );
 
             router.get('/products', params, {
                 preserveState: true,
                 preserveScroll: false,
-                replace: true
+                replace: true,
             });
         }, 0);
     };
@@ -280,51 +281,56 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             const params = Object.fromEntries(
                 Object.entries({
                     ...filterData,
-                    page
+                    page,
                 }).filter(([_, value]) => {
                     if (Array.isArray(value)) return value.length > 0;
                     return value !== '' && value !== null && value !== undefined;
-                })
+                }),
             );
 
             router.get('/products', params, {
                 preserveState: true,
                 preserveScroll: true,
-                replace: true
+                replace: true,
             });
 
             // Scroll para o topo da lista de produtos
             window.scrollTo({
                 top: document.querySelector('.products-grid')?.offsetTop - 100 || 0,
-                behavior: 'smooth'
+                behavior: 'smooth',
             });
         }, 0);
     };
 
     return (
         <SiteLayout>
+            <Head title="Catálogo" />
+
             {/* Cabeçalho da Loja */}
-            <header className="bg-gradient-to-r from-orange-50 via-white to-amber-50 py-8 border-b border-slate-200">
+            <header className="border-b border-slate-200 bg-gradient-to-r from-orange-50 via-white to-amber-50 py-8">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-slate-800 mb-1">Loja de EPIs</h1>
+                    <h1 className="mb-1 text-3xl font-bold text-slate-800 md:text-4xl">Loja de EPIs</h1>
                     <p className="text-slate-600">Encontre os melhores equipamentos de proteção individual.</p>
                 </div>
             </header>
 
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-                <div className="flex flex-col lg:flex-row gap-8">
-
+            <div className="container mx-auto px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+                <div className="flex flex-col gap-8 lg:flex-row">
                     {/* Botão Filtros Mobile */}
-                    <div className="lg:hidden mb-4 flex justify-between items-center">
+                    <div className="mb-4 flex items-center justify-between lg:hidden">
                         <button
                             onClick={() => setIsFiltersOpenMobile(!isFiltersOpenMobile)}
-                            className="inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50"
+                            className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                         >
                             <SlidersHorizontal size={16} className="mr-2" />
                             Filtros {isFiltersOpenMobile ? <ChevronUp size={16} className="ml-2" /> : <ChevronDown size={16} className="ml-2" />}
                         </button>
                         {/* Botão Limpar Filtros Mobile */}
-                        {(filterData.categories.length > 0 || filterData.brands.length > 0 || filterData.price_min || filterData.price_max || filterData.search) && (
+                        {(filterData.categories.length > 0 ||
+                            filterData.brands.length > 0 ||
+                            filterData.price_min ||
+                            filterData.price_max ||
+                            filterData.search) && (
                             <button
                                 onClick={clearFilters}
                                 className="inline-flex items-center text-xs font-medium text-slate-500 hover:text-red-600"
@@ -336,18 +342,21 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                     </div>
 
                     {/* Sidebar de Filtros */}
-                    <aside className={`lg:w-1/4 ${isFiltersOpenMobile ? 'block animate-fade-in-down' : 'hidden'} lg:block`}>
-                        <div className="space-y-0 bg-white p-5 rounded-lg border border-slate-200 lg:sticky lg:top-24">
-
+                    <aside className={`lg:w-1/4 ${isFiltersOpenMobile ? 'animate-fade-in-down block' : 'hidden'} lg:block`}>
+                        <div className="space-y-0 rounded-lg border border-slate-200 bg-white p-5 lg:sticky lg:top-24">
                             {/* Cabeçalho da Sidebar com Limpar */}
-                            <div className="flex justify-between items-center pb-3 mb-3 border-b border-slate-200">
-                                <h3 className="text-lg font-semibold text-slate-800 inline-flex items-center">
+                            <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-3">
+                                <h3 className="inline-flex items-center text-lg font-semibold text-slate-800">
                                     <ListFilter size={18} className="mr-2" /> Filtros
                                 </h3>
-                                {(filterData.categories.length > 0 || filterData.brands.length > 0 || filterData.price_min || filterData.price_max || filterData.search) && (
+                                {(filterData.categories.length > 0 ||
+                                    filterData.brands.length > 0 ||
+                                    filterData.price_min ||
+                                    filterData.price_max ||
+                                    filterData.search) && (
                                     <button
                                         onClick={clearFilters}
-                                        className="text-xs font-medium text-slate-500 hover:text-red-600 flex items-center"
+                                        className="flex items-center text-xs font-medium text-slate-500 hover:text-red-600"
                                         title="Limpar todos os filtros"
                                     >
                                         <FilterX size={14} className="mr-1" /> Limpar Tudo
@@ -363,35 +372,42 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                     value={filterData.search}
                                     onChange={(e) => handleFilterChange('search', e.target.value)}
                                     onKeyDown={handleSearchKeyDown}
-                                    className="text-zinc-800 w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                                    className="w-full rounded-md border border-slate-300 py-2 pr-3 pl-9 text-sm text-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
                                 />
-                                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                <Search size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 transform text-slate-400" />
                             </div>
 
                             {/* Seção de Categorias */}
-                            <div className="py-3 border-t border-slate-200">
+                            <div className="border-t border-slate-200 py-3">
                                 <button
                                     onClick={() => toggleFilterSection('categories')}
-                                    className="flex justify-between items-center w-full mb-2"
+                                    className="mb-2 flex w-full items-center justify-between"
                                     aria-expanded={openFilterSections.categories}
                                 >
                                     <h4 className="font-semibold text-slate-700">Categorias</h4>
-                                    {openFilterSections.categories ? <Minus size={16} className="text-slate-500" /> : <Plus size={16} className="text-slate-500" />}
+                                    {openFilterSections.categories ? (
+                                        <Minus size={16} className="text-slate-500" />
+                                    ) : (
+                                        <Plus size={16} className="text-slate-500" />
+                                    )}
                                 </button>
                                 {openFilterSections.categories && (
-                                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200">
-                                        {categories.map(parentCat => (
+                                    <div className="scrollbar-thin scrollbar-thumb-slate-200 max-h-60 space-y-2 overflow-y-auto pr-1">
+                                        {categories.map((parentCat) => (
                                             <div key={parentCat.id} className="ml-1">
-                                                <span className="font-medium text-sm text-slate-600 block mb-1">{parentCat.name}</span>
-                                                <div className="space-y-1.5 ml-2">
-                                                    {parentCat.subcategories.map(subCat => (
-                                                        <label key={subCat.id} className="flex items-center space-x-2 cursor-pointer text-sm text-slate-600 hover:text-orange-600">
+                                                <span className="mb-1 block text-sm font-medium text-slate-600">{parentCat.name}</span>
+                                                <div className="ml-2 space-y-1.5">
+                                                    {parentCat.subcategories.map((subCat) => (
+                                                        <label
+                                                            key={subCat.id}
+                                                            className="flex cursor-pointer items-center space-x-2 text-sm text-slate-600 hover:text-orange-600"
+                                                        >
                                                             <input
                                                                 type="checkbox"
                                                                 value={subCat.id}
                                                                 checked={filterData.categories.includes(subCat.id)}
                                                                 onChange={() => handleCheckboxChange('categories', subCat.id)}
-                                                                className="text-zinc-800 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                                className="rounded border-slate-300 text-orange-600 text-zinc-800 focus:ring-orange-500"
                                                             />
                                                             <span>{subCat.name}</span>
                                                         </label>
@@ -404,25 +420,32 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                             </div>
 
                             {/* Seção de Marcas */}
-                            <div className="py-3 border-t border-slate-200">
+                            <div className="border-t border-slate-200 py-3">
                                 <button
                                     onClick={() => toggleFilterSection('brands')}
-                                    className="flex justify-between items-center w-full mb-2"
+                                    className="mb-2 flex w-full items-center justify-between"
                                     aria-expanded={openFilterSections.brands}
                                 >
                                     <h4 className="font-semibold text-slate-700">Marcas</h4>
-                                    {openFilterSections.brands ? <Minus size={16} className="text-slate-500" /> : <Plus size={16} className="text-slate-500" />}
+                                    {openFilterSections.brands ? (
+                                        <Minus size={16} className="text-slate-500" />
+                                    ) : (
+                                        <Plus size={16} className="text-slate-500" />
+                                    )}
                                 </button>
                                 {openFilterSections.brands && (
-                                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200">
-                                        {brands.map(brand => (
-                                            <label key={brand.id} className="flex items-center space-x-2 cursor-pointer text-sm text-slate-600 hover:text-orange-600">
+                                    <div className="scrollbar-thin scrollbar-thumb-slate-200 max-h-40 space-y-1.5 overflow-y-auto pr-1">
+                                        {brands.map((brand) => (
+                                            <label
+                                                key={brand.id}
+                                                className="flex cursor-pointer items-center space-x-2 text-sm text-slate-600 hover:text-orange-600"
+                                            >
                                                 <input
                                                     type="checkbox"
                                                     value={brand.id}
                                                     checked={filterData.brands.includes(brand.id)}
                                                     onChange={() => handleCheckboxChange('brands', brand.id)}
-                                                    className="text-zinc-800 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                    className="rounded border-slate-300 text-orange-600 text-zinc-800 focus:ring-orange-500"
                                                 />
                                                 <span>{brand.name}</span>
                                             </label>
@@ -432,20 +455,26 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                             </div>
 
                             {/* Seção de Preço */}
-                            <div className="py-3 border-t border-slate-200">
+                            <div className="border-t border-slate-200 py-3">
                                 <button
                                     onClick={() => toggleFilterSection('price')}
-                                    className="flex justify-between items-center w-full mb-2"
+                                    className="mb-2 flex w-full items-center justify-between"
                                     aria-expanded={openFilterSections.price}
                                 >
                                     <h4 className="font-semibold text-slate-700">Preço</h4>
-                                    {openFilterSections.price ? <Minus size={16} className="text-slate-500" /> : <Plus size={16} className="text-slate-500" />}
+                                    {openFilterSections.price ? (
+                                        <Minus size={16} className="text-slate-500" />
+                                    ) : (
+                                        <Plus size={16} className="text-slate-500" />
+                                    )}
                                 </button>
                                 {openFilterSections.price && (
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
                                             <div className="flex-1">
-                                                <label htmlFor="priceMin" className="text-xs text-slate-500 mb-1 block">Mínimo</label>
+                                                <label htmlFor="priceMin" className="mb-1 block text-xs text-slate-500">
+                                                    Mínimo
+                                                </label>
                                                 <input
                                                     id="priceMin"
                                                     type="text"
@@ -453,11 +482,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                                     value={filterData.price_min}
                                                     name="price_min"
                                                     onChange={handlePriceInputChange}
-                                                    className="text-zinc-800 w-full px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                                                    className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm text-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
                                                 />
                                             </div>
                                             <div className="flex-1">
-                                                <label htmlFor="priceMax" className="text-xs text-slate-500 mb-1 block">Máximo</label>
+                                                <label htmlFor="priceMax" className="mb-1 block text-xs text-slate-500">
+                                                    Máximo
+                                                </label>
                                                 <input
                                                     id="priceMax"
                                                     type="text"
@@ -465,13 +496,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                                     value={filterData.price_max}
                                                     name="price_max"
                                                     onChange={handlePriceInputChange}
-                                                    className="text-zinc-800 w-full px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                                                    className="w-full rounded-md border border-slate-300 px-3 py-1.5 text-sm text-zinc-800 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 focus:outline-none"
                                                 />
                                             </div>
                                         </div>
                                         <button
                                             onClick={applyFilters}
-                                            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-1.5 px-3 rounded-md text-xs transition-colors duration-300"
+                                            className="w-full rounded-md bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition-colors duration-300 hover:bg-slate-200"
                                         >
                                             Aplicar Filtro de Preço
                                         </button>
@@ -486,7 +517,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                         applyFilters();
                                         setIsFiltersOpenMobile(false);
                                     }}
-                                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-4 rounded-md text-sm transition-colors duration-300"
+                                    className="w-full rounded-md bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-orange-600"
                                 >
                                     Aplicar Filtros
                                 </button>
@@ -497,13 +528,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                     {/* Conteúdo Principal */}
                     <div className="flex-1">
                         {/* Barra de Controles (Ordenação, Visualização, etc) */}
-                        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 bg-white p-4 rounded-lg border border-slate-200">
+                        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-slate-500">Ordenar por:</span>
                                 <select
                                     value={`${filterData.sort}_${filterData.order}`}
                                     onChange={(e) => handleSortChange(e.target.value)}
-                                    className="bg-white border border-slate-300 text-slate-700 text-sm rounded-md focus:ring-orange-500 focus:border-orange-500 block p-2"
+                                    className="block rounded-md border border-slate-300 bg-white p-2 text-sm text-slate-700 focus:border-orange-500 focus:ring-orange-500"
                                 >
                                     <option value="created_at_desc">Mais Recentes</option>
                                     <option value="price_asc">Menor Preço</option>
@@ -512,14 +543,18 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                 </select>
                             </div>
                             <div className="text-sm text-slate-500">
-                                Mostrando <span className="font-medium text-slate-700">{products.from}-{products.to}</span> de <span className="font-medium text-slate-700">{products.total}</span> produtos
+                                Mostrando{' '}
+                                <span className="font-medium text-slate-700">
+                                    {products.from}-{products.to}
+                                </span>{' '}
+                                de <span className="font-medium text-slate-700">{products.total}</span> produtos
                             </div>
                         </div>
 
                         {/* Grid de Produtos */}
                         {products.data && products.data.length > 0 ? (
                             <>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 products-grid">
+                                <div className="products-grid grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                     {products.data.map((product) => (
                                         <ProductCard key={product.id} product={product} />
                                     ))}
@@ -533,16 +568,15 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                             <button
                                                 onClick={() => products.prev_page_url && handlePageChange(products.current_page - 1)}
                                                 disabled={!products.prev_page_url}
-                                                className={`px-3 py-1.5 rounded-md text-sm font-medium ${products.prev_page_url
-                                                    ? 'text-slate-700 hover:bg-slate-100'
-                                                    : 'text-slate-400 cursor-not-allowed'
-                                                    }`}
+                                                className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                                                    products.prev_page_url ? 'text-slate-700 hover:bg-slate-100' : 'cursor-not-allowed text-slate-400'
+                                                }`}
                                             >
                                                 Anterior
                                             </button>
 
                                             {/* Números das Páginas */}
-                                            {Array.from({ length: products.last_page }, (_, i) => i + 1).map(page => {
+                                            {Array.from({ length: products.last_page }, (_, i) => i + 1).map((page) => {
                                                 // Mostrar apenas algumas páginas para não sobrecarregar a UI
                                                 if (
                                                     page === 1 ||
@@ -553,10 +587,11 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                                         <button
                                                             key={page}
                                                             onClick={() => handlePageChange(page)}
-                                                            className={`w-9 h-9 flex items-center justify-center rounded-md text-sm font-medium ${page === products.current_page
-                                                                ? 'bg-orange-500 text-white'
-                                                                : 'text-slate-700 hover:bg-slate-100'
-                                                                }`}
+                                                            className={`flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium ${
+                                                                page === products.current_page
+                                                                    ? 'bg-orange-500 text-white'
+                                                                    : 'text-slate-700 hover:bg-slate-100'
+                                                            }`}
                                                         >
                                                             {page}
                                                         </button>
@@ -566,7 +601,11 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                                     (page === products.current_page + 2 && products.current_page < products.last_page - 2)
                                                 ) {
                                                     // Mostrar reticências para indicar páginas omitidas
-                                                    return <span key={page} className="px-1.5">...</span>;
+                                                    return (
+                                                        <span key={page} className="px-1.5">
+                                                            ...
+                                                        </span>
+                                                    );
                                                 }
                                                 return null;
                                             })}
@@ -575,10 +614,9 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                             <button
                                                 onClick={() => products.next_page_url && handlePageChange(products.current_page + 1)}
                                                 disabled={!products.next_page_url}
-                                                className={`px-3 py-1.5 rounded-md text-sm font-medium ${products.next_page_url
-                                                    ? 'text-slate-700 hover:bg-slate-100'
-                                                    : 'text-slate-400 cursor-not-allowed'
-                                                    }`}
+                                                className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                                                    products.next_page_url ? 'text-slate-700 hover:bg-slate-100' : 'cursor-not-allowed text-slate-400'
+                                                }`}
                                             >
                                                 Próximo
                                             </button>
@@ -587,12 +625,12 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                 )}
                             </>
                         ) : (
-                            <div className="text-center py-16 bg-white rounded-lg border border-slate-200">
-                                <h3 className="text-lg font-semibold text-slate-800 mb-2">Nenhum produto encontrado</h3>
-                                <p className="text-slate-500 mb-6">Tente ajustar seus filtros ou buscar por outro termo.</p>
+                            <div className="rounded-lg border border-slate-200 bg-white py-16 text-center">
+                                <h3 className="mb-2 text-lg font-semibold text-slate-800">Nenhum produto encontrado</h3>
+                                <p className="mb-6 text-slate-500">Tente ajustar seus filtros ou buscar por outro termo.</p>
                                 <button
                                     onClick={clearFilters}
-                                    className="inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50"
+                                    className="inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                                 >
                                     <FilterX size={16} className="mr-2" /> Limpar Filtros
                                 </button>

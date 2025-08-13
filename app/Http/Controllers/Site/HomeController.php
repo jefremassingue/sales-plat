@@ -14,6 +14,8 @@ class HomeController extends Controller
 {
     public function index()
     {
+
+        // Cache::clear();
         // Produtos em destaque com cache
         $featuredProducts = Cache::remember('home:featured_products', now()->addMinutes(30), function () {
             return Product::with(['category', 'mainImage.versions'])
@@ -26,8 +28,8 @@ class HomeController extends Controller
                     'id' => $p->id,
                     'name' => $p->name,
                     'slug' => $p->slug,
-                    'price' => $p->ecommerce_inventory->unit_cost ?? $p->price,
-                    'old_price' => $p->ecommerce_inventory->old_cost ?? $p->old_price,
+                    // 'price' => $p->ecommerce_inventory->unit_cost ?? $p->price,
+                    // 'old_price' => $p->ecommerce_inventory->old_cost ?? $p->old_price,
                     'category' => $p->category ? [
                         'id' => $p->category->id,
                         'name' => $p->category->name,

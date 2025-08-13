@@ -73,7 +73,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                                 product.main_image.url
                             }
                             alt={product.name}
-                            className="h-full w-full aspect-square rounded-xl object-cover transition-all hover:scale-105"
+                            className="h-full w-full aspect-square rounded-xl object-contain transition-all hover:scale-105"
                         />
                     ) : (
                         <div className="flex h-full w-full aspect-square items-center rounded-xl justify-center bg-gray-100 ">

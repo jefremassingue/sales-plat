@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { use, useEffect } from 'react'
 import { Head, Link } from '@inertiajs/react'
 import SiteLayout from '@/layouts/site-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { useAppearance } from '@/hooks/use-appearance'
 
 interface Customer {
     id: string
@@ -102,6 +103,13 @@ const statusColors = {
 }
 
 export default function Profile({ customer, stats, recentSales, recentQuotations }: Props) {
+   
+       const { appearance, updateAppearance } = useAppearance();
+
+       useEffect(() => {
+           updateAppearance('light');
+       }, [appearance, updateAppearance]);
+
     const formatCurrency = (amount: number, currency = 'MZN') => {
         return new Intl.NumberFormat('pt-MZ', {
             style: 'currency',

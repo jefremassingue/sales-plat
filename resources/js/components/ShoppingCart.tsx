@@ -138,19 +138,19 @@ const ShoppingCart: React.FC = () => {
                         </div>
 
                         <div className="border-t p-4 space-y-4">
-                            <div className="flex justify-between text-base font-medium text-gray-900">
+                            {/* <div className="flex justify-between text-base font-medium text-gray-900">
                                 <p>Subtotal</p>
                                 <p>{formatCurrency(total)}</p>
                             </div>
                             <p className="text-sm text-gray-500">
                                 Portes e impostos calculados na cotação
-                            </p>
+                            </p> */}
                             <div className="grid grid-cols-2 gap-3">
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="rounded-md border border-orange-600 px-3 py-2 text-sm font-medium text-orange-600 hover:bg-orange-50"
                                 >
-                                    Continuar Comprando
+                                    Continuar Adicionando
                                 </button>
                                 <Link
                                     href="/quotation"

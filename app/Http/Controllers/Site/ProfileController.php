@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class ProfileController extends Controller
 {
@@ -20,37 +21,37 @@ class ProfileController extends Controller
     private function getOrCreateCustomer()
     {
         $user = Auth::user();
-        
+
         // 1. Buscar customer associado ao usuário autenticado
         $customer = Customer::where('user_id', $user->id)->first();
-        
+
         if ($customer) {
             return $customer;
         }
-        
+
         // 2. Se não encontrou por user_id, buscar por email sem user_id
         $customerByEmail = Customer::where('email', $user->email)
             ->whereNull('user_id')
             ->first();
-            
+
         if ($customerByEmail) {
             // Associar o customer existente ao usuário
             $customerByEmail->update(['user_id' => $user->id]);
             return $customerByEmail;
         }
-        
+
         // 3. Verificar se já existe customer com esse email mas com outro user_id
         $existingCustomerWithUser = Customer::where('email', $user->email)
             ->whereNotNull('user_id')
             ->where('user_id', '!=', $user->id)
             ->first();
-            
+
         if ($existingCustomerWithUser) {
             // Redirecionar para página de verificação personalizada
             return redirect()->route('customer.verification')
                 ->with('warning', 'Foi encontrado um conflito com seu email. Por favor, resolva a situação abaixo.');
         }
-        
+
         // 4. Se não existir customer, criar um novo
         $customer = Customer::create([
             'user_id' => $user->id,
@@ -59,7 +60,7 @@ class ProfileController extends Controller
             'active' => true,
             'client_type' => 'individual',
         ]);
-        
+
         return $customer;
     }
 
@@ -69,7 +70,7 @@ class ProfileController extends Controller
     public function index()
     {
         $customer = $this->getOrCreateCustomer();
-        
+
         // Se retornou um redirect (conflito), retorná-lo
         if ($customer instanceof \Illuminate\Http\RedirectResponse) {
             return $customer;
@@ -77,19 +78,19 @@ class ProfileController extends Controller
 
         // Carregar dados relacionados
         $customer->load(['user']);
-        
+
         // Estatísticas do customer
         $salesCount = Sale::where('customer_id', $customer->id)->count();
         $salesTotal = Sale::where('customer_id', $customer->id)->sum('total');
         $quotationsCount = Quotation::where('customer_id', $customer->id)->count();
-        
+
         // Vendas recentes (últimas 5)
         $recentSales = Sale::where('customer_id', $customer->id)
             ->with(['items'])
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
-            
+
         // Cotações recentes (últimas 5) - apenas as que podem mostrar preço
         $recentQuotations = Quotation::where('customer_id', $customer->id)
             ->with(['items'])
@@ -123,7 +124,7 @@ class ProfileController extends Controller
     public function edit()
     {
         $customer = $this->getOrCreateCustomer();
-        
+
         // Se retornou um redirect (conflito), retorná-lo
         if ($customer instanceof \Illuminate\Http\RedirectResponse) {
             return $customer;
@@ -140,7 +141,7 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $customer = $this->getOrCreateCustomer();
-        
+
         // Se retornou um redirect (conflito), retorná-lo
         if ($customer instanceof \Illuminate\Http\RedirectResponse) {
             return $customer;
@@ -197,7 +198,7 @@ class ProfileController extends Controller
     public function salesStatement(Request $request)
     {
         $customer = $this->getOrCreateCustomer();
-        
+
         // Se retornou um redirect (conflito), retorná-lo
         if ($customer instanceof \Illuminate\Http\RedirectResponse) {
             return $customer;
@@ -251,7 +252,7 @@ class ProfileController extends Controller
     public function quotationsStatement(Request $request)
     {
         $customer = $this->getOrCreateCustomer();
-        
+
         // Se retornou um redirect (conflito), retorná-lo
         if ($customer instanceof \Illuminate\Http\RedirectResponse) {
             return $customer;
@@ -306,7 +307,7 @@ class ProfileController extends Controller
     public function exportSalesStatement(Request $request)
     {
         $customer = $this->getOrCreateCustomer();
-        
+
         // Se retornou um redirect (conflito), retorná-lo
         if ($customer instanceof \Illuminate\Http\RedirectResponse) {
             return $customer;
@@ -330,11 +331,17 @@ class ProfileController extends Controller
 
         $sales = $query->get();
 
+        // Carregar informações da empresa e dados bancários
+        $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+        $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
+
         $pdf = Pdf::loadView('exports.sales-statement', [
             'customer' => $customer,
             'sales' => $sales,
             'filters' => $request->only(['status', 'date_from', 'date_to']),
             'generatedAt' => now(),
+            'company' => $company,
+            'bank' => $bank,
         ]);
 
         $filename = 'extrato-vendas-' . $customer->name . '-' . now()->format('Y-m-d') . '.pdf';
@@ -348,7 +355,7 @@ class ProfileController extends Controller
     public function exportQuotationsStatement(Request $request)
     {
         $customer = $this->getOrCreateCustomer();
-        
+
         // Se retornou um redirect (conflito), retorná-lo
         if ($customer instanceof \Illuminate\Http\RedirectResponse) {
             return $customer;
@@ -372,11 +379,17 @@ class ProfileController extends Controller
 
         $quotations = $query->get();
 
+        // Carregar informações da empresa e dados bancários
+        $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
+        $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
+
         $pdf = Pdf::loadView('exports.quotations-statement', [
             'customer' => $customer,
             'quotations' => $quotations,
             'filters' => $request->only(['status', 'date_from', 'date_to']),
             'generatedAt' => now(),
+            'company' => $company,
+            'bank' => $bank,
         ]);
 
         $filename = 'extrato-cotacoes-' . $customer->name . '-' . now()->format('Y-m-d') . '.pdf';

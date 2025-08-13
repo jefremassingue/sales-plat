@@ -77,7 +77,7 @@ const SearchBar = () => {
         e.preventDefault();
         if (searchTerm.trim()) {
             router.get(
-                '/search',
+                '/products',
                 { q: searchTerm },
                 {
                     preserveState: true,

@@ -12,7 +12,7 @@ const heroSlidesDataEPI = [
       title: 'Capacetes de Alta Resistência',
       subtitle: 'Proteção certificada para sua cabeça em qualquer ambiente de trabalho.',
       ctaText: 'Ver Capacetes',
-      ctaLink: '/epis/capacetes',
+      ctaLink: '/products',
       textPosition: 'right',
       textColor: 'text-white',
       overlayColor: 'bg-black/40'
@@ -25,7 +25,7 @@ const heroSlidesDataEPI = [
       title: 'Luvas para Todas as Necessidades',
       subtitle: 'Desde proteção contra cortes até manuseio de químicos, temos a luva ideal.',
       ctaText: 'Explorar Luvas',
-      ctaLink: '/epis/luvas',
+      ctaLink: '/products',
       textPosition: 'center',
       textColor: 'text-white',
       overlayColor: 'bg-gradient-to-t from-slate-800/70 via-slate-800/50 to-transparent'
@@ -38,7 +38,7 @@ const heroSlidesDataEPI = [
       title: 'Óculos de Proteção Avançados',
       subtitle: 'Lentes anti-embaçantes e resistentes a impacto para máxima clareza e segurança.',
       ctaText: 'Ver Óculos',
-      ctaLink: '/epis/oculos-de-protecao',
+      ctaLink: '/products',
       textPosition: 'right',
       textColor: 'text-white', // Mudei para branco para melhor contraste com overlay escuro
       overlayColor: 'bg-sky-800/40' // Overlay com cor para contraste
@@ -51,7 +51,7 @@ const heroSlidesDataEPI = [
       title: 'Proteção Respiratória Eficaz',
       subtitle: 'Máscaras e respiradores contra poeira, gases e vapores.',
       ctaText: 'Linha Respiratória',
-      ctaLink: '/epis/protecao-respiratoria',
+      ctaLink: '/products',
       textPosition: 'left',
       textColor: 'text-white',
       overlayColor: 'bg-neutral-900/50'
