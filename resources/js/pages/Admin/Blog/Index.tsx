@@ -1,4 +1,5 @@
 import { DeleteAlert } from '@/components/delete-alert';
+import { can } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -154,12 +155,14 @@ export default function Index({ blogs, categories, filters }: Props) {
             <div className="container px-4 py-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <h1 className="text-2xl font-bold">Blog</h1>
-                    <Button asChild>
-                        <Link href="/admin/blog/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Novo Artigo
-                        </Link>
-                    </Button>
+                    {can('admin-blog.create') && (
+                        <Button asChild>
+                            <Link href="/admin/blog/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Novo Artigo
+                            </Link>
+                        </Button>
+                    )}
                 </div>
 
                 <Card className="mt-6">
@@ -214,12 +217,14 @@ export default function Index({ blogs, categories, filters }: Props) {
                                 <p className="mt-2 text-sm text-muted-foreground">
                                     Não foram encontrados artigos com os filtros aplicados.
                                 </p>
-                                <Button asChild className="mt-4">
-                                    <Link href="/admin/blog/create">
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Criar Novo Artigo
-                                    </Link>
-                                </Button>
+                                {can('admin-blog.create') && (
+                                    <Button asChild className="mt-4">
+                                        <Link href="/admin/blog/create">
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Criar Novo Artigo
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -246,23 +251,29 @@ export default function Index({ blogs, categories, filters }: Props) {
                                                     <TableCell>{formatDate(blog.published_at)}</TableCell>
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
-                                                            <Button variant="outline" size="icon" asChild>
-                                                                <Link href={`/admin/blog/${blog.slug}`} target="_blank">
-                                                                    <Eye className="h-4 w-4" />
-                                                                </Link>
-                                                            </Button>
-                                                            <Button variant="outline" size="icon" asChild>
-                                                                <Link href={`/admin/blog/${blog.id}/edit`}>
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Link>
-                                                            </Button>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="icon"
-                                                                onClick={() => confirmDelete(blog)}
-                                                            >
-                                                                <Trash className="h-4 w-4" />
-                                                            </Button>
+                                                            {can('admin-blog.show') && (
+                                                                <Button variant="outline" size="icon" asChild>
+                                                                    <Link href={`/admin/blog/${blog.slug}`} target="_blank">
+                                                                        <Eye className="h-4 w-4" />
+                                                                    </Link>
+                                                                </Button>
+                                                            )}
+                                                            {can('admin-blog.edit') && (
+                                                                <Button variant="outline" size="icon" asChild>
+                                                                    <Link href={`/admin/blog/${blog.id}/edit`}>
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Link>
+                                                                </Button>
+                                                            )}
+                                                            {can('admin-blog.destroy') && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => confirmDelete(blog)}
+                                                                >
+                                                                    <Trash className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>

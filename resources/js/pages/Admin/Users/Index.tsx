@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { can } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -183,12 +184,14 @@ export default function Index({ users, roles, filters = {} }: Props) {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Gerir Utilizadores</h1>
           <div className="flex gap-2">
-            <Button asChild>
-              <Link href="/admin/users/create">
-                <Plus className="mr-2 h-4 w-4" />
-                <span>Novo Utilizador</span>
-              </Link>
-            </Button>
+            {can('admin-user.create') && (
+              <Button asChild>
+                <Link href="/admin/users/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>Novo Utilizador</span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -286,20 +289,24 @@ export default function Index({ users, roles, filters = {} }: Props) {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/admin/users/${user.id}/edit`}>
-                                <Edit className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => confirmDelete(user.id)}
-                              className="text-destructive hover:text-destructive"
-                              disabled={user.id === (usePage().props.auth?.user as any)?.id}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
+                            {can('admin-user.edit') && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link href={`/admin/users/${user.id}/edit`}>
+                                  <Edit className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            )}
+                            {can('admin-user.destroy') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => confirmDelete(user.id)}
+                                className="text-destructive hover:text-destructive"
+                                disabled={user.id === (usePage().props.auth?.user as any)?.id}
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

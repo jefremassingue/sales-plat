@@ -1,5 +1,6 @@
 // filepath: /Users/macair/projects/laravel/matony/resources/js/pages/Admin/Inventories/Show.tsx
 import { Button } from '@/components/ui/button';
+import { can } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -119,15 +120,19 @@ export default function Show({ inventory, statuses, recentAdjustments = [], adju
 
                     <div className="flex gap-2">
                         <Button variant="outline" asChild>
-                            <Link href={`/admin/inventories/${inventory.id}/edit`}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
-                            </Link>
+                            {can('admin-inventory.edit') && (
+                                <Link href={`/admin/inventories/${inventory.id}/edit`}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Editar
+                                </Link>
+                            )}
                         </Button>
                         <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)}>
                             <Trash className="mr-2 h-4 w-4" />
                             Eliminar
                         </Button>
+                        {/* Only show delete button if user can destroy */}
+                        {!can('admin-inventory.destroy') && null}
                     </div>
                 </div>
 
@@ -331,10 +336,12 @@ export default function Show({ inventory, statuses, recentAdjustments = [], adju
                         </div>
                         <div className="flex gap-2">
                             <Button asChild>
-                                <Link href={`/admin/inventories/${inventory.id}/adjustments/create`}>
-                                    <PlusCircle className="mr-2 h-4 w-4" />
-                                    Novo Ajuste
-                                </Link>
+                                {can('admin-inventory.edit') && (
+                                    <Link href={`/admin/inventories/${inventory.id}/adjustments/create`}>
+                                        <PlusCircle className="mr-2 h-4 w-4" />
+                                        Novo Ajuste
+                                    </Link>
+                                )}
                             </Button>
                             <Button variant="outline" asChild>
                                 <Link href={`/admin/inventories/${inventory.id}/adjustments`}>

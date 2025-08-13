@@ -1,4 +1,5 @@
 import { DeleteAlert } from '@/components/delete-alert';
+import { can } from '@/lib/utils';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -286,27 +287,33 @@ export default function Index({ customers, filters = {} }: Props) {
                     )}
                 </CardContent>
                 <div className="mt-auto flex justify-end gap-2 border-t p-4 pt-0">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/customers/${customer.id}`}>
-                            <Eye className="mr-1 h-4 w-4" />
-                            Ver
-                        </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/customers/${customer.id}/edit`}>
-                            <Edit className="mr-1 h-4 w-4" />
-                            Editar
-                        </Link>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(customer.id)}
-                        className="text-destructive hover:text-destructive"
-                    >
-                        <Trash className="mr-1 h-4 w-4" />
-                        Eliminar
-                    </Button>
+                    {can('admin-customer.show') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/customers/${customer.id}`}>
+                                <Eye className="mr-1 h-4 w-4" />
+                                Ver
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-customer.edit') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/customers/${customer.id}/edit`}>
+                                <Edit className="mr-1 h-4 w-4" />
+                                Editar
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-customer.destroy') && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(customer.id)}
+                            className="text-destructive hover:text-destructive"
+                        >
+                            <Trash className="mr-1 h-4 w-4" />
+                            Eliminar
+                        </Button>
+                    )}
                 </div>
             </Card>
         );
@@ -320,16 +327,20 @@ export default function Index({ customers, filters = {} }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Gerir Clientes</h1>
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleExportPDF}>
-                            <FileDown className="mr-2 h-4 w-4" />
-                            <span>Exportar PDF</span>
-                        </Button>
-                        <Button asChild>
-                            <Link href="/admin/customers/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                <span>Novo Cliente</span>
-                            </Link>
-                        </Button>
+                        {can('admin-customer.index') && (
+                            <Button variant="outline" onClick={handleExportPDF}>
+                                <FileDown className="mr-2 h-4 w-4" />
+                                <span>Exportar PDF</span>
+                            </Button>
+                        )}
+                        {can('admin-customer.create') && (
+                            <Button asChild>
+                                <Link href="/admin/customers/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    <span>Novo Cliente</span>
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -530,24 +541,30 @@ export default function Index({ customers, filters = {} }: Props) {
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex items-center gap-2">
-                                                                <Button variant="ghost" size="icon" asChild>
-                                                                    <Link href={`/admin/customers/${customer.id}`}>
-                                                                        <Eye className="h-4 w-4" />
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button variant="ghost" size="icon" asChild>
-                                                                    <Link href={`/admin/customers/${customer.id}/edit`}>
-                                                                        <Edit className="h-4 w-4" />
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => handleDeleteClick(customer.id)}
-                                                                    className="text-destructive hover:text-destructive"
-                                                                >
-                                                                    <Trash className="h-4 w-4" />
-                                                                </Button>
+                                                                {can('admin-customer.show') && (
+                                                                    <Button variant="ghost" size="icon" asChild>
+                                                                        <Link href={`/admin/customers/${customer.id}`}>
+                                                                            <Eye className="h-4 w-4" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                )}
+                                                                {can('admin-customer.edit') && (
+                                                                    <Button variant="ghost" size="icon" asChild>
+                                                                        <Link href={`/admin/customers/${customer.id}/edit`}>
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                )}
+                                                                {can('admin-customer.destroy') && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => handleDeleteClick(customer.id)}
+                                                                        className="text-destructive hover:text-destructive"
+                                                                    >
+                                                                        <Trash className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>

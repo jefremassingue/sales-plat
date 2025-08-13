@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { can } from '@/lib/utils';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -197,12 +198,14 @@ export default function Index({ roles, filters = {} }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Gerir Funções</h1>
                     <div className="flex gap-2">
-                        <Button asChild>
-                            <Link href="/admin/roles/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                <span>Nova Função</span>
-                            </Link>
-                        </Button>
+                        {can('admin-role.create') && (
+                            <Button asChild>
+                                <Link href="/admin/roles/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    <span>Nova Função</span>
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -213,7 +216,7 @@ export default function Index({ roles, filters = {} }: Props) {
                                 <CardTitle>Funções</CardTitle>
 
                                 <div className="flex items-center gap-2">
-                                    {selectedRoles.length > 0 && (
+                                    {selectedRoles.length > 0 && can('admin-role.destroy') && (
                                         <Button variant="destructive" size="sm" onClick={handleBulkDeleteClick}>
                                             <Trash className="mr-2 h-4 w-4" />
                                             Eliminar Selecionados
@@ -312,30 +315,36 @@ export default function Index({ roles, filters = {} }: Props) {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex justify-end space-x-2">
-                                                        <Button variant="ghost" size="icon" asChild>
-                                                            <Link href={`/admin/roles/${role.id}`}>
-                                                                <Eye className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            asChild
-                                                            disabled={role.name === 'Super Admin'}
-                                                        >
-                                                            <Link href={`/admin/roles/${role.id}/edit`}>
-                                                                <Edit className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleDeleteClick(role.id)}
-                                                            disabled={role.name === 'Super Admin'}
-                                                            className="text-destructive hover:text-destructive"
-                                                        >
-                                                            <Trash className="h-4 w-4" />
-                                                        </Button>
+                                                        {can('admin-role.view') && (
+                                                            <Button variant="ghost" size="icon" asChild>
+                                                                <Link href={`/admin/roles/${role.id}`}>
+                                                                    <Eye className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        )}
+                                                        {can('admin-role.edit') && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                asChild
+                                                                disabled={role.name === 'Super Admin'}
+                                                            >
+                                                                <Link href={`/admin/roles/${role.id}/edit`}>
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        )}
+                                                        {can('admin-role.destroy') && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleDeleteClick(role.id)}
+                                                                disabled={role.name === 'Super Admin'}
+                                                                className="text-destructive hover:text-destructive"
+                                                            >
+                                                                <Trash className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { can } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -189,14 +190,16 @@ export default function Show({ quotation, statuses }: Props) {
               </SelectContent>
             </Select>
 
-            <Button variant="outline" asChild>
-              <a href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
-                <Printer className="mr-2 h-4 w-4" />
-                PDF
-              </a>
-            </Button>
+            {can('admin-quotation.index') && (
+              <Button variant="outline" asChild>
+                <a href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
+                  <Printer className="mr-2 h-4 w-4" />
+                  PDF
+                </a>
+              </Button>
+            )}
 
-            {isEditable() && (
+            {can('admin-quotation.edit') && isEditable() && (
               <Button variant="outline" asChild>
                 <Link href={`/admin/quotations/${quotation.id}/edit`}>
                   <Edit className="mr-2 h-4 w-4" />
@@ -205,10 +208,12 @@ export default function Show({ quotation, statuses }: Props) {
               </Button>
             )}
 
-            <Button onClick={() => setDeleteAlertOpen(true)} variant="destructive">
-              <Trash className="mr-2 h-4 w-4" />
-              Eliminar
-            </Button>
+            {can('admin-quotation.destroy') && (
+              <Button onClick={() => setDeleteAlertOpen(true)} variant="destructive">
+                <Trash className="mr-2 h-4 w-4" />
+                Eliminar
+              </Button>
+            )}
           </div>
         </div>
 
@@ -494,36 +499,42 @@ export default function Show({ quotation, statuses }: Props) {
                 <CardTitle>Ações</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button className="w-full justify-start" asChild>
-                  <a href={`/admin/quotations/${quotation.id}/pdf?download=true`} target="_blank">
-                    <Download className="mr-2 h-4 w-4" />
-                    Descarregar PDF
-                  </a>
-                </Button>
+                {can('admin-quotation.index') && (
+                  <Button className="w-full justify-start" asChild>
+                    <a href={`/admin/quotations/${quotation.id}/pdf?download=true`} target="_blank">
+                      <Download className="mr-2 h-4 w-4" />
+                      Descarregar PDF
+                    </a>
+                  </Button>
+                )}
 
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  disabled={!quotation.customer || !quotation.customer.email}
-                  onClick={() => router.post(`/admin/quotations/${quotation.id}/send-email`)}
-                >
-                  <Send className="mr-2 h-4 w-4" />
-                  Enviar por Email
-                  {(!quotation.customer || !quotation.customer.email) && (
-                    <span className="ml-1 text-xs text-destructive">(Sem email)</span>
-                  )}
-                </Button>
+                {can('admin-quotation.index') && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    disabled={!quotation.customer || !quotation.customer.email}
+                    onClick={() => router.post(`/admin/quotations/${quotation.id}/send-email`)}
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Enviar por Email
+                    {(!quotation.customer || !quotation.customer.email) && (
+                      <span className="ml-1 text-xs text-destructive">(Sem email)</span>
+                    )}
+                  </Button>
+                )}
 
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => router.post(`/admin/quotations/${quotation.id}/duplicate`)}
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Duplicar Cotação
-                </Button>
+                {can('admin-quotation.index') && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => router.post(`/admin/quotations/${quotation.id}/duplicate`)}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    Duplicar Cotação
+                  </Button>
+                )}
 
-                {(quotation.status === 'approved' || quotation.status === 'draft') && (
+                {can('admin-quotation.index') && (quotation.status === 'approved' || quotation.status === 'draft') && (
                   <Button
                     variant="default"
                     className="w-full justify-start"
@@ -534,20 +545,19 @@ export default function Show({ quotation, statuses }: Props) {
                   </Button>
                 )}
 
-                {isEditable() && (
-                  <>
-                    <Button variant="outline" className="w-full justify-start" asChild>
-                      <Link href={`/admin/quotations/${quotation.id}/edit`}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar Cotação
-                      </Link>
-                    </Button>
-
-                    <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)} className="w-full justify-start">
-                      <Trash className="mr-2 h-4 w-4" />
-                      Eliminar Cotação
-                    </Button>
-                  </>
+                {can('admin-quotation.edit') && isEditable() && (
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <Link href={`/admin/quotations/${quotation.id}/edit`}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Editar Cotação
+                    </Link>
+                  </Button>
+                )}
+                {can('admin-quotation.destroy') && isEditable() && (
+                  <Button variant="destructive" onClick={() => setDeleteAlertOpen(true)} className="w-full justify-start">
+                    <Trash className="mr-2 h-4 w-4" />
+                    Eliminar Cotação
+                  </Button>
                 )}
               </CardContent>
             </Card>

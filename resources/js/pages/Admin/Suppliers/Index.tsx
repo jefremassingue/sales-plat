@@ -25,6 +25,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Building, Edit, Eye, Filter, GridIcon, ListIcon, Plus, Trash, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { type Supplier, type User } from './_components';
+import { can } from '@/lib/utils';
 
 interface Props {
     suppliers: {
@@ -286,12 +287,14 @@ export default function Index({ suppliers, filters = {} }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Gerir Fornecedores</h1>
                     <div className="flex gap-2">
-                        <Button asChild>
-                            <Link href="/admin/suppliers/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                <span>Novo Fornecedor</span>
-                            </Link>
-                        </Button>
+                        {can('admin-supplier.create') && (
+                            <Button asChild>
+                                <Link href="/admin/suppliers/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    <span>Novo Fornecedor</span>
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -302,7 +305,7 @@ export default function Index({ suppliers, filters = {} }: Props) {
                                 <CardTitle>Fornecedores</CardTitle>
 
                                 <div className="flex items-center gap-2">
-                                    {selectedSuppliers.length > 0 && (
+                                    {selectedSuppliers.length > 0 && can('admin-supplier.destroy') && (
                                         <Button variant="destructive" size="sm" onClick={handleBulkDeleteClick}>
                                             <Trash className="mr-2 h-4 w-4" />
                                             Eliminar Selecionados
@@ -485,24 +488,30 @@ export default function Index({ suppliers, filters = {} }: Props) {
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex items-center gap-2">
-                                                                <Button variant="ghost" size="icon" asChild>
-                                                                    <Link href={`/admin/suppliers/${supplier.id}`}>
-                                                                        <Eye className="h-4 w-4" />
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button variant="ghost" size="icon" asChild>
-                                                                    <Link href={`/admin/suppliers/${supplier.id}/edit`}>
-                                                                        <Edit className="h-4 w-4" />
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => handleDeleteClick(supplier.id)}
-                                                                    className="text-destructive hover:text-destructive"
-                                                                >
-                                                                    <Trash className="h-4 w-4" />
-                                                                </Button>
+                                                                {can('admin-supplier.view') && (
+                                                                    <Button variant="ghost" size="icon" asChild>
+                                                                        <Link href={`/admin/suppliers/${supplier.id}`}>
+                                                                            <Eye className="h-4 w-4" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                )}
+                                                                {can('admin-supplier.edit') && (
+                                                                    <Button variant="ghost" size="icon" asChild>
+                                                                        <Link href={`/admin/suppliers/${supplier.id}/edit`}>
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                )}
+                                                                {can('admin-supplier.destroy') && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => handleDeleteClick(supplier.id)}
+                                                                        className="text-destructive hover:text-destructive"
+                                                                    >
+                                                                        <Trash className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>

@@ -13,6 +13,7 @@ import {
   MapPin, Calendar, FileText, User, CreditCard, DollarSign
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { can } from '@/lib/utils';
 
 interface Props {
   supplier: Supplier;
@@ -103,19 +104,23 @@ export default function Show({ supplier }: Props) {
             </Badge>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href={`/admin/suppliers/${supplier.id}/edit`}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar
-              </Link>
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => setDeleteAlertOpen(true)}
-            >
-              <Trash className="h-4 w-4 mr-2" />
-              Eliminar
-            </Button>
+            {can('admin-supplier.edit') && (
+              <Button variant="outline" asChild>
+                <Link href={`/admin/suppliers/${supplier.id}/edit`}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </Link>
+              </Button>
+            )}
+            {can('admin-supplier.destroy') && (
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteAlertOpen(true)}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Eliminar
+              </Button>
+            )}
           </div>
         </div>
 

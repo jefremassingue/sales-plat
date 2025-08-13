@@ -62,7 +62,7 @@ const formSchema = z.object({
   customer_id: z.string().optional(),
   issue_date: z.date({ required_error: "Data de emissão é obrigatória" }),
   expiry_date: z.date().optional().nullable(),
-  status: z.enum(['draft', 'sent', 'approved', 'rejected', 'cancelled', 'expired', 'converted']),
+  status: z.enum(['draft', 'sent', 'approved', 'rejected']),
   currency_code: z.string().min(1, { message: "Moeda é obrigatória" }),
   exchange_rate: z.string().min(1, { message: "Taxa de câmbio é obrigatória" })
     .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
@@ -139,6 +139,9 @@ export default function Edit({
   const expiryDate = quotation.expiry_date ? new Date(quotation.expiry_date) : null;
 
   // Inicializar o formulário
+  // Garantir que status seja sempre um dos valores válidos
+  const validStatuses = ['draft', 'sent', 'approved', 'rejected'];
+  const initialStatus = validStatuses.includes(quotation.status) ? quotation.status : 'draft';
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -146,7 +149,7 @@ export default function Edit({
       customer_id: quotation.customer_id ? quotation.customer_id.toString() : '',
       issue_date: issueDate,
       expiry_date: expiryDate,
-      status: quotation.status as any,
+      status: initialStatus as any,
       currency_code: quotation.currency_code,
       exchange_rate: quotation.exchange_rate.toString(),
       include_tax: quotation.include_tax,
@@ -193,14 +196,14 @@ export default function Edit({
         // Verificar se o erro é em um campo de item
         if (key.startsWith('items.')) {
           const [_, index, field] = key.split('.');
-          form.setError(`items.${index}.${field}` as any, {
+          form.setError(`items.${parseInt(index)}.${field}` as any, {
             type: 'manual',
-            message: errors[key],
+            message: Array.isArray(errors[key]) ? errors[key][0] : errors[key],
           });
         } else {
           form.setError(key as any, {
             type: 'manual',
-            message: errors[key],
+            message: Array.isArray(errors[key]) ? errors[key][0] : errors[key],
           });
         }
       });
@@ -347,19 +350,26 @@ export default function Edit({
         exchange_rate: parseFloat(values.exchange_rate),
         issue_date: format(values.issue_date, 'yyyy-MM-dd'),
         expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
-        items: values.items.map(item => ({
-          ...item,
-          id: item.id || undefined,
-          product_id: item.product_id ? item.product_id : null,
-          product_variant_id: item.product_variant_id ? item.product_variant_id : null,
-          warehouse_id: item.warehouse_id ? item.warehouse_id : null,
-          quantity: parseFloat(item.quantity),
-          unit_price: parseFloat(item.unit_price),
-          discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
-          tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
-          // Incluir os valores calculados
-          ...calculateItemValues(item)
-        })),
+        notes: values.notes ?? '',
+        terms: values.terms ?? '',
+        items: values.items.map(item => {
+          const mappedItem = {
+            ...item,
+            product_id: item.product_id ? item.product_id : null,
+            product_variant_id: item.product_variant_id ? item.product_variant_id : null,
+            warehouse_id: item.warehouse_id ? item.warehouse_id : null,
+            description: item.description ?? '',
+            quantity: parseFloat(item.quantity),
+            unit_price: parseFloat(item.unit_price),
+            discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
+            tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
+            // Incluir os valores calculados
+            ...calculateItemValues(item)
+          };
+          // Só incluir id se existir
+          if (item.id) mappedItem.id = item.id;
+          return mappedItem;
+        }),
       };
 
       router.put(`/admin/quotations/${quotation.id}`, data, {
@@ -406,7 +416,27 @@ export default function Edit({
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(onSubmit, (formErrors) => {
+              // Mostrar todos os erros no console
+              console.log('Zod validation errors:', formErrors);
+              // Extrair a primeira mensagem de erro
+              const errorList = Object.values(formErrors);
+              let firstMessage = 'Preencha todos os campos obrigatórios.';
+              if (errorList.length > 0) {
+                const firstError = errorList[0];
+                if (firstError && typeof firstError === 'object' && 'message' in firstError) {
+                  firstMessage = (firstError as { message: string }).message;
+                }
+              }
+              toast({
+                title: 'Erro de validação',
+                description: firstMessage,
+                variant: 'destructive',
+              });
+            })}
+            className="space-y-8"
+          >
             <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab}>
               <TabsList>
                 <TabsTrigger value="details">

@@ -13,6 +13,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { ArrowLeft, Building2, Edit, MapPin, Phone, Mail, User, Database, Trash, BarChart2, AlertTriangle, PackageCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Warehouse } from './_components';
+import { can } from '@/lib/utils';
 
 interface InventoryItem {
   id: number;
@@ -148,13 +149,23 @@ export default function Show({ warehouse, inventoryStats, inventoryItems, invent
                 Editar
               </Link>
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => setDeleteAlertOpen(true)}
-            >
-              <Trash className="h-4 w-4 mr-2" />
-              Eliminar
-            </Button>
+            {can('admin-warehouse.edit') && (
+              <Button asChild>
+                <Link href={`/admin/warehouses/${warehouse.id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </Link>
+              </Button>
+            )}
+            {can('admin-warehouse.destroy') && (
+              <Button
+                variant="destructive"
+                onClick={() => setDeleteAlertOpen(true)}
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                Eliminar
+              </Button>
+            )}
           </div>
         </div>
 

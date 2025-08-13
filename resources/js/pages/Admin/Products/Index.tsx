@@ -20,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
+import { can } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ChevronDown, Edit, Eye, Filter, GridIcon, ListIcon, MoreHorizontal, PackageSearch, Plus, Store, Trash, WarehouseIcon } from 'lucide-react';
@@ -323,33 +324,41 @@ export default function Index({ products, categories, filters }: Props) {
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2 border-t pt-2">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/products/${product.id}`}>
-                            <Eye className="mr-1 h-4 w-4" />
-                            Ver
-                        </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/products/${product.id}/inventory`}>
-                            <WarehouseIcon className="mr-1 h-4 w-4" />
-                            Inventário
-                        </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/products/${product.id}/edit`}>
-                            <Edit className="mr-1 h-4 w-4" />
-                            Editar
-                        </Link>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(product.id)}
-                        className="text-destructive hover:text-destructive"
-                    >
-                        <Trash className="mr-1 h-4 w-4" />
-                        Eliminar
-                    </Button>
+                    {can('admin-product.view') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/products/${product.id}`}>
+                                <Eye className="mr-1 h-4 w-4" />
+                                Ver
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-product.edit') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/products/${product.id}/inventory`}>
+                                <WarehouseIcon className="mr-1 h-4 w-4" />
+                                Inventário
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-product.edit') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/products/${product.id}/edit`}>
+                                <Edit className="mr-1 h-4 w-4" />
+                                Editar
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-product.destroy') && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(product.id)}
+                            className="text-destructive hover:text-destructive"
+                        >
+                            <Trash className="mr-1 h-4 w-4" />
+                            Eliminar
+                        </Button>
+                    )}
                 </CardFooter>
             </Card>
         );
@@ -363,12 +372,14 @@ export default function Index({ products, categories, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Gerir Produtos</h1>
                     <div className="flex gap-2">
-                        <Button asChild>
-                            <Link href="/admin/products/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                <span>Novo Produto</span>
-                            </Link>
-                        </Button>
+                        {can('admin-product.create') && (
+                            <Button asChild>
+                                <Link href="/admin/products/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    <span>Novo Produto</span>
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -379,7 +390,7 @@ export default function Index({ products, categories, filters }: Props) {
                                 <CardTitle>Produtos</CardTitle>
 
                                 <div className="flex items-center gap-2">
-                                    {selectedProducts.length > 0 && (
+                                    {selectedProducts.length > 0 && can('admin-product.destroy') && (
                                         <Button variant="destructive" size="sm" onClick={handleBulkDeleteClick}>
                                             <Trash className="mr-2 h-4 w-4" />
                                             Eliminar Selecionados
@@ -566,31 +577,39 @@ export default function Index({ products, categories, filters }: Props) {
                                                                         </Button>
                                                                     </DropdownMenuTrigger>
                                                                     <DropdownMenuContent align="end">
-                                                                        <DropdownMenuItem asChild>
-                                                                            <Link href={`/admin/products/${product.id}`}>
-                                                                                <Eye className="mr-2 h-4 w-4" />
-                                                                                <span>Ver Detalhes</span>
-                                                                            </Link>
-                                                                        </DropdownMenuItem>
-                                                                        <DropdownMenuItem asChild>
-                                                                            <Link href={`/admin/products/${product.id}/inventory`}>
-                                                                                <Store className="mr-2 h-4 w-4" />
-                                                                                <span>Gerir Inventário</span>
-                                                                            </Link>
-                                                                        </DropdownMenuItem>
-                                                                        <DropdownMenuItem asChild>
-                                                                            <Link href={`/admin/products/${product.id}/edit`}>
-                                                                                <Edit className="mr-2 h-4 w-4" />
-                                                                                <span>Editar</span>
-                                                                            </Link>
-                                                                        </DropdownMenuItem>
-                                                                        <DropdownMenuItem
-                                                                            onClick={() => handleDeleteClick(product.id)}
-                                                                            className="text-destructive focus:text-destructive"
-                                                                        >
-                                                                            <Trash className="mr-2 h-4 w-4" />
-                                                                            <span>Eliminar</span>
-                                                                        </DropdownMenuItem>
+                                                                        {can('admin-product.view') && (
+                                                                            <DropdownMenuItem asChild>
+                                                                                <Link href={`/admin/products/${product.id}`}>
+                                                                                    <Eye className="mr-2 h-4 w-4" />
+                                                                                    <span>Ver Detalhes</span>
+                                                                                </Link>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {can('admin-product.edit') && (
+                                                                            <DropdownMenuItem asChild>
+                                                                                <Link href={`/admin/products/${product.id}/inventory`}>
+                                                                                    <Store className="mr-2 h-4 w-4" />
+                                                                                    <span>Gerir Inventário</span>
+                                                                                </Link>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {can('admin-product.edit') && (
+                                                                            <DropdownMenuItem asChild>
+                                                                                <Link href={`/admin/products/${product.id}/edit`}>
+                                                                                    <Edit className="mr-2 h-4 w-4" />
+                                                                                    <span>Editar</span>
+                                                                                </Link>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {can('admin-product.destroy') && (
+                                                                            <DropdownMenuItem
+                                                                                onClick={() => handleDeleteClick(product.id)}
+                                                                                className="text-destructive focus:text-destructive"
+                                                                            >
+                                                                                <Trash className="mr-2 h-4 w-4" />
+                                                                                <span>Eliminar</span>
+                                                                            </DropdownMenuItem>
+                                                                        )}
                                                                     </DropdownMenuContent>
                                                                 </DropdownMenu>
                                                             </TableCell>

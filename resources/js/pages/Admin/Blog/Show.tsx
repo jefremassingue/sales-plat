@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit, Trash2, Calendar, Tag } from "lucide-react";
 import AppLayout from "@/layouts/app-layout";
-import { type BreadcrumbItem } from '@/types';
+import { can } from '@/lib/utils';
 import { useToast } from "@/components/ui/use-toast";
 import {
     AlertDialog,
@@ -111,34 +111,38 @@ export default function Show({ blog }: Props) {
                         </Button>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" asChild>
-                            <Link href={`/admin/blog/${blog.id}/edit`}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                            </Link>
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive">
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Eliminar
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Esta ação não pode ser desfeita. Isto irá eliminar permanentemente o artigo.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
-                                        {isDeleting ? 'A eliminar...' : 'Eliminar'}
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                        {can('admin-blog.edit') && (
+                            <Button variant="outline" asChild>
+                                <Link href={`/admin/blog/${blog.id}/edit`}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                </Link>
+                            </Button>
+                        )}
+                        {can('admin-blog.destroy') && (
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive">
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Eliminar
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Esta ação não pode ser desfeita. Isto irá eliminar permanentemente o artigo.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+                                            {isDeleting ? 'A eliminar...' : 'Eliminar'}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        )}
                     </div>
                 </div>
 

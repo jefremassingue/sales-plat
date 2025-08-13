@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { can } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -141,19 +142,21 @@ export default function Show({ currency }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {!currency.is_default && (
+            {can('admin-currency.index') && !currency.is_default && (
               <Button onClick={handleSetDefault} variant="outline">
                 <Star className="mr-2 h-4 w-4" />
                 Definir como Padrão
               </Button>
             )}
-            <Button variant="outline" asChild>
-              <Link href={`/admin/currencies/${currency.id}/edit`}>
-                <Edit className="mr-2 h-4 w-4" />
-                Editar
-              </Link>
-            </Button>
-            {!currency.is_default && (
+            {can('admin-currency.edit') && (
+              <Button variant="outline" asChild>
+                <Link href={`/admin/currencies/${currency.id}/edit`}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Editar
+                </Link>
+              </Button>
+            )}
+            {can('admin-currency.destroy') && !currency.is_default && (
               <Button variant="destructive" onClick={handleDeleteClick}>
                 <Trash className="mr-2 h-4 w-4" />
                 Eliminar
@@ -289,39 +292,41 @@ export default function Show({ currency }: Props) {
 
               <Separator />
 
-              <div className="pt-2">
-                <h3 className="text-sm font-medium mb-2">Ações</h3>
-                <div className="space-y-2">
-                  <Button asChild variant="outline" className="w-full justify-start">
-                    <Link href={`/admin/currencies/${currency.id}/edit`}>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Editar Configurações
-                    </Link>
-                  </Button>
+                <div className="pt-2">
+                  <h3 className="text-sm font-medium mb-2">Ações</h3>
+                  <div className="space-y-2">
+                    {can('admin-currency.edit') && (
+                      <Button asChild variant="outline" className="w-full justify-start">
+                        <Link href={`/admin/currencies/${currency.id}/edit`}>
+                          <Settings className="mr-2 h-4 w-4" />
+                          Editar Configurações
+                        </Link>
+                      </Button>
+                    )}
 
-                  {!currency.is_default && (
-                    <Button
-                      onClick={handleSetDefault}
-                      variant="outline"
-                      className="w-full justify-start"
-                    >
-                      <Star className="mr-2 h-4 w-4" />
-                      Definir como Padrão
-                    </Button>
-                  )}
+                    {can('admin-currency.index') && !currency.is_default && (
+                      <Button
+                        onClick={handleSetDefault}
+                        variant="outline"
+                        className="w-full justify-start"
+                      >
+                        <Star className="mr-2 h-4 w-4" />
+                        Definir como Padrão
+                      </Button>
+                    )}
 
-                  {!currency.is_default && (
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-destructive hover:text-destructive"
-                      onClick={handleDeleteClick}
-                    >
-                      <Trash className="mr-2 h-4 w-4" />
-                      Eliminar Moeda
-                    </Button>
-                  )}
+                    {can('admin-currency.destroy') && !currency.is_default && (
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-destructive hover:text-destructive"
+                        onClick={handleDeleteClick}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Eliminar Moeda
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
             </CardContent>
           </Card>
         </div>

@@ -16,6 +16,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AlertCircle, Archive, Box, Calendar, Edit, Eye, Filter, GridIcon, ListIcon, MoreHorizontal, PackageCheck, Pencil, Plus, Trash, WarehouseIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Inventory, Product, Warehouse } from './_components/types';
+import { can } from '@/lib/utils';
 
 interface Props {
     inventories: {
@@ -301,27 +302,33 @@ export default function Index({ inventories, products, warehouses, statuses, fil
                     </div>
                 </CardContent>
                 <div className="mt-auto flex justify-end gap-2 border-t p-4">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/inventories/${inventory.id}`}>
-                            <Eye className="mr-1 h-4 w-4" />
-                            Ver
-                        </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/inventories/${inventory.id}/edit`}>
-                            <Edit className="mr-1 h-4 w-4" />
-                            Editar
-                        </Link>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(inventory.id)}
-                        className="text-destructive hover:text-destructive"
-                    >
-                        <Trash className="mr-1 h-4 w-4" />
-                        Eliminar
-                    </Button>
+                    {can('admin-inventory.show') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/inventories/${inventory.id}`}>
+                                <Eye className="mr-1 h-4 w-4" />
+                                Ver
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-inventory.edit') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/inventories/${inventory.id}/edit`}>
+                                <Edit className="mr-1 h-4 w-4" />
+                                Editar
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-inventory.destroy') && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(inventory.id)}
+                            className="text-destructive hover:text-destructive"
+                        >
+                            <Trash className="mr-1 h-4 w-4" />
+                            Eliminar
+                        </Button>
+                    )}
                 </div>
             </Card>
         );
@@ -335,12 +342,14 @@ export default function Index({ inventories, products, warehouses, statuses, fil
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Gerir Inventário</h1>
                     <div className="flex gap-2">
-                        <Button asChild>
-                            <Link href="/admin/inventories/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                <span>Novo Registo</span>
-                            </Link>
-                        </Button>
+                        {can('admin-inventory.create') && (
+                            <Button asChild>
+                                <Link href="/admin/inventories/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    <span>Novo Registo</span>
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -668,24 +677,30 @@ export default function Index({ inventories, products, warehouses, statuses, fil
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex items-center gap-2">
-                                                                <Button variant="ghost" size="icon" asChild>
-                                                                    <Link href={`/admin/inventories/${inventory.id}`}>
-                                                                        <Eye className="h-4 w-4" />
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button variant="ghost" size="icon" asChild>
-                                                                    <Link href={`/admin/inventories/${inventory.id}/edit`}>
-                                                                        <Edit className="h-4 w-4" />
-                                                                    </Link>
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => handleDeleteClick(inventory.id)}
-                                                                    className="text-destructive hover:text-destructive"
-                                                                >
-                                                                    <Trash className="h-4 w-4" />
-                                                                </Button>
+                                                                {can('admin-inventory.show') && (
+                                                                    <Button variant="ghost" size="icon" asChild>
+                                                                        <Link href={`/admin/inventories/${inventory.id}`}>
+                                                                            <Eye className="h-4 w-4" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                )}
+                                                                {can('admin-inventory.edit') && (
+                                                                    <Button variant="ghost" size="icon" asChild>
+                                                                        <Link href={`/admin/inventories/${inventory.id}/edit`}>
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                )}
+                                                                {can('admin-inventory.destroy') && (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => handleDeleteClick(inventory.id)}
+                                                                        className="text-destructive hover:text-destructive"
+                                                                    >
+                                                                        <Trash className="h-4 w-4" />
+                                                                    </Button>
+                                                                )}
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>

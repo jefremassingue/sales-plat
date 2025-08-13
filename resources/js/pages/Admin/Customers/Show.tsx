@@ -1,10 +1,11 @@
 import { Badge } from '@/components/ui/badge';
+import { can } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DeleteAlert } from '@/components/delete-alert';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -72,7 +73,7 @@ export default function Show({ customer }: Props) {
         }
     }, [flash, toast]);
 
-    const breadcrumbs: BreadcrumbItem[] = [
+    const breadcrumbs = [
         {
             title: 'Dashboard',
             href: '/dashboard',
@@ -121,24 +122,28 @@ export default function Show({ customer }: Props) {
                                 <p className="text-muted-foreground">{customer.company_name}</p>
                             )}
                         </div>
-                        <Badge variant={customer.active ? "success" : "secondary"}>
+                        <Badge variant={customer.active ? "default" : "secondary"}>
                             {customer.active ? 'Activo' : 'Inactivo'}
                         </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" asChild>
-                            <Link href={`/admin/customers/${customer.id}/edit`}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => setDeleteAlertOpen(true)}
-                        >
-                            <Trash className="h-4 w-4 mr-2" />
-                            Eliminar
-                        </Button>
+                        {can('admin-customer.edit') && (
+                            <Button variant="outline" asChild>
+                                <Link href={`/admin/customers/${customer.id}/edit`}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                </Link>
+                            </Button>
+                        )}
+                        {can('admin-customer.destroy') && (
+                            <Button
+                                variant="destructive"
+                                onClick={() => setDeleteAlertOpen(true)}
+                            >
+                                <Trash className="h-4 w-4 mr-2" />
+                                Eliminar
+                            </Button>
+                        )}
                     </div>
                 </div>
 

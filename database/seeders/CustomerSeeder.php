@@ -416,6 +416,59 @@ Dispõe de uma equipa técnico-comercial de elevado know-how e amplamente reconh
 A sua sede está localizada na Cidade Maputo Av. Trabalho 1547 R/C que apresenta as características ideais para a actividade desenvolvida.",
                     'client_type' => 'company',
                 ],
+                [
+                    'name' => 'Oceana Distribuidora',
+                    'company_name' => 'Oceana Distribuidora',
+                    'email' => 'geral@oceana.co.mz',
+                    'mobile' => '+258823157500',
+                    'phone' => '',
+                    'address' => 'Maputo - Moçambique, Bairro Muntanhane, Estrada Circular, Q2, Bloco F Nº.102 / Marracuene-Sede',
+                    'city' => 'Maputo',
+                    'province' => 'Maputo',
+                    'postal_code' => '1100',
+                    'website' => '',
+                    'country' => 'Moçambique',
+                    'notes' => 'Empresa que actua no sector da distribuição FMCG a mais de 15 anos, distribuímos e representamos com paixão e orgulho marcas que impactam a vida dos consumidores de toda a parte do mundo, com dedicação e profissionalismo fazemo-nos presente em todo o Moçambique.',
+                    'client_type' => 'company',
+                ],
+                [
+                    'name' => 'Socimpex LDA',
+                    'company_name' => 'Socimpex LDA',
+                    'email' => 'vendas@socimpex.com',
+                    'mobile' => '+258864938855',
+                    'phone' => '+258842600206',
+                    'address' => 'Av. 24 de Julho 2236, Maputo, Mozambique',
+                    'city' => 'Maputo',
+                    'province' => 'Maputo',
+                    'postal_code' => '1100',
+                    'website' => 'https://socimpex.co.mz',
+                    'country' => 'Moçambique',
+                    'notes' => 'A Socimpex LDA é um grupo de empresas que opera em diferentes áreas, como a das bebidas.
+Fundada em 1991, a SOCimpex iniciou a sua actividade no sector das bebidas e é hoje o maior importador e distribuidor de Vinhos, Espumantes, Aguardentes e Destilados em Moçambique.
+A Socimpex representa produtos com grande penetração no mercado, consolidando a sua rede de fornecedores, parceiros e distribuidores com forte discrição e eficácia.
+Com uma visão de longo prazo, reforçou a sua presença com base em 4 pilares que definem a sua penetração no mercado:
+1 Exclusividade em produtos-chave.
+2 Competitividade na venda de produtos em grande escala.
+3 Sensibilidade em relação ao mercado em que nos inserimos.
+4 Forte sentido de parceria com todos os "players" do negócio.',
+                    'client_type' => 'company',
+                ],
+                [
+                    'name' => 'Kingman Construtora',
+                    'company_name' => 'Kingman Construtora',
+                    'email' => 'info@kingman.co.mz',
+                    'mobile' => '+258862133807',
+                    'phone' => '',
+                    'address' => 'Maputo',
+                    'city' => 'Maputo',
+                    'province' => 'Maputo',
+                    'postal_code' => '1100',
+                    'website' => 'http://www.kingman.co.mz',
+                    'country' => 'Moçambique',
+                    'notes' => 'As principais áreas da nossa actividade vão desde a construção convencional à construção em pré-fabricados, incluindo obra industrial e residencial.
+Somos flexíveis na nossa abordagem para cumprirmos com as necessidades do cliente e procurarmos as soluções que o projecto exige, sejam elas nacionais ou internacionais, tendo em vista o melhor resultado e relação qualidade-custo.',
+                    'client_type' => 'company',
+                ],
             ];
 
         foreach ($clients as $client) {

@@ -30,6 +30,7 @@ import { useEffect, useState } from 'react';
 import { Warehouse, User as ManagerUser } from './_components';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DeleteAlert } from '@/components/delete-alert';
+import { can } from '@/lib/utils';
 
 interface Props {
   warehouses: {
@@ -267,14 +268,16 @@ export default function Index({ warehouses, filters = {} }: Props) {
               <Eye className="mr-1 h-4 w-4" />
               Ver
             </Link>
-          </Button>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/admin/warehouses/${warehouse.id}/edit`}>
-              <Edit className="mr-1 h-4 w-4" />
-              Editar
-            </Link>
-          </Button>
-          <Button
+            {can('admin-warehouse.destroy') && (
+              <Button
+                variant="destructive"
+                disabled={selected.length === 0}
+                onClick={handleBulkDelete}
+              >
+                <Trash className="mr-2 h-4 w-4" />
+                Eliminar Selecionados
+              </Button>
+            )}
             variant="ghost"
             size="sm"
             onClick={() => handleDeleteClick(warehouse.id)}
@@ -296,12 +299,14 @@ export default function Index({ warehouses, filters = {} }: Props) {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Gerir Armazéns</h1>
           <div className="flex gap-2">
-            <Button asChild>
-              <Link href="/admin/warehouses/create">
-                <Plus className="mr-2 h-4 w-4" />
-                <span>Novo Armazém</span>
-              </Link>
-            </Button>
+            {can('admin-warehouse.create') && (
+              <Button asChild>
+                <Link href="/admin/warehouses/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>Novo Armazm</span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -510,24 +515,30 @@ export default function Index({ warehouses, filters = {} }: Props) {
                             </TableCell>
                             <TableCell>
                               <div className="flex space-x-1">
-                                <Button variant="ghost" size="icon" asChild>
-                                  <Link href={`/admin/warehouses/${warehouse.id}`} className="h-8 w-8">
-                                    <Eye className="h-4 w-4" />
-                                  </Link>
-                                </Button>
-                                <Button variant="ghost" size="icon" asChild>
-                                  <Link href={`/admin/warehouses/${warehouse.id}/edit`} className="h-8 w-8">
-                                    <Edit className="h-4 w-4" />
-                                  </Link>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive hover:text-destructive"
-                                  onClick={() => handleDeleteClick(warehouse.id)}
-                                >
-                                  <Trash className="h-4 w-4" />
-                                </Button>
+                                  {can('admin-warehouse.view') && (
+                                    <Button variant="ghost" size="icon" asChild>
+                                      <Link href={`/admin/warehouses/${warehouse.id}`} className="h-8 w-8">
+                                        <Eye className="h-4 w-4" />
+                                      </Link>
+                                    </Button>
+                                  )}
+                                  {can('admin-warehouse.edit') && (
+                                    <Button variant="ghost" size="icon" asChild>
+                                      <Link href={`/admin/warehouses/${warehouse.id}/edit`} className="h-8 w-8">
+                                        <Edit className="h-4 w-4" />
+                                      </Link>
+                                    </Button>
+                                  )}
+                                  {can('admin-warehouse.destroy') && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-destructive hover:text-destructive"
+                                      onClick={() => handleDeleteClick(warehouse.id)}
+                                    >
+                                      <Trash className="h-4 w-4" />
+                                    </Button>
+                                  )}
                               </div>
                             </TableCell>
                           </TableRow>

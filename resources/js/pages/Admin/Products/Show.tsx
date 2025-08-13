@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { ArrowLeft, Edit, File, Hammer, PackageSearch, Palette, Ruler, Scan, Tag, Trash, WarehouseIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { usePermission } from '@/hooks/usePermission';
+import { can } from '@/lib/utils';
 
 interface Image {
     id: number;
@@ -199,7 +199,6 @@ export default function Show({ product }: Props) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
     const { toast } = useToast();
     const { flash } = usePage().props as any;
-    const { can } = usePermission();
 
     const mainImage = product.images.find((img) => img.is_main) || product.images[0];
 

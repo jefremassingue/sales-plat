@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { can } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -231,31 +232,39 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem asChild>
-                                    <Link href={`/admin/categories/${category.id}`}>
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        <span>Ver Detalhes</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                    <Link href={`/admin/categories/${category.id}/edit`}>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        <span>Editar</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                    <Link href={`/admin/categories/create?parent_id=${category.id}`}>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        <span>Adicionar Subcategoria</span>
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => handleDeleteClick(category.id)}
-                                    className="text-destructive focus:text-destructive"
-                                >
-                                    <Trash className="mr-2 h-4 w-4" />
-                                    <span>Eliminar</span>
-                                </DropdownMenuItem>
+                                {can('admin-category.show') && (
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/admin/categories/${category.id}`}>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            <span>Ver Detalhes</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )}
+                                {can('admin-category.edit') && (
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/admin/categories/${category.id}/edit`}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            <span>Editar</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )}
+                                {can('admin-category.create') && (
+                                    <DropdownMenuItem asChild>
+                                        <Link href={`/admin/categories/create?parent_id=${category.id}`}>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            <span>Adicionar Subcategoria</span>
+                                        </Link>
+                                    </DropdownMenuItem>
+                                )}
+                                {can('admin-category.destroy') && (
+                                    <DropdownMenuItem
+                                        onClick={() => handleDeleteClick(category.id)}
+                                        className="text-destructive focus:text-destructive"
+                                    >
+                                        <Trash className="mr-2 h-4 w-4" />
+                                        <span>Eliminar</span>
+                                    </DropdownMenuItem>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </TableCell>
@@ -289,9 +298,13 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                             <div className="flex flex-wrap gap-1">
                                 {category.children.map(child => (
                                     <Badge key={child.id} variant="outline" className="mr-1 mb-1">
-                                        <Link href={`/admin/categories/${child.id}`} className="hover:underline">
-                                            {child.name}
-                                        </Link>
+                                        {can('admin-category.show') ? (
+                                            <Link href={`/admin/categories/${child.id}`} className="hover:underline">
+                                                {child.name}
+                                            </Link>
+                                        ) : (
+                                            <span>{child.name}</span>
+                                        )}
                                     </Badge>
                                 ))}
                             </div>
@@ -299,33 +312,41 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                     )}
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2 pt-2 border-t">
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/categories/${category.id}`}>
-                            <Eye className="h-4 w-4 mr-1" />
-                            Ver
-                        </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/categories/${category.id}/edit`}>
-                            <Edit className="h-4 w-4 mr-1" />
-                            Editar
-                        </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/categories/create?parent_id=${category.id}`}>
-                            <Plus className="h-4 w-4 mr-1" />
-                            Adicionar
-                        </Link>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteClick(category.id)}
-                        className="text-destructive hover:text-destructive"
-                    >
-                        <Trash className="h-4 w-4 mr-1" />
-                        Eliminar
-                    </Button>
+                    {can('admin-category.show') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/categories/${category.id}`}>
+                                <Eye className="h-4 w-4 mr-1" />
+                                Ver
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-category.edit') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/categories/${category.id}/edit`}>
+                                <Edit className="h-4 w-4 mr-1" />
+                                Editar
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-category.create') && (
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={`/admin/categories/create?parent_id=${category.id}`}>
+                                <Plus className="h-4 w-4 mr-1" />
+                                Adicionar
+                            </Link>
+                        </Button>
+                    )}
+                    {can('admin-category.destroy') && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(category.id)}
+                            className="text-destructive hover:text-destructive"
+                        >
+                            <Trash className="h-4 w-4 mr-1" />
+                            Eliminar
+                        </Button>
+                    )}
                 </CardFooter>
             </Card>
         );
@@ -345,12 +366,14 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                                 <span>Ver em Árvore</span>
                             </Link>
                         </Button>
-                        <Button asChild>
-                            <Link href="/admin/categories/create">
-                                <Plus className="mr-2 h-4 w-4" />
-                                <span>Nova Categoria</span>
-                            </Link>
-                        </Button>
+                        {can('admin-category.create') && (
+                            <Button asChild>
+                                <Link href="/admin/categories/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    <span>Nova Categoria</span>
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </div>
 

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { can } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -131,12 +132,14 @@ export default function Index({ currencies, filters = {} }: Props) {
             <DollarSign className="h-6 w-6" />
             Gestão de Moedas
           </h1>
-          <Button asChild>
-            <Link href="/admin/currencies/create">
-              <Plus className="mr-2 h-4 w-4" />
-              Nova Moeda
-            </Link>
-          </Button>
+          {can('admin-currency.create') && (
+            <Button asChild>
+              <Link href="/admin/currencies/create">
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Moeda
+              </Link>
+            </Button>
+          )}
         </div>
 
         <Card>
@@ -211,17 +214,21 @@ export default function Index({ currencies, filters = {} }: Props) {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="icon" asChild>
-                              <Link href={`/admin/currencies/${currency.id}`}>
-                                <Check className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button variant="ghost" size="icon" asChild>
-                              <Link href={`/admin/currencies/${currency.id}/edit`}>
-                                <Edit className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            {!currency.is_default && (
+                            {can('admin-currency.show') && (
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/admin/currencies/${currency.id}`}>
+                                  <Check className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            )}
+                            {can('admin-currency.edit') && (
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/admin/currencies/${currency.id}/edit`}>
+                                  <Edit className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            )}
+                            {can('admin-currency.destroy') && !currency.is_default && (
                               <Button
                                 variant="ghost"
                                 size="icon"

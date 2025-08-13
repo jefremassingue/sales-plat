@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { can } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -158,12 +159,14 @@ export default function Index({ permissions, filters = {} }: Props) {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Gerir Permissões</h1>
           <div className="flex gap-2">
-            <Button asChild>
-              <Link href="/admin/permissions/create">
-                <Plus className="mr-2 h-4 w-4" />
-                <span>Nova Permissão</span>
-              </Link>
-            </Button>
+            {can('admin-permission.create') && (
+              <Button asChild>
+                <Link href="/admin/permissions/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>Nova Permissão</span>
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -220,19 +223,23 @@ export default function Index({ permissions, filters = {} }: Props) {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/admin/permissions/${permission.id}/edit`}>
-                                <Edit className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => confirmDelete(permission.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
+                            {can('admin-permission.edit') && (
+                              <Button variant="ghost" size="sm" asChild>
+                                <Link href={`/admin/permissions/${permission.id}/edit`}>
+                                  <Edit className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            )}
+                            {can('admin-permission.destroy') && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => confirmDelete(permission.id)}
+                                className="text-destructive hover:text-destructive"
+                              >
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -244,12 +251,14 @@ export default function Index({ permissions, filters = {} }: Props) {
                           <ShieldAlert className="h-12 w-12 mb-2" />
                           <h3 className="text-lg font-medium">Nenhuma permissão encontrada</h3>
                           <p className="mb-4">Comece criando uma nova permissão para o sistema.</p>
-                          <Button asChild>
-                            <Link href="/admin/permissions/create">
-                              <Plus className="mr-2 h-4 w-4" />
-                              Criar nova permissão
-                            </Link>
-                          </Button>
+                          {can('admin-permission.create') && (
+                            <Button asChild>
+                              <Link href="/admin/permissions/create">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Criar nova permissão
+                              </Link>
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

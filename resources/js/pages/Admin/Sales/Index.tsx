@@ -14,6 +14,7 @@ import { Calendar, Eye, FileText, Filter, MoreHorizontal, Pencil, Plus, Printer,
 import { useEffect, useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
+import { can } from '@/lib/utils';
 
 interface Customer {
   id: number;
@@ -381,12 +382,14 @@ export default function Index({ sales, customers, warehouses, statuses, currency
       <div className="container px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Gestão de Vendas</h1>
-          <Button asChild>
-            <Link href="/admin/sales/create">
-              <Plus className="mr-2 h-4 w-4" />
-              <span>Nova Venda</span>
-            </Link>
-          </Button>
+          {can('admin-sale.create') && (
+            <Button asChild>
+              <Link href="/admin/sales/create">
+                <Plus className="mr-2 h-4 w-4" />
+                <span>Nova Venda</span>
+              </Link>
+            </Button>
+          )}
         </div>
 
         {/* Estatísticas rápidas */}
@@ -701,13 +704,15 @@ export default function Index({ sales, customers, warehouses, statuses, currency
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/admin/sales/${sale.id}`}>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  <span>Ver Detalhes</span>
-                                </Link>
-                              </DropdownMenuItem>
-                              {["draft", "pending"].includes(sale.status) && (
+                              {can('admin-sale.view') && (
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/admin/sales/${sale.id}`}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    <span>Ver Detalhes</span>
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
+                              {["draft", "pending"].includes(sale.status) && can('admin-sale.edit') && (
                                 <DropdownMenuItem asChild>
                                   <Link href={`/admin/sales/${sale.id}/edit`}>
                                     <Pencil className="mr-2 h-4 w-4" />
@@ -728,34 +733,40 @@ export default function Index({ sales, customers, warehouses, statuses, currency
                                 </a>
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => handleSendEmail(
-                                  sale.id,
-                                  Boolean(sale.customer?.email)
-                                )}
-                                disabled={!sale.customer?.email}
-                              >
-                                <Send className="mr-2 h-4 w-4" />
-                                <span>Enviar por Email</span>
-                                {!sale.customer?.email && (
-                                  <span className="ml-1 text-xs text-destructive">(Sem email)</span>
-                                )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDuplicate(sale.id)}>
-                                <Copy className="mr-2 h-4 w-4" />
-                                <span>Duplicar Venda</span>
-                              </DropdownMenuItem>
-                              {sale.amount_due > 0 && !['draft', 'canceled'].includes(sale.status) && (
+                              {can('admin-sale.sendemail') && (
+                                <DropdownMenuItem
+                                  onClick={() => handleSendEmail(
+                                    sale.id,
+                                    Boolean(sale.customer?.email)
+                                  )}
+                                  disabled={!sale.customer?.email}
+                                >
+                                  <Send className="mr-2 h-4 w-4" />
+                                  <span>Enviar por Email</span>
+                                  {!sale.customer?.email && (
+                                    <span className="ml-1 text-xs text-destructive">(Sem email)</span>
+                                  )}
+                                </DropdownMenuItem>
+                              )}
+                              {can('admin-sale.duplicate') && (
+                                <DropdownMenuItem onClick={() => handleDuplicate(sale.id)}>
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  <span>Duplicar Venda</span>
+                                </DropdownMenuItem>
+                              )}
+                              {sale.amount_due > 0 && !['draft', 'canceled'].includes(sale.status) && can('admin-sale.registerpayment') && (
                                 <DropdownMenuItem onClick={() => handleQuickPayment(sale.id, sale.amount_due)}>
                                   <Banknote className="mr-2 h-4 w-4" />
                                   <span>Registrar Pagamento</span>
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleDeleteClick(sale.id)}>
-                                <Trash className="mr-2 h-4 w-4" />
-                                <span>Eliminar</span>
-                              </DropdownMenuItem>
+                              {can('admin-sale.destroy') && (
+                                <DropdownMenuItem onClick={() => handleDeleteClick(sale.id)}>
+                                  <Trash className="mr-2 h-4 w-4" />
+                                  <span>Eliminar</span>
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <DropdownMenu>

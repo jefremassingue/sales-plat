@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { can } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DeleteAlert } from '@/components/delete-alert';
@@ -140,19 +141,23 @@ export default function Show({ category }: Props) {
                         </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" asChild>
-                            <Link href={`/admin/categories/${category.id}/edit`}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                            </Link>
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={() => setDeleteAlertOpen(true)}
-                        >
-                            <Trash className="h-4 w-4 mr-2" />
-                            Eliminar
-                        </Button>
+                        {can('admin-category.edit') && (
+                            <Button variant="outline" asChild>
+                                <Link href={`/admin/categories/${category.id}/edit`}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Editar
+                                </Link>
+                            </Button>
+                        )}
+                        {can('admin-category.destroy') && (
+                            <Button
+                                variant="destructive"
+                                onClick={() => setDeleteAlertOpen(true)}
+                            >
+                                <Trash className="h-4 w-4 mr-2" />
+                                Eliminar
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -215,9 +220,11 @@ export default function Show({ category }: Props) {
                                                     {child.active ? 'Activo' : 'Inactivo'}
                                                 </Badge>
                                             </div>
-                                            <Link href={`/admin/categories/${child.id}`}>
-                                                Ver detalhes
-                                            </Link>
+                                            {can('admin-category.show') && (
+                                                <Link href={`/admin/categories/${child.id}`}>
+                                                    Ver detalhes
+                                                </Link>
+                                            )}
                                         </li>
                                     ))}
                                 </ul>

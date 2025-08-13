@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { can } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -320,12 +321,14 @@ export default function Index({ quotations, customers, statuses, currency, filte
       <div className="container px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Gestão de Cotações</h1>
-          <Button asChild>
-            <Link href="/admin/quotations/create">
-              <Plus className="mr-2 h-4 w-4" />
-              <span>Nova Cotação</span>
-            </Link>
-          </Button>
+          {can('admin-quotation.create') && (
+            <Button asChild>
+              <Link href="/admin/quotations/create">
+                <Plus className="mr-2 h-4 w-4" />
+                <span>Nova Cotação</span>
+              </Link>
+            </Button>
+          )}
         </div>
 
         {/* Estatísticas rápidas */}
@@ -590,13 +593,15 @@ export default function Index({ quotations, customers, statuses, currency, filte
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/admin/quotations/${quotation.id}`}>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  <span>Ver Detalhes</span>
-                                </Link>
-                              </DropdownMenuItem>
-                              {quotation.status === 'draft' && (
+                              {can('admin-quotation.show') && (
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/admin/quotations/${quotation.id}`}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    <span>Ver Detalhes</span>
+                                  </Link>
+                                </DropdownMenuItem>
+                              )}
+                              {can('admin-quotation.edit') && quotation.status === 'draft' && (
                                 <DropdownMenuItem asChild>
                                   <Link href={`/admin/quotations/${quotation.id}/edit`}>
                                     <Pencil className="mr-2 h-4 w-4" />
@@ -604,18 +609,22 @@ export default function Index({ quotations, customers, statuses, currency, filte
                                   </Link>
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem asChild>
-                                <a href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
-                                  <FileText className="mr-2 h-4 w-4" />
-                                  <span>Ver PDF</span>
-                                </a>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <a href={`/admin/quotations/${quotation.id}/pdf?download=true`} target="_blank">
-                                  <Download className="mr-2 h-4 w-4" />
-                                  <span>Descarregar PDF</span>
-                                </a>
-                              </DropdownMenuItem>
+                              {can('admin-quotation.index') && (
+                                <>
+                                  <DropdownMenuItem asChild>
+                                    <a href={`/admin/quotations/${quotation.id}/pdf`} target="_blank">
+                                      <FileText className="mr-2 h-4 w-4" />
+                                      <span>Ver PDF</span>
+                                    </a>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem asChild>
+                                    <a href={`/admin/quotations/${quotation.id}/pdf?download=true`} target="_blank">
+                                      <Download className="mr-2 h-4 w-4" />
+                                      <span>Descarregar PDF</span>
+                                    </a>
+                                  </DropdownMenuItem>
+                                </>
+                              )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => handleSendEmail(
@@ -641,10 +650,12 @@ export default function Index({ quotations, customers, statuses, currency, filte
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleDeleteClick(quotation.id)}>
-                                <Trash className="mr-2 h-4 w-4" />
-                                <span>Eliminar</span>
-                              </DropdownMenuItem>
+                              {can('admin-quotation.destroy') && (
+                                <DropdownMenuItem onClick={() => handleDeleteClick(quotation.id)}>
+                                  <Trash className="mr-2 h-4 w-4" />
+                                  <span>Eliminar</span>
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                           <DropdownMenu>
