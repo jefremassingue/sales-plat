@@ -488,7 +488,7 @@ export default function Index({ suppliers, filters = {} }: Props) {
                                                         </TableCell>
                                                         <TableCell>
                                                             <div className="flex items-center gap-2">
-                                                                {can('admin-supplier.view') && (
+                                                                {can('admin-supplier.show') && (
                                                                     <Button variant="ghost" size="icon" asChild>
                                                                         <Link href={`/admin/suppliers/${supplier.id}`}>
                                                                             <Eye className="h-4 w-4" />

@@ -324,7 +324,7 @@ export default function Index({ products, categories, filters }: Props) {
                     </div>
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2 border-t pt-2">
-                    {can('admin-product.view') && (
+                    {can('admin-product.show') && (
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/products/${product.id}`}>
                                 <Eye className="mr-1 h-4 w-4" />
@@ -577,7 +577,7 @@ export default function Index({ products, categories, filters }: Props) {
                                                                         </Button>
                                                                     </DropdownMenuTrigger>
                                                                     <DropdownMenuContent align="end">
-                                                                        {can('admin-product.view') && (
+                                                                        {can('admin-product.show') && (
                                                                             <DropdownMenuItem asChild>
                                                                                 <Link href={`/admin/products/${product.id}`}>
                                                                                     <Eye className="mr-2 h-4 w-4" />

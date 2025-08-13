@@ -315,7 +315,7 @@ export default function Index({ roles, filters = {} }: Props) {
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="flex justify-end space-x-2">
-                                                        {can('admin-role.view') && (
+                                                        {can('admin-role.show') && (
                                                             <Button variant="ghost" size="icon" asChild>
                                                                 <Link href={`/admin/roles/${role.id}`}>
                                                                     <Eye className="h-4 w-4" />

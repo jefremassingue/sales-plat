@@ -18,6 +18,7 @@ import SaleSummary from './_components/SaleSummary';
 import SaleDetails from './_components/SaleDetails';
 import ItemEditDialog from './_components/ItemEditDialog';
 import ManualItemDialog from './_components/ManualItemDialog';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 // Schema de validação para o formulário
 const formSchema = z.object({
@@ -71,19 +72,44 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface Customer { id: string; name: string; }
+interface Product { id: string; name: string; price: number; unit?: string; description?: string; category?: { id: string; name: string }; }
+interface Warehouse { id: string; name: string; }
+interface Currency { code: string; exchange_rate: number; decimal_separator: string; thousand_separator: string; decimal_places: number; symbol: string; }
+interface TaxRate { value: number; is_default?: boolean; }
+interface PaymentMethod { value: string; label: string; }
+interface QuotationItem {
+  product_id?: string;
+  product_variant_id?: string;
+  warehouse_id?: string;
+  name: string;
+  description?: string;
+  quantity: string;
+  unit?: string;
+  unit_price: string;
+  discount_percentage?: string;
+  tax_percentage?: string;
+}
+interface Quotation {
+  id?: string;
+  quotation_number?: string;
+  customer_id?: string;
+  notes?: string;
+  terms?: string;
+  items?: QuotationItem[];
+}
 interface Props {
   salePlaceholder: string;
-  customers: any[];
-  products: any[];
-  warehouses: any[];
-  currencies: any[];
-  defaultCurrency: any;
-  taxRates: any[];
+  customers: Customer[];
+  products: Product[];
+  warehouses: Warehouse[];
+  currencies: Currency[];
+  defaultCurrency: Currency;
+  taxRates: TaxRate[];
   units: { value: string; label: string }[];
-  statuses: any[];
-  discountTypes: any[];
-  paymentMethods: { value: string; label: string }[];
-  quotation?: any;
+  statuses: string[];
+  paymentMethods: PaymentMethod[];
+  quotation?: Quotation;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -102,57 +128,82 @@ export default function Create({
   taxRates,
   statuses,
   units,
-  discountTypes,
   paymentMethods,
   quotation
 }: Props) {
   const { toast } = useToast();
 
-  const { defaultWarehouse } = usePage().props as any;
+  const { defaultWarehouse, errors } = usePage().props as { defaultWarehouse?: Warehouse; errors?: Record<string, string | string[]> };
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeView, setActiveView] = useState<'products' | 'details'>('products');
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>(
     defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : "")
   );
-  const [itemBeingEdited, setItemBeingEdited] = useState<any | null>(null);
+  const [itemBeingEdited, setItemBeingEdited] = useState<(QuotationItem & { index: number }) | null>(null);
   const [itemEditDialogOpen, setItemEditDialogOpen] = useState(false);
   const [manualItemDialogOpen, setManualItemDialogOpen] = useState(false);
-  const { errors } = usePage().props as any;
+  // errors already destructured above
 
+  // Calcular datas padrão
   const today = new Date();
   const dueDate = new Date();
   dueDate.setDate(today.getDate() + 30);
 
+  // Chave para localStorage
+  const LOCAL_STORAGE_KEY = 'new_sale_form';
+
+  // Valores padrão iniciais
+  const initialDefaultValues: FormValues = {
+    sale_number: salePlaceholder,
+    customer_id: quotation?.customer_id?.toString() || '',
+    issue_date: today,
+    due_date: dueDate,
+    status: 'pending',
+    currency_code: defaultCurrency?.code || 'MZN',
+    exchange_rate: defaultCurrency ? defaultCurrency.exchange_rate.toString() : '1.0000',
+    include_tax: true,
+    shipping_amount: '0',
+    amount_paid: '0',
+    payment_method: paymentMethods.length > 0 ? paymentMethods[0].value : '',
+    notes: quotation?.notes || '',
+    terms: quotation?.terms || '',
+    items: quotation?.items?.map((item) => ({
+      product_id: item.product_id ? item.product_id.toString() : undefined,
+      product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
+      warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : (defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : "")),
+      name: item.name,
+      description: item.description || '',
+      quantity: item.quantity.toString(),
+      unit: item.unit || 'unit',
+      unit_price: item.unit_price.toString(),
+      discount_percentage: item.discount_percentage?.toString() || '0',
+      tax_percentage: item.tax_percentage?.toString() || '16',
+    })) || [],
+  };
+
+  // Hook useLocalStorage
+  const [savedFormData, setSavedFormData] = useLocalStorage<FormValues>(LOCAL_STORAGE_KEY, initialDefaultValues);
+
+  // Preparar valores para o useForm, convertendo datas salvas como string de volta para objetos Date
+  const formInitialValues = {
+    ...savedFormData,
+    issue_date: savedFormData.issue_date ? new Date(savedFormData.issue_date) : today,
+    due_date: savedFormData.due_date ? new Date(savedFormData.due_date) : dueDate,
+  };
+
+  // Inicializar o formulário com dados do localStorage ou os padrões
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      sale_number: salePlaceholder,
-      customer_id: quotation?.customer_id?.toString() || '',
-      issue_date: today,
-      due_date: dueDate,
-      status: 'pending',
-      currency_code: defaultCurrency?.code || 'MZN',
-      exchange_rate: defaultCurrency ? defaultCurrency.exchange_rate.toString() : '1.0000',
-      include_tax: true,
-      shipping_amount: '0',
-      amount_paid: '0',
-      payment_method: paymentMethods.length > 0 ? paymentMethods[0].value : '',
-      notes: quotation?.notes || '',
-      terms: quotation?.terms || '',
-      items: quotation?.items?.map((item: any) => ({
-        product_id: item.product_id ? item.product_id.toString() : undefined,
-        product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
-        warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : (defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : "")),
-        name: item.name,
-        description: item.description || '',
-        quantity: item.quantity.toString(),
-        unit: item.unit || 'unit',
-        unit_price: item.unit_price.toString(),
-        discount_percentage: item.discount_percentage?.toString() || '0',
-        tax_percentage: item.tax_percentage?.toString() || '16',
-      })) || [],
-    },
+    defaultValues: formInitialValues,
   });
+
+  // Escutar mudanças no formulário e salvar no localStorage
+  useEffect(() => {
+    const subscription = form.watch((value) => {
+      setSavedFormData(value as FormValues);
+    });
+    return () => subscription.unsubscribe();
+  }, [form, setSavedFormData]);
 
   const { fields, append, remove, update } = useFieldArray({
     control: form.control,
@@ -174,13 +225,15 @@ export default function Create({
     if (errors) {
       Object.keys(errors).forEach(key => {
         if (key.startsWith('items.')) {
-          const [_, index, field] = key.split('.');
-          form.setError(`items.${index}.${field}` as any, {
+          const parts = key.split('.');
+          const index = parts[1];
+          const field = parts[2];
+          form.setError(`items.${index}.${field}` as keyof FormValues, {
             type: 'manual',
             message: errors[key],
           });
         } else {
-          form.setError(key as any, {
+          form.setError(key as keyof FormValues, {
             type: 'manual',
             message: errors[key],
           });
@@ -272,21 +325,21 @@ export default function Create({
     setItemEditDialogOpen(true);
   };
 
-  const handleSaveItemEdit = (editedItem: any) => {
+  const handleSaveItemEdit = (editedItem: QuotationItem & { index: number }) => {
     const { index, ...itemToUpdate } = editedItem;
     update(index, itemToUpdate);
     setItemBeingEdited(null);
   };
 
-  const handleAddManualItem = (item: any) => {
+  const handleAddManualItem = (item: QuotationItem) => {
     append({ ...item, product_id: undefined });
   };
 
-  const calculateItemValues = (item: any) => {
+  const calculateItemValues = (item: QuotationItem) => {
     const quantity = parseFloat(item.quantity) || 0;
     const unitPrice = parseFloat(item.unit_price) || 0;
-    const discountPercentage = parseFloat(item.discount_percentage) || 0;
-    const taxPercentage = parseFloat(item.tax_percentage) || 0;
+    const discountPercentage = parseFloat(item.discount_percentage || '0') || 0;
+    const taxPercentage = parseFloat(item.tax_percentage || '0') || 0;
     const subtotal = quantity * unitPrice;
     const discountAmount = subtotal * (discountPercentage / 100);
     const taxAmount = (subtotal - discountAmount) * (taxPercentage / 100);
@@ -311,15 +364,20 @@ export default function Create({
     return { subtotal, taxAmount, discountAmount, shippingAmount, total };
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | null | undefined, withSymbol = true) => {
     if (value === null || value === undefined) return 'N/A';
     const selectedCurrencyCode = form.getValues('currency_code');
     const selectedCurrency = currencies.find(c => c.code === selectedCurrencyCode) || defaultCurrency;
     if (!selectedCurrency) {
-      return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'MZN' }).format(value);
+      return new Intl.NumberFormat('pt-PT', { style: withSymbol ? 'currency' : 'decimal', currency: 'MZN' }).format(value);
     }
     const { decimal_separator, thousand_separator, decimal_places, symbol } = selectedCurrency;
-    return `${symbol} ${value.toFixed(decimal_places).replace('.', decimal_separator).replace(/\B(?=(\d{3})+(?!\d))/g, thousand_separator)}`;
+    const formattedValue = value
+      .toFixed(decimal_places)
+      .replace('.', 'DECIMAL')
+      .replace(/\B(?=(\d{3})+(?!\d))/g, thousand_separator)
+      .replace('DECIMAL', decimal_separator);
+    return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
   };
 
   const handlePaymentMethodChange = (method: string) => form.setValue('payment_method', method);
@@ -404,7 +462,7 @@ export default function Create({
                   <div>
                     <ProductCatalog
                       products={products}
-                      categories={products.reduce((acc: any[], p) => (!p.category || acc.some(c => c.id === p.category.id) ? acc : [...acc, p.category]), [])}
+                      categories={products.reduce((acc: { id: string; name: string }[], p) => (!p.category || acc.some(c => c.id === p.category!.id) ? acc : [...acc, p.category!]), [])}
                       onProductSelect={addProductToCart}
                       warehouses={warehouses}
                       selectedWarehouseId={selectedWarehouseId}

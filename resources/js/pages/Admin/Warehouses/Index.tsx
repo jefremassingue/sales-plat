@@ -271,20 +271,12 @@ export default function Index({ warehouses, filters = {} }: Props) {
             {can('admin-warehouse.destroy') && (
               <Button
                 variant="destructive"
-                disabled={selected.length === 0}
                 onClick={handleBulkDelete}
               >
                 <Trash className="mr-2 h-4 w-4" />
                 Eliminar Selecionados
               </Button>
             )}
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDeleteClick(warehouse.id)}
-            className="text-destructive hover:text-destructive"
-          >
-            <Trash className="mr-1 h-4 w-4" />
-            Eliminar
           </Button>
         </div>
       </Card>
@@ -515,7 +507,7 @@ export default function Index({ warehouses, filters = {} }: Props) {
                             </TableCell>
                             <TableCell>
                               <div className="flex space-x-1">
-                                  {can('admin-warehouse.view') && (
+                                  {can('admin-warehouse.show') && (
                                     <Button variant="ghost" size="icon" asChild>
                                       <Link href={`/admin/warehouses/${warehouse.id}`} className="h-8 w-8">
                                         <Eye className="h-4 w-4" />

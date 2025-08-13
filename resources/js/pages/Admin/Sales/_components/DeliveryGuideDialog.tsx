@@ -86,8 +86,8 @@ export default function DeliveryGuideDialog({ open, onOpenChange, sale, delivery
         };
 
         const url = isEditMode
-            ? route('admin.delivery-guides.update', { sale: sale.id, delivery_guide: deliveryGuide.id })
-            : route('admin.delivery-guides.store', { sale: sale.id });
+            ? route('admin.sales.delivery-guides.update', { sale: sale.id, delivery_guide: deliveryGuide.id })
+            : route('admin.sales.delivery-guides.store', { sale: sale.id });
 
         router.visit(url, {
             method: isEditMode ? 'put' : 'post',

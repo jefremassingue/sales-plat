@@ -242,7 +242,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                                     <Truck className="mr-2 h-4 w-4" />
                                     Guias de Entrega ({sale.delivery_guides?.length || 0})
                                 </TabsTrigger>
-                                {can('admin-sale.viewrevenue') && (
+                                {can('admin-sale.showrevenue') && (
                                     <TabsTrigger value="revenue">
                                         <TrendingUp className="mr-2 h-4 w-4" />
                                         Receita
@@ -277,7 +277,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                             </TabsContent>
 
                             {/* ABA 4: RECEITA */}
-                            {can('admin-sale.viewrevenue') && (
+                            {can('admin-sale.showrevenue') && (
                                 <TabsContent value="revenue">
                                     <RevenueTab sale={sale} formatCurrency={formatCurrency} />
                                 </TabsContent>

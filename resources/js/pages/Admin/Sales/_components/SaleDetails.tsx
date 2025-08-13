@@ -256,7 +256,7 @@ export default function SaleDetails({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Moeda <span className="text-destructive">*</span></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={true}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione uma moeda" />

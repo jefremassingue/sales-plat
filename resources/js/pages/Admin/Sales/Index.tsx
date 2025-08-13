@@ -704,7 +704,7 @@ export default function Index({ sales, customers, warehouses, statuses, currency
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              {can('admin-sale.view') && (
+                              {can('admin-sale.show') && (
                                 <DropdownMenuItem asChild>
                                   <Link href={`/admin/sales/${sale.id}`}>
                                     <Eye className="mr-2 h-4 w-4" />
