@@ -28,7 +28,7 @@ const formSchema = z.object({
     excerpt: z.string().min(10, "O resumo deve ter pelo menos 10 caracteres"),
     featured_image: z.string().nullable(),
     published_at: z.string().nullable(),
-    blog_category_id: z.number().nullable(),
+    blog_category_id: z.string().nullable(),
 });
 
 interface Props {
@@ -64,7 +64,7 @@ export default function Edit({ blog }: Props) {
             excerpt: blog.excerpt,
             featured_image: blog.featured_image,
             published_at: blog.published_at,
-            blog_category_id: blog.blog_category_id,
+            blog_category_id: blog.blog_category_id ? blog.blog_category_id.toString() : null,
         }
     });
 

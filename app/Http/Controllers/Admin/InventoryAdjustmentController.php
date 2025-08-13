@@ -126,7 +126,7 @@ class InventoryAdjustmentController extends Controller implements HasMiddleware
                 'quantity' => ['required', 'numeric', 'not_in:0'],
                 'type' => ['required', 'string', 'max:255', 'in:addition,subtraction,correction,transfer,loss,damaged,expired,initial'],
                 'reference_number' => ['nullable', 'string', 'max:255'],
-                'supplier_id' => ['nullable', 'exists:suppliers,id'],
+                'supplier_id' => ['nullable', 'string', 'exists:suppliers,id'],
                 'reason' => ['nullable', 'string', 'max:1000'],
                 'notes' => ['nullable', 'string', 'max:1000'],
             ], [

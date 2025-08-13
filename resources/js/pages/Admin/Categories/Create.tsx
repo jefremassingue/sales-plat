@@ -28,11 +28,11 @@ const formatSlug = (text: string): string => {
 };
 
 interface Category {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
-    parent_id: number | null;
+    parent_id: string | null;
     active: boolean;
     order: number;
 }
@@ -272,7 +272,7 @@ export default function Create({ categories }: Props) {
                                                     <SelectContent>
                                                         <SelectItem value="root">Nenhuma (Categoria Raiz)</SelectItem>
                                                         {categories.map((category) => (
-                                                            <SelectItem key={category.id} value={category.id.toString()}>
+                                                            <SelectItem key={category.id} value={category.id}>
                                                                 {category.name}
                                                             </SelectItem>
                                                         ))}

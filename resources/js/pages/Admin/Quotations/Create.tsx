@@ -216,8 +216,8 @@ export default function Create({
     const handleProductSelect = (productId: string) => {
         setProductSelectorOpen(false);
 
-        // Obter o produto selecionado
-        const selectedProduct = products.find((p) => p.id === productId);
+    // Obter o produto selecionado
+    const selectedProduct = products.find((p) => p.id === productId);
         if (!selectedProduct) return;
 
         // Se estiver editando um item existente
@@ -241,7 +241,7 @@ export default function Create({
                 unit_price: selectedProduct.price.toString(),
                 unit: selectedProduct.unit || 'unit', // Usar a unidade do produto
                 discount_percentage: '0',
-                tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value || '16', // Taxa padrão de IVA em Moçambique
+                tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value?.toString() || '16', // Taxa padrão de IVA em Moçambique
                 warehouse_id: defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : ""),
             };
             // Ensure tax_percentage is a string

@@ -20,9 +20,9 @@ import NotesTab from './_components/NotesTab';
 
 interface Props {
   quotation: {
-    id: number;
+    id: string;
     quotation_number: string;
-    customer_id: number | null;
+    customer_id: string | null;
     issue_date: string;
     expiry_date: string | null;
     status: string;
@@ -32,17 +32,17 @@ interface Props {
     notes: string | null;
     terms: string | null;
     items: {
-      id: number;
-      product_id: number | null;
-      product_variant_id: number | null;
-      warehouse_id: number | null;
+      id: string;
+      product_id: string | null;
+      product_variant_id: string | null;
+      warehouse_id: string | null;
       name: string;
       description: string | null;
-      quantity: number;
+      quantity: string;
       unit: string | null;
-      unit_price: number;
-      discount_percentage: number;
-      tax_percentage: number;
+      unit_price: string;
+      discount_percentage: string;
+      tax_percentage: string;
     }[];
   };
   customers: Customer[];
@@ -72,7 +72,7 @@ const formSchema = z.object({
   terms: z.string().optional().nullable(),
   items: z.array(
     z.object({
-      id: z.number().optional(),
+      id: z.string().optional(),
       product_id: z.string().optional(),
       product_variant_id: z.string().optional(),
       warehouse_id: z.string().optional(),
@@ -130,7 +130,7 @@ export default function Edit({
     },
     {
       title: `#${quotation.quotation_number}`,
-      href: `/admin/quotations/${quotation.id}/edit`,
+  href: `/admin/quotations/${quotation.id}/edit`,
     },
   ];
 
@@ -146,7 +146,7 @@ export default function Edit({
     resolver: zodResolver(formSchema),
     defaultValues: {
       quotation_number: quotation.quotation_number,
-      customer_id: quotation.customer_id ? quotation.customer_id.toString() : '',
+  customer_id: quotation.customer_id ? quotation.customer_id : '',
       issue_date: issueDate,
       expiry_date: expiryDate,
       status: initialStatus as any,
@@ -156,10 +156,10 @@ export default function Edit({
       notes: quotation.notes,
       terms: quotation.terms,
       items: quotation.items.map(item => ({
-        id: item.id,
-        product_id: item.product_id ? item.product_id.toString() : undefined,
-        product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
-        warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : undefined,
+  id: item.id,
+  product_id: item.product_id ? item.product_id : undefined,
+  product_variant_id: item.product_variant_id ? item.product_variant_id : undefined,
+  warehouse_id: item.warehouse_id ? item.warehouse_id : undefined,
         name: item.name,
         description: item.description || '',
         quantity: item.quantity.toString(),

@@ -103,7 +103,7 @@ class BlogController extends Controller implements HasMiddleware
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Alterado para aceitar upload de imagem
             'status' => 'boolean',
             'published_at' => 'nullable|date',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'nullable|string|exists:categories,id',
         ], [
             'slug.regex' => 'O slug deve conter apenas letras minúsculas, números e hífens.',
             'slug.unique' => 'Este slug já está a ser utilizado por outro post.',
@@ -230,7 +230,7 @@ class BlogController extends Controller implements HasMiddleware
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Alterado para aceitar upload de imagem
             'status' => 'boolean',
             'published_at' => 'nullable|date',
-            'category_id' => 'nullable|exists:categories,id',
+            'category_id' => 'nullable|string|exists:categories,id',
         ], [
             'slug.regex' => 'O slug deve conter apenas letras minúsculas, números e hífens.',
             'slug.unique' => 'Este slug já está a ser utilizado por outro post.',

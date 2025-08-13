@@ -119,9 +119,9 @@ class InventoryController extends Controller implements HasMiddleware
     {
         try {
             $validator = Validator::make($request->all(), [
-                'product_id' => 'required|exists:products,id',
-                'product_variant_id' => 'nullable|exists:product_variants,id',
-                'warehouse_id' => 'required|exists:warehouses,id',
+                'product_id' => 'required|string|exists:products,id',
+                'product_variant_id' => 'nullable|string|exists:product_variants,id',
+                'warehouse_id' => 'required|string|exists:warehouses,id',
                 'quantity' => 'required|integer|min:0',
                 'min_quantity' => 'nullable|integer|min:0',
                 'max_quantity' => 'nullable|integer|min:0',

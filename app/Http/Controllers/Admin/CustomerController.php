@@ -226,7 +226,7 @@ class CustomerController extends Controller implements HasMiddleware
 
             // Dados do utilizador (opcional)
             'connect_user' => 'boolean',
-            'user_id' => 'nullable|exists:users,id|required_if:connect_user,true',
+            'user_id' => 'nullable|string|exists:users,id|required_if:connect_user,true',
         ]);
 
         if ($validator->fails()) {

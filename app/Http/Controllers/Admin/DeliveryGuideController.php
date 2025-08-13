@@ -24,7 +24,7 @@ class DeliveryGuideController extends Controller
         $validator = Validator::make($request->all(), [
             'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
-            'items.*.sale_item_id' => 'required|exists:sale_items,id',
+            'items.*.sale_item_id' => 'required|string|exists:sale_items,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
@@ -110,7 +110,7 @@ class DeliveryGuideController extends Controller
         $validator = Validator::make($request->all(), [
             'notes' => 'nullable|string|max:1000',
             'items' => 'required|array|min:1',
-            'items.*.sale_item_id' => 'required|exists:sale_items,id',
+            'items.*.sale_item_id' => 'required|string|exists:sale_items,id',
             'items.*.quantity' => 'required|numeric|min:0', // 0 is allowed to remove an item
         ]);
 

@@ -28,7 +28,7 @@ const formSchema = z.object({
     excerpt: z.string().min(10, "O resumo deve ter pelo menos 10 caracteres"),
     featured_image: z.any().optional(),
     published_at: z.string().nullable(),
-    blog_category_id: z.number().nullable(),
+    blog_category_id: z.string().nullable(),
 });
 
 const breadcrumbs: BreadcrumbItem[] = [

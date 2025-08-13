@@ -16,11 +16,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 interface Category {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
-    parent_id: number | null;
+    parent_id: string | null;
     active: boolean;
     order: number;
 }
@@ -75,7 +75,7 @@ export default function Edit({ category, categories }: Props) {
         form.reset({
             name: category.name,
             description: category.description || '',
-            parent_id: category.parent_id ? String(category.parent_id) : 'root',
+            parent_id: category.parent_id ? category.parent_id : 'root',
             active: category.active,
             order: category.order,
         });
@@ -222,7 +222,7 @@ export default function Edit({ category, categories }: Props) {
                                                         {categories.map((cat) => (
                                                             <SelectItem
                                                                 key={cat.id}
-                                                                value={cat.id.toString()}
+                                                                value={cat.id}
                                                                 disabled={cat.id === category.id}
                                                             >
                                                                 {cat.name}

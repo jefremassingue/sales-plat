@@ -16,11 +16,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 interface Category {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     description: string | null;
-    parent_id: number | null;
+    parent_id: string | null;
     active: boolean;
     order: number;
 }

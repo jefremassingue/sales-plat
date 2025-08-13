@@ -162,7 +162,7 @@ class CategoryController extends Controller implements HasMiddleware
                 Rule::unique('categories', 'slug')
             ],
             'description' => 'nullable|string',
-            'parent_id' => 'nullable|exists:categories,id',
+            'parent_id' => 'nullable|string|exists:categories,id',
             'active' => 'boolean',
             'order' => 'integer',
         ], [
@@ -253,6 +253,7 @@ class CategoryController extends Controller implements HasMiddleware
             'description' => 'nullable|string',
             'parent_id' => [
                 'nullable',
+                'string',
                 'exists:categories,id',
                 function ($attribute, $value, $fail) use ($category) {
                     // Prevenir ciclos: uma categoria não pode ser sua própria filha/descendente
