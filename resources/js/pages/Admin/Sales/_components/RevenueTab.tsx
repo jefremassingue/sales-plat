@@ -169,7 +169,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
                         <div className="text-sm text-muted-foreground">Lucro Bruto</div>
                         <div className="text-2xl font-bold text-green-500">{formatCurrency(grossProfit)}</div>
                         <div className="text-xs text-muted-foreground mt-1">
-                            Margem Bruta: {grossProfitMargin.toFixed(1)}%
+                            Margem Bruta: {grossProfitMargin?.toFixed(1)}%
                         </div>
                     </CardContent>
                 </Card>
@@ -217,7 +217,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
                         <div className="text-sm text-muted-foreground">Lucro Líquido (Empresa)</div>
                         <div className="text-2xl font-bold text-purple-500">{formatCurrency(netProfit)}</div>
                         <div className="text-xs text-muted-foreground mt-1">
-                            Margem Líquida: {netProfitMargin.toFixed(1)}%
+                            Margem Líquida: {netProfitMargin?.toFixed(1)}%
                         </div>
                     </CardContent>
                 </Card>
@@ -411,7 +411,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between"><span className="text-muted-foreground">Valor Pago:</span><span className="text-emerald-600 font-semibold">{formatCurrency(sale.amount_paid)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Valor Pendente:</span><span className={sale.amount_due > 0 ? 'text-destructive font-semibold' : 'text-emerald-600 font-semibold'}>{formatCurrency(sale.amount_due)}</span></div>
-                            <div className="border-t pt-2"><div className="flex justify-between font-medium"><span>Percentual Recebido:</span><span>{sale.total > 0 ? ((sale.amount_paid / sale.total) * 100).toFixed(1) : '0'}%</span></div></div>
+                            <div className="border-t pt-2"><div className="flex justify-between font-medium"><span>Percentual Recebido:</span><span>{sale.total > 0 ? ((sale.amount_paid / sale.total) * 100)?.toFixed(1) : '0'}%</span></div></div>
                         </div>
                     </div>
                 </CardContent>

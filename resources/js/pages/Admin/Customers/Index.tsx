@@ -324,9 +324,9 @@ export default function Index({ customers, filters = {} }: Props) {
             <Head title="Gerir Clientes" />
 
             <div className="container px-4 py-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                     <h1 className="text-2xl font-bold">Gerir Clientes</h1>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         {can('admin-customer.index') && (
                             <Button variant="outline" onClick={handleExportPDF}>
                                 <FileDown className="mr-2 h-4 w-4" />
@@ -347,10 +347,10 @@ export default function Index({ customers, filters = {} }: Props) {
                 <div className="mt-6">
                     <Card>
                         <CardHeader>
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
                                 <CardTitle>Clientes</CardTitle>
 
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     {selectedCustomers.length > 0 && (
                                         <Button variant="destructive" size="sm" onClick={handleBulkDeleteClick}>
                                             <Trash className="mr-2 h-4 w-4" />
@@ -373,7 +373,7 @@ export default function Index({ customers, filters = {} }: Props) {
                             </div>
 
                             {/* Área de filtros */}
-                            <div className="mt-4 grid gap-4 md:grid-cols-4">
+                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-4">
                                 <div className="md:col-span-2">
                                     <Input
                                         placeholder="Pesquisar por nome, empresa, email ou telefone"
@@ -453,135 +453,137 @@ export default function Index({ customers, filters = {} }: Props) {
                         <CardContent>
                             <Tabs value={viewTab} className="w-full">
                                 <TabsContent value="table" className="mt-0">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-[50px]">
-                                                    <Checkbox
-                                                        checked={customers.data.length > 0 && selectedCustomers.length === customers.data.length}
-                                                        onCheckedChange={handleSelectAll}
-                                                    />
-                                                </TableHead>
-                                                <TableHead className="cursor-pointer" onClick={() => toggleSort('name')}>
-                                                    Nome {sortField === 'name' && <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
-                                                </TableHead>
-                                                <TableHead>Tipo</TableHead>
-                                                <TableHead>Contacto</TableHead>
-                                                <TableHead>Morada</TableHead>
-                                                <TableHead>Estado</TableHead>
-                                                <TableHead>Utilizador</TableHead>
-                                                <TableHead className="w-[100px]">Acções</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {customers.data.length > 0 ? (
-                                                customers.data.map((customer) => (
-                                                    <TableRow key={customer.id}>
-                                                        <TableCell className="w-[50px]">
-                                                            <Checkbox
-                                                                checked={selectedCustomers.includes(customer.id)}
-                                                                onCheckedChange={() => handleSelect(customer.id)}
-                                                            />
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="font-medium">
-                                                                {customer.name}
-                                                                {customer.company_name && (
-                                                                    <span className="text-muted-foreground block text-xs">
-                                                                        {customer.company_name}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {customer.client_type === 'company' ? (
-                                                                <div className="flex items-center">
-                                                                    <Building className="mr-1 h-4 w-4" />
-                                                                    <span>Empresa</span>
+                                    <div className="w-full overflow-x-auto">
+                                        <Table className="min-w-[900px]">
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="w-[50px]">
+                                                        <Checkbox
+                                                            checked={customers.data.length > 0 && selectedCustomers.length === customers.data.length}
+                                                            onCheckedChange={handleSelectAll}
+                                                        />
+                                                    </TableHead>
+                                                    <TableHead className="cursor-pointer" onClick={() => toggleSort('name')}>
+                                                        Nome {sortField === 'name' && <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>}
+                                                    </TableHead>
+                                                    <TableHead className="hidden sm:table-cell">Tipo</TableHead>
+                                                    <TableHead className="hidden md:table-cell">Contacto</TableHead>
+                                                    <TableHead className="hidden lg:table-cell">Morada</TableHead>
+                                                    <TableHead>Estado</TableHead>
+                                                    <TableHead className="hidden lg:table-cell">Utilizador</TableHead>
+                                                    <TableHead className="w-[100px]">Acções</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {customers.data.length > 0 ? (
+                                                    customers.data.map((customer) => (
+                                                        <TableRow key={customer.id}>
+                                                            <TableCell className="w-[50px]">
+                                                                <Checkbox
+                                                                    checked={selectedCustomers.includes(customer.id)}
+                                                                    onCheckedChange={() => handleSelect(customer.id)}
+                                                                />
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="font-medium">
+                                                                    {customer.name}
+                                                                    {customer.company_name && (
+                                                                        <span className="text-muted-foreground block text-xs">
+                                                                            {customer.company_name}
+                                                                        </span>
+                                                                    )}
                                                                 </div>
-                                                            ) : (
-                                                                <div className="flex items-center">
-                                                                    <Contact className="mr-1 h-4 w-4" />
-                                                                    <span>Particular</span>
-                                                                </div>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {customer.email && <div className="text-xs">{customer.email}</div>}
-                                                            {customer.phone && <div className="text-xs">Tel: {customer.phone}</div>}
-                                                            {customer.mobile && <div className="text-xs">Mob: {customer.mobile}</div>}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {customer.address ? (
-                                                                <div className="text-xs">
-                                                                    <div>{customer.address}</div>
-                                                                    <div>
-                                                                        {customer.city}
-                                                                        {customer.province ? `, ${customer.province}` : ''}
+                                                            </TableCell>
+                                                            <TableCell className="hidden sm:table-cell">
+                                                                {customer.client_type === 'company' ? (
+                                                                    <div className="flex items-center">
+                                                                        <Building className="mr-1 h-4 w-4" />
+                                                                        <span>Empresa</span>
                                                                     </div>
+                                                                ) : (
+                                                                    <div className="flex items-center">
+                                                                        <Contact className="mr-1 h-4 w-4" />
+                                                                        <span>Particular</span>
+                                                                    </div>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell className="hidden md:table-cell">
+                                                                {customer.email && <div className="text-xs">{customer.email}</div>}
+                                                                {customer.phone && <div className="text-xs">Tel: {customer.phone}</div>}
+                                                                {customer.mobile && <div className="text-xs">Mob: {customer.mobile}</div>}
+                                                            </TableCell>
+                                                            <TableCell className="hidden lg:table-cell">
+                                                                {customer.address ? (
+                                                                    <div className="text-xs">
+                                                                        <div>{customer.address}</div>
+                                                                        <div>
+                                                                            {customer.city}
+                                                                            {customer.province ? `, ${customer.province}` : ''}
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground text-xs">Sem morada</span>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <Badge variant={customer.active ? 'default' : 'secondary'}>
+                                                                    {customer.active ? 'Activo' : 'Inactivo'}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="hidden lg:table-cell">
+                                                                {customer.user ? (
+                                                                    <div className="text-xs">
+                                                                        <div className="font-medium">{customer.user.name}</div>
+                                                                        <div className="text-muted-foreground">{customer.user.email}</div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-muted-foreground text-xs">Não associado</span>
+                                                                )}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center gap-2">
+                                                                    {can('admin-customer.show') && (
+                                                                        <Button variant="ghost" size="icon" asChild>
+                                                                            <Link href={`/admin/customers/${customer.id}`}>
+                                                                                <Eye className="h-4 w-4" />
+                                                                            </Link>
+                                                                        </Button>
+                                                                    )}
+                                                                    {can('admin-customer.edit') && (
+                                                                        <Button variant="ghost" size="icon" asChild>
+                                                                            <Link href={`/admin/customers/${customer.id}/edit`}>
+                                                                                <Edit className="h-4 w-4" />
+                                                                            </Link>
+                                                                        </Button>
+                                                                    )}
+                                                                    {can('admin-customer.destroy') && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            onClick={() => handleDeleteClick(customer.id)}
+                                                                            className="text-destructive hover:text-destructive"
+                                                                        >
+                                                                            <Trash className="h-4 w-4" />
+                                                                        </Button>
+                                                                    )}
                                                                 </div>
-                                                            ) : (
-                                                                <span className="text-muted-foreground text-xs">Sem morada</span>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge variant={customer.active ? 'default' : 'secondary'}>
-                                                                {customer.active ? 'Activo' : 'Inactivo'}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {customer.user ? (
-                                                                <div className="text-xs">
-                                                                    <div className="font-medium">{customer.user.name}</div>
-                                                                    <div className="text-muted-foreground">{customer.user.email}</div>
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-muted-foreground text-xs">Não associado</span>
-                                                            )}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="flex items-center gap-2">
-                                                                {can('admin-customer.show') && (
-                                                                    <Button variant="ghost" size="icon" asChild>
-                                                                        <Link href={`/admin/customers/${customer.id}`}>
-                                                                            <Eye className="h-4 w-4" />
-                                                                        </Link>
-                                                                    </Button>
-                                                                )}
-                                                                {can('admin-customer.edit') && (
-                                                                    <Button variant="ghost" size="icon" asChild>
-                                                                        <Link href={`/admin/customers/${customer.id}/edit`}>
-                                                                            <Edit className="h-4 w-4" />
-                                                                        </Link>
-                                                                    </Button>
-                                                                )}
-                                                                {can('admin-customer.destroy') && (
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        onClick={() => handleDeleteClick(customer.id)}
-                                                                        className="text-destructive hover:text-destructive"
-                                                                    >
-                                                                        <Trash className="h-4 w-4" />
-                                                                    </Button>
-                                                                )}
-                                                            </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={8} className="py-6 text-center">
+                                                            Nenhum cliente encontrado
                                                         </TableCell>
                                                     </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={8} className="py-6 text-center">
-                                                        Nenhum cliente encontrado
-                                                    </TableCell>
-                                                </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
 
                                     {/* Paginação */}
                                     {customers.last_page > 1 && (
-                                        <div className="flex items-center justify-between px-2 py-4">
+                                        <div className="flex flex-col items-start justify-between gap-3 px-2 py-4 md:flex-row md:items-center">
                                             <div className="text-muted-foreground text-sm">
                                                 Mostrando {customers.from} a {customers.to} de {customers.total} registos
                                             </div>
@@ -621,7 +623,7 @@ export default function Index({ customers, filters = {} }: Props) {
 
                                     {/* Paginação */}
                                     {customers.last_page > 1 && (
-                                        <div className="flex items-center justify-between px-2 py-4">
+                                        <div className="flex flex-col items-start justify-between gap-3 px-2 py-4 md:flex-row md:items-center">
                                             <div className="text-muted-foreground text-sm">
                                                 Mostrando {customers.from} a {customers.to} de {customers.total} registos
                                             </div>
