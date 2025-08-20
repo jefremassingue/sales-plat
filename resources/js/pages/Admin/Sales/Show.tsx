@@ -178,7 +178,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
         const { decimal_separator, thousand_separator, decimal_places, symbol } = sale.currency;
 
         const formattedValue = value
-            .toFixed(decimal_places)
+            ?.toFixed(decimal_places)
             .replace('.', 'DECIMAL')
             .replace(/\B(?=(\d{3})+(?!\d))/g, thousand_separator)
             .replace('DECIMAL', decimal_separator);
