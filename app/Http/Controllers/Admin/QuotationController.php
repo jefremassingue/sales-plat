@@ -271,8 +271,12 @@ class QuotationController extends Controller implements HasMiddleware
 
                         if (empty($itemData['unit_price'])) {
                             $itemData['unit_price'] = $product->price;
+                        } else {
+                            $product->price = $itemData['unit_price'];
+                            $product->save();
                         }
                     }
+
 
                     $item = new QuotationItem($itemData);
                     $item->calculateValues();
@@ -465,6 +469,11 @@ class QuotationController extends Controller implements HasMiddleware
                             if (empty($itemData['description']) && $product->description) {
                                 $itemData['description'] = $product->description;
                             }
+
+                            if (!empty($itemData['unit_price'])) {
+                                $product->price = $itemData['unit_price'];
+                                $product->save();
+                            }
                         }
                     }
 
@@ -606,9 +615,9 @@ class QuotationController extends Controller implements HasMiddleware
         // Gerar o PDF usando a view
         $pdf = \PDF::setOptions([
             'isPhpEnabled'        => true,
-            'isHtml5ParserEnabled'=> true,
+            'isHtml5ParserEnabled' => true,
             'isRemoteEnabled'        => true,            // <-- permite URLs remotas (http/https)
-            'enable_local_file_access'=> true,           // <-- permite file:// e acessos locais
+            'enable_local_file_access' => true,           // <-- permite file:// e acessos locais
             'chroot'                 => public_path(),
         ])->loadView('pdf.quotation', [
             'quotation' => $quotation,
@@ -658,9 +667,9 @@ class QuotationController extends Controller implements HasMiddleware
             // Gerar PDF anexo
             $pdf = \PDF::setOptions([
                 'isPhpEnabled'        => true,
-                'isHtml5ParserEnabled'=> true,
+                'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled'     => true,
-                'enable_local_file_access'=> true,
+                'enable_local_file_access' => true,
                 'chroot'              => public_path(),
             ])->loadView('pdf.quotation', [
                 'quotation' => $quotation,
@@ -676,12 +685,12 @@ class QuotationController extends Controller implements HasMiddleware
             \Mail::send('emails.quotation', [
                 'quotation' => $quotation,
                 'company' => $company,
-            ], function($message) use ($quotation, $pdfContent, $pdfFilename, $company) {
+            ], function ($message) use ($quotation, $pdfContent, $pdfFilename, $company) {
                 $message->to($quotation->customer->email, $quotation->customer->name)
-                        ->subject('Cotação ' . $quotation->quotation_number)
-                        ->attachData($pdfContent, $pdfFilename, [
-                            'mime' => 'application/pdf',
-                        ]);
+                    ->subject('Cotação ' . $quotation->quotation_number)
+                    ->attachData($pdfContent, $pdfFilename, [
+                        'mime' => 'application/pdf',
+                    ]);
 
                 // Adicionar remetente se configurado
                 if (isset($company['email'])) {
@@ -699,7 +708,6 @@ class QuotationController extends Controller implements HasMiddleware
             DB::commit();
 
             return redirect()->back()->with('success', 'Cotação enviada com sucesso para ' . $quotation->customer->email);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -756,7 +764,6 @@ class QuotationController extends Controller implements HasMiddleware
 
             return redirect()->route('admin.quotations.edit', $newQuotation)
                 ->with('success', 'Cotação duplicada com sucesso. Você está a editar a nova cotação.');
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -856,7 +863,6 @@ class QuotationController extends Controller implements HasMiddleware
 
             return redirect()->route('admin.sales.show', $sale->id)
                 ->with('success', 'Cotação convertida em venda com sucesso!');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Erro ao converter cotação em venda: ' . $e->getMessage(), [
@@ -894,7 +900,7 @@ class QuotationController extends Controller implements HasMiddleware
 
         return $saleNumber;
     }
-    
+
     /**
      * Get inventory information for a product in a warehouse
      */

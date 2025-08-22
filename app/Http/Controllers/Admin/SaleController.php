@@ -381,6 +381,11 @@ class SaleController extends Controller implements HasMiddleware
                                 $itemData['cost'] = $product->cost ?? 0;
                             }
 
+                            if (!empty($itemData['unit_price'])) {
+                                $product->price = $itemData['unit_price'];
+                                $product->save();
+                            }
+
                             // Verificar se há inventário suficiente
                             if (!empty($itemData['warehouse_id'])) {
                                 $inventory = Inventory::where('product_id', $itemData['product_id'])
@@ -954,6 +959,11 @@ class SaleController extends Controller implements HasMiddleware
             // Atualizar o custo do item
             $item->cost = $request->cost;
             $item->save();
+
+            if (isset($item->product)) {
+                $item->product->cost = $item->cost;
+                $item->product->save();
+            }
 
             // Recalcular totais da venda (assumindo que este método existe no modelo Sale)
             $sale->calculateTotals();

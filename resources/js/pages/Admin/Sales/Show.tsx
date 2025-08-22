@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { can } from '@/lib/utils';
-import { BreadcrumbItem } from '@/types/index';
+import { type BreadcrumbItem, type Sale } from '@/types/index.d';
 import { Head, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
@@ -17,90 +17,6 @@ import { RevenueTab } from './_components/RevenueTab';
 import { SaleDetailsCard } from './_components/SaleDetailsCard';
 import { SaleHeader } from './_components/SaleHeader';
 import { StatusChangeDialog } from './_components/StatusChangeDialog';
-
-interface Sale {
-    id: number;
-    sale_number: string;
-    customer_id: number | null;
-    user_id: number | null;
-    issue_date: string;
-    due_date: string | null;
-    status: 'draft' | 'pending' | 'paid' | 'partial' | 'canceled' | 'overdue';
-    subtotal: number;
-    tax_amount: number;
-    discount_amount: number;
-    shipping_amount: number;
-    total: number;
-    amount_paid: number;
-    amount_due: number;
-    currency_code: string;
-    exchange_rate: number;
-    notes: string | null;
-    terms: string | null;
-    include_tax: boolean;
-    shipping_address: string | null;
-    billing_address: string | null;
-    payment_method: string | null;
-    reference: string | null;
-    quotation_id: number | null;
-    customer?: {
-        id: number;
-        name: string;
-        email: string | null;
-        phone: string | null;
-        address: string | null;
-    };
-    user?: {
-        id: number;
-        name: string;
-        email: string;
-    };
-    currency?: {
-        code: string;
-        name: string;
-        symbol: string;
-        decimal_places: number;
-        decimal_separator: string;
-        thousand_separator: string;
-    };
-    items: Array<{
-        id: number;
-        sale_id: number;
-        product_id: number | null;
-        product_variant_id: number | null;
-        warehouse_id: number | null;
-        name: string;
-        description: string | null;
-        quantity: number;
-        unit: string | null;
-        unit_price: number;
-        discount_percentage: number;
-        discount_amount: number;
-        tax_percentage: number;
-        tax_amount: number;
-        subtotal: number;
-        total: number;
-        product?: any;
-        productVariant?: any;
-        warehouse?: any;
-        available_quantity?: number;
-    }>;
-    payments?: Array<{
-        id: number;
-        sale_id: number;
-        amount: number;
-        payment_date: string;
-        payment_method: string;
-        reference: string | null;
-        notes: string | null;
-    }>;
-    delivery_guides: any;
-    quotation?: {
-        id: number;
-        quotation_number: string;
-        issue_date: string;
-    };
-}
 
 interface PaymentMethod {
     value: string;
@@ -120,7 +36,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState<typeof sale.status>(sale.status);
     const { toast } = useToast();
-    const { flash } = usePage().props as any;
+    const { flash } = usePage().props as { flash?: { success?: string; error?: string } };
 
     useEffect(() => {
         if (flash?.success) {
@@ -141,7 +57,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
     }, [flash, toast]);
 
     const handleStatusChange = (newStatus: string) => {
-        setSelectedStatus(newStatus);
+        setSelectedStatus(newStatus as typeof sale.status);
         setStatusDialogOpen(true);
     };
 
@@ -168,16 +84,19 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
     const formatCurrency = (value: number | null | undefined, withSymbol = true) => {
         if (value === null || value === undefined) return 'N/A';
 
+        // Ensure value is a number
+        const numericValue = typeof value === 'number' ? value : parseFloat(String(value)) || 0;
+
         if (!sale.currency) {
             return new Intl.NumberFormat('pt-PT', {
                 style: withSymbol ? 'currency' : 'decimal',
                 currency: 'MZN',
-            }).format(value);
+            }).format(numericValue);
         }
 
         const { decimal_separator, thousand_separator, decimal_places, symbol } = sale.currency;
 
-        const formattedValue = (value || 0.00)
+        const formattedValue = numericValue
             .toFixed(decimal_places || 2)
             .replace('.', 'DECIMAL')
             .replace(/\B(?=(\d{3})+(?!\d))/g, thousand_separator)
@@ -201,7 +120,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
         return ['draft', 'pending'].includes(sale.status);
     };
 
-    const hasStockWarning = (item: any) => {
+    const hasStockWarning = (item: Sale['items'][0]) => {
         if (!item.warehouse_id) return false;
         if (item.available_quantity === undefined || item.available_quantity === null) return false;
         return item.available_quantity < item.quantity;
@@ -279,7 +198,25 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                             {/* ABA 4: RECEITA */}
                             {can('admin-sale.showrevenue') && (
                                 <TabsContent value="revenue">
-                                    <RevenueTab sale={sale} formatCurrency={formatCurrency} />
+                                    <RevenueTab 
+                                        sale={sale as Sale & {
+                                            commission_rate?: number;
+                                            backup_rate?: number;
+                                            total_cost?: number;
+                                            commission_amount?: number;
+                                            backup_amount?: number;
+                                            expenses?: Array<{
+                                                id: string;
+                                                description: string;
+                                                amount: number;
+                                                created_at: string;
+                                            }>;
+                                            items: Array<Sale['items'][0] & {
+                                                cost?: number;
+                                            }>;
+                                        }} 
+                                        formatCurrency={formatCurrency} 
+                                    />
                                 </TabsContent>
                             )}
                         </Tabs>
@@ -303,12 +240,21 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
             <StatusChangeDialog
                 open={statusDialogOpen}
                 onOpenChange={setStatusDialogOpen}
-                saleId={sale.id}
+                saleId={parseInt(sale.id)}
                 selectedStatus={selectedStatus}
                 statuses={statuses}
             />
 
-            <PaymentDialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen} sale={sale} paymentMethods={paymentMethods} />
+            <PaymentDialog 
+                open={paymentDialogOpen} 
+                onOpenChange={setPaymentDialogOpen} 
+                sale={{
+                    id: parseInt(sale.id),
+                    amount_due: sale.amount_due,
+                    currency: sale.currency
+                }} 
+                paymentMethods={paymentMethods} 
+            />
 
             <DeleteAlert
                 isOpen={deleteAlertOpen}

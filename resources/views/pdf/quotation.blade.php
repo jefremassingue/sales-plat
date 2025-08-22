@@ -498,6 +498,29 @@
 
 
                                 </table>
+                                <hr style="opacity: 0.3" />
+                                  <table style="width: auto; border-collapse: collapse;">
+                                    <tr>
+                                        <td style=" width: 30%;"><span
+                                                style="font-weight: bold; color: #313131;">Banco:</span></td>
+                                        <td style="padding-left: 16px">BCI</td>
+                                    </tr>
+                                    <tr>
+
+                                        <td style=" width: 30%;"><span style="font-weight: bold; color: #313131;">Número
+                                                De Conta:</span></td>
+                                        <td style="padding-left: 16px">
+                                            31610592910001</td>
+                                    </tr>
+                                    <tr>
+                                        <td style=""><span style="font-weight: bold; color: #313131;">NIB:</span>
+                                        </td>
+                                        <td style="padding-left: 16px" colspan="3">
+                                            000800001610592910128</td>
+                                    </tr>
+
+
+                                </table>
                             </div>
                         </td>
                         <td style="width: 50%; vertical-align: top;">

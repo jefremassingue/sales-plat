@@ -62,6 +62,31 @@ class BankSettingsSeeder extends Seeder
                     'type' => 'text',
                     'is_public' => true,
                 ],
+
+                     [
+                    'group' => 'bank',
+                    'key' => 'bank_name_bci',
+                    'value' => 'BCI',
+                    'description' => 'Nome do banco BCI',
+                    'type' => 'text',
+                    'is_public' => true,
+                ],
+                [
+                    'group' => 'bank',
+                    'key' => 'account_number_bci',
+                    'value' => '31610592910001',
+                    'description' => 'Número da conta bancária BCI',
+                    'type' => 'text',
+                    'is_public' => true,
+                ],
+                [
+                    'group' => 'bank',
+                    'key' => 'nib_bci',
+                    'value' => '0008 0000 316105929100128',
+                    'description' => 'NIB da conta bancária BCI',
+                    'type' => 'text',
+                    'is_public' => true,
+                ],
             ];
 
             // Inserir as configurações bancárias

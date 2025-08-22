@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sale, PageProps } from '@/types';
+import { Sale } from '@/types/index.d';
 import { useState, useEffect, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,14 +7,32 @@ import { Pencil, Plus, Trash2, Save } from 'lucide-react'; // Ícone 'Save' adic
 import { useToast } from '@/components/ui/use-toast';
 import { router, useForm, usePage } from '@inertiajs/react';
 
+// Extended Sale interface for revenue calculations
+interface ExtendedSale extends Sale {
+    commission_rate?: number;
+    backup_rate?: number;
+    total_cost?: number;
+    commission_amount?: number;
+    backup_amount?: number;
+    expenses?: Array<{
+        id: string;
+        description: string;
+        amount: number;
+        created_at: string;
+    }>;
+    items: Array<Sale['items'][0] & {
+        cost?: number;
+    }>;
+}
+
 interface RevenueTabProps {
-    sale: Sale;
+    sale: ExtendedSale;
     formatCurrency: (value: number | null | undefined, withSymbol?: boolean) => string;
 }
 
 export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
     const { toast } = useToast();
-    const { props } = usePage<PageProps>();
+    const { props } = usePage() as { props: { flash?: { success?: string; error?: string } } };
 
     // --- ESTADOS DA UI ---
     const [editingCosts, setEditingCosts] = useState<Record<string, boolean>>({});
@@ -46,7 +64,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
         if (props.flash?.error) {
             toast({ title: 'Erro', description: props.flash.error, variant: 'destructive' });
         }
-    }, [props.flash]);
+    }, [props.flash, toast]);
     
     // Efeito para garantir que o formulário de taxas tenha sempre os dados mais recentes da venda
     useEffect(() => {
@@ -54,7 +72,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
             commission_rate: sale.commission_rate || 1.5,
             backup_rate: sale.backup_rate || 10,
         });
-    }, [sale]);
+    }, [sale, setRatesData]);
 
     // --- CÁLCULOS FINANCEIROS ---
     const netRevenue = (sale.total || 0) - (sale.tax_amount || 0);
@@ -62,7 +80,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
     const operationalDeductions = 
         (sale.commission_amount || 0) + 
         (sale.backup_amount || 0) + 
-        (sale.expenses?.reduce((sum, expense) => sum + expense.amount, 0) || 0);
+        (sale.expenses?.reduce((sum: number, expense: { amount: number }) => sum + expense.amount, 0) || 0);
     const netProfit = grossProfit - operationalDeductions;
     const totalDeductions = (sale.tax_amount || 0) + operationalDeductions;
     const grossProfitMargin = netRevenue > 0 ? (grossProfit / netRevenue) * 100 : 0;
@@ -169,7 +187,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
                         <div className="text-sm text-muted-foreground">Lucro Bruto</div>
                         <div className="text-2xl font-bold text-green-500">{formatCurrency(grossProfit)}</div>
                         <div className="text-xs text-muted-foreground mt-1">
-                            Margem Bruta: {grossProfitMargin?.toFixed(1)}%
+                            Margem Bruta: {(grossProfitMargin || 0).toFixed(1)}%
                         </div>
                     </CardContent>
                 </Card>
@@ -217,7 +235,7 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
                         <div className="text-sm text-muted-foreground">Lucro Líquido (Empresa)</div>
                         <div className="text-2xl font-bold text-purple-500">{formatCurrency(netProfit)}</div>
                         <div className="text-xs text-muted-foreground mt-1">
-                            Margem Líquida: {netProfitMargin?.toFixed(1)}%
+                            Margem Líquida: {(netProfitMargin || 0).toFixed(1)}%
                         </div>
                     </CardContent>
                 </Card>
@@ -409,9 +427,9 @@ export function RevenueTab({ sale, formatCurrency }: RevenueTabProps) {
                     <div className="space-y-4 pt-4 border-t">
                         <h3 className="font-medium">Pagamentos Recebidos</h3>
                         <div className="space-y-2 text-sm">
-                            <div className="flex justify-between"><span className="text-muted-foreground">Valor Pago:</span><span className="text-emerald-600 font-semibold">{formatCurrency(sale.amount_paid)}</span></div>
+                            <div className="flex justify-between"><span className="text-muted-foreground">Valor Pago:</span><span className="text-emerald-600 font-semibold">{formatCurrency(parseFloat(sale.amount_paid) || 0)}</span></div>
                             <div className="flex justify-between"><span className="text-muted-foreground">Valor Pendente:</span><span className={sale.amount_due > 0 ? 'text-destructive font-semibold' : 'text-emerald-600 font-semibold'}>{formatCurrency(sale.amount_due)}</span></div>
-                            <div className="border-t pt-2"><div className="flex justify-between font-medium"><span>Percentual Recebido:</span><span>{sale.total > 0 ? ((sale.amount_paid / sale.total) * 100)?.toFixed(1) : '0'}%</span></div></div>
+                            <div className="border-t pt-2"><div className="flex justify-between font-medium"><span>Percentual Recebido:</span><span>{sale.total > 0 ? (((parseFloat(sale.amount_paid) || 0) / (Number(sale.total) || 1)) * 100).toFixed(1) : '0'}%</span></div></div>
                         </div>
                     </div>
                 </CardContent>
