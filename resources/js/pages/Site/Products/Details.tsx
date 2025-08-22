@@ -139,19 +139,19 @@ export default function ProductDetails({ product, relatedProducts }: Props) {
         <SiteLayout>
             <Head title={product.name}>
                 <meta name="description" content={product.description || ''} />
-                <link rel="canonical" href={`${window.location.origin}/products/${product.slug}`} />
-                {/* og:image */}
-                <meta
-                    property="og:image"
-                    content={
-                        product.main_image.versions?.find((image) => image.version == 'sm')?.url ||
-                        product.main_image.versions?.find((image) => image.version == 'md')?.url ||
-                        product.main_image.versions?.find((image) => image.version == 'lg')?.url ||
-                        product.main_image.url ||
-                        window.location.origin + '/og.png'
-                    }
-                />
-                <meta property="og:image:alt" content={product.name} />
+                    <link rel="canonical" href={`${window.location.origin}/products/${product.slug}`} />
+                    {/* og:image */}
+                    <meta
+                        property="og:image"
+                        content={
+                            product.main_image?.versions?.find((image) => image.version == 'sm')?.url ||
+                            product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
+                            product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
+                            product.main_image?.url ||
+                            window.location.origin + '/og.png'
+                        }
+                    />
+                    <meta property="og:image:alt" content={product.name} />
             </Head>
             <ProductDetailsContent product={product} relatedProducts={relatedProducts} />
         </SiteLayout>
