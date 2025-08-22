@@ -9,6 +9,7 @@ interface Category {
     name: string;
     slug: string;
     parent: Category | null;
+    subcategories?: Category[];
 }
 
 interface Product {
@@ -38,17 +39,24 @@ interface Product {
     category: Category;
 }
 
+interface BrandItem { id: number; name: string }
+
 interface Props {
     products: {
         data: Product[];
         current_page: number;
         last_page: number;
+    from?: number;
+    to?: number;
+    total?: number;
+    prev_page_url?: string | null;
+    next_page_url?: string | null;
     };
     categories: Category[];
-    brands: string[];
+    brands: BrandItem[];
     filters: {
         categories: number[];
-        brands: string[];
+        brands: number[];
         price_min: string;
         price_max: string;
         search: string;
@@ -71,7 +79,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
     // Estado local para gerenciar os filtros
     const [filterData, setFilterData] = useState({
         categories: filters.categories || [],
-        brands: filters.brands || [],
+        brands: (filters.brands || []).map((b) => Number(b)),
         price_min: filters.price_min || '',
         price_max: filters.price_max || '',
         search: filters.search || '',
@@ -92,7 +100,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
     }, [products]);
 
     // Handler para mudanças nos filtros de texto/preço com debounce
-    const handleFilterChange = (filterName: string, value) => {
+    const handleFilterChange = (filterName: string, value: any) => {
         setFilterData((prev) => ({
             ...prev,
             [filterName]: value,
@@ -113,13 +121,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
     }, [filterData.search]);
 
     // Handler específico para checkboxes (categorias e marcas)
-    const handleCheckboxChange = (filterType, id) => {
-        const currentValues = filterData[filterType] || [];
+    const handleCheckboxChange = (filterType: 'categories' | 'brands', id: number) => {
+        const currentValues: number[] = (filterData as any)[filterType] || [];
         let newValues;
 
         if (currentValues.includes(id)) {
             // Remove se já existe (desmarcar)
-            newValues = currentValues.filter((value) => value !== id);
+            newValues = currentValues.filter((value: number) => value !== id);
         } else {
             // Adiciona se não existe (marcar)
             newValues = [...currentValues, id];
@@ -153,7 +161,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
         }, 0);
     };
 
-    const handlePriceInputChange = (e) => {
+    const handlePriceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         const sanitizedValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
         handleFilterChange(name, sanitizedValue);
@@ -204,19 +212,21 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
     };
 
     // Toggle para abrir/fechar seções de filtro na sidebar
-    const toggleFilterSection = (section) => {
+    const toggleFilterSection = (section: 'categories' | 'brands' | 'price') => {
         setOpenFilterSections((prev) => ({ ...prev, [section]: !prev[section] }));
     };
 
     // Aplicar filtros quando o usuário pressionar Enter no campo de busca
-    const handleSearchKeyDown = (e) => {
+    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             applyFilters();
         }
     };
 
     // Alterar a ordenação
-    const handleSortChange = (sortOption) => {
+    const handleSortChange = (
+        sortOption: 'price_asc' | 'price_desc' | 'newest' | 'name_asc' | 'created_at_desc',
+    ) => {
         let sortField, sortOrder;
 
         switch (sortOption) {
@@ -295,8 +305,9 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             });
 
             // Scroll para o topo da lista de produtos
+            const gridEl = document.querySelector('.products-grid') as HTMLElement | null;
             window.scrollTo({
-                top: document.querySelector('.products-grid')?.offsetTop - 100 || 0,
+                top: (gridEl?.offsetTop ?? 0) - 100,
                 behavior: 'smooth',
             });
         }, 0);

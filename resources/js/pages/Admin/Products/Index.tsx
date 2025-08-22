@@ -54,7 +54,8 @@ interface Product {
     featured: boolean;
     certification: string | null;
     warranty: string | null;
-    brand: string | null;
+    brand_id?: number | null;
+    brand?: { id: number; name: string; logo_url?: string } | null;
     created_at: string;
     updated_at: string;
     main_image: Image | null;
@@ -316,9 +317,12 @@ export default function Index({ products, categories, filters }: Props) {
                             </div>
                         )}
                         {product.brand && (
-                            <div>
+                            <div className="flex items-center gap-2">
                                 <span className="text-gray-500 dark:text-gray-400">Marca:</span>
-                                <p className="font-medium">{product.brand}</p>
+                                {product.brand.logo_url && (
+                                    <img src={product.brand.logo_url} alt={product.brand.name} className="h-5 w-5 rounded-full border" />
+                                )}
+                                <span className="font-medium">{product.brand.name}</span>
                             </div>
                         )}
                     </div>

@@ -64,6 +64,7 @@ interface Product {
     brand: string | null;
     origin_country: string | null;
     currency: string;
+    description_pdf_url?: string | null;
     images: ProductImage[];
     colors: ProductColor[];
     sizes: ProductSize[];
@@ -74,7 +75,8 @@ interface Product {
 interface Props {
     product: Product;
     categories: Category[];
-    units: { value: string; label: string }[]; // Adicionado array de unidades
+    units: { value: string; label: string }[];
+    brands: { id: number; name: string; logo_url?: string }[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -92,12 +94,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Edit({ product, categories, units }: Props) {
+export default function Edit({ product, categories, units, brands }: Props) {
     const [activeTab, setActiveTab] = useState('basic');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [description, setDescription] = useState(product.description || '');
     const [technicalDetails, setTechnicalDetails] = useState(product.technical_details || '');
     const [features, setFeatures] = useState(product.features || '');
+    const [descriptionPdfFile, setDescriptionPdfFile] = useState<File | null>(null);
+    const [currentDescriptionPdfUrl, setCurrentDescriptionPdfUrl] = useState<string | null>(product.description_pdf_url || null);
+    const [removeCurrentPdf, setRemoveCurrentPdf] = useState(false);
 
     // Mapear cores existentes para o formato esperado
     const [colors, setColors] = useState<ProductColor[]>(
@@ -173,7 +178,7 @@ export default function Edit({ product, categories, units }: Props) {
         featured: product.featured,
         certification: product.certification || '',
         warranty: product.warranty || '',
-        brand: product.brand || '',
+        brand_id: product.brand_id ? product.brand_id.toString() : '',
         origin_country: product.origin_country || 'Moçambique',
         currency: product.currency || 'MZN',
     });
@@ -548,6 +553,14 @@ export default function Edit({ product, categories, units }: Props) {
             formData.append('technical_details', technicalDetails);
             formData.append('features', features);
 
+            // PDF (remover e/ou enviar novo)
+            if (removeCurrentPdf) {
+                formData.append('remove_description_pdf', '1');
+            }
+            if (descriptionPdfFile) {
+                formData.append('description_pdf', descriptionPdfFile);
+            }
+
             // Cores
             colors.forEach((color, index) => {
                 if (color.id) {
@@ -761,8 +774,9 @@ export default function Edit({ product, categories, units }: Props) {
                                             data={data}
                                             setData={handleSetData}
                                             errors={errors}
-                                            categories={categories}
+                                            categories={categories.map(cat => ({ ...cat, subcategories: [] }))}
                                             units={units}
+                                            brands={brands}
                                             isEditing={true}
                                             productId={product.id}
                                         />
@@ -778,6 +792,10 @@ export default function Edit({ product, categories, units }: Props) {
                                             features={features}
                                             setFeatures={setFeatures}
                                             errors={errors}
+                                            descriptionPdfFile={descriptionPdfFile}
+                                            setDescriptionPdfFile={setDescriptionPdfFile}
+                                            currentDescriptionPdfUrl={currentDescriptionPdfUrl}
+                                            onRemoveCurrentPdf={() => { setRemoveCurrentPdf(true); setCurrentDescriptionPdfUrl(null); }}
                                         />
                                     </TabsContent>
 

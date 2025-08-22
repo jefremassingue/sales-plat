@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import SiteLayout from '@/layouts/site-layout'; // Assumindo que SiteLayout existe
 import { useCart } from '@/contexts/CartContext'; // Assumindo que CartContext existe
 import { ShoppingBag, User, Package, CheckCircle, ArrowLeft, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 // Métodos de pagamento removidos do MVP público (poderão ser reintroduzidos depois)
 
@@ -25,12 +28,21 @@ const quotationSchema = z.object({
 
 
 // Componente principal de Checkout
-export default function Checkout() {
-    const CheckoutContent = () => {
+const CheckoutContent: React.FC = () => {
     const { items, itemCount, clearCart } = useCart();
         const { toast } = useToast();
 
-        const [formData, setFormData] = useState({
+        type FormData = {
+            fullName: string;
+            phone: string;
+            email: string;
+            companyName: string;
+            neighborhood: string;
+            streetAndNumber: string;
+            notes: string;
+        };
+
+    const { data, setData, post, processing, errors, setError, clearErrors, reset, transform } = useForm<FormData>({
             fullName: '',
             phone: '',
             email: '',
@@ -40,41 +52,38 @@ export default function Checkout() {
             notes: '',
         });
     const [selectedPaymentMethodId] = useState(''); // sem seleção de método no MVP
-    const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [orderId, setOrderId] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
+    // submissão controlada por 'processing' do Inertia useForm
     // const [activeAccordion, setActiveAccordion] = useState<string | null>(null); // reservado para futura expansão
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
             const { name, value } = e.target;
-            setFormData(prev => ({ ...prev, [name]: value }));
-            if (errors[name]) {
-                setErrors(prev => ({ ...prev, [name]: null }));
+            setData(name as keyof FormData, value as never);
+            if (errors[name as keyof FormData]) {
+                clearErrors(name as keyof FormData);
             }
         };
 
     const handleSubmit = (e: React.FormEvent) => {
             e.preventDefault();
-            setErrors({}); // Limpa erros anteriores
+            clearErrors(); // Limpa erros anteriores
 
             const dataToValidate = {
-                ...formData,
+                ...data,
                 paymentMethod: selectedPaymentMethodId || undefined,
             };
 
             const validationResult = quotationSchema.safeParse(dataToValidate);
 
             if (!validationResult.success) {
-                const formattedErrors: Record<string, string> = {};
-                validationResult.error.errors.forEach(err => {
+                validationResult.error.errors.forEach((err: z.ZodIssue) => {
                     if (err.path.length > 0) {
-                        formattedErrors[err.path[0]] = err.message;
+                        setError(err.path[0] as keyof FormData, err.message);
                     }
                 });
-                setErrors(formattedErrors);
                 // Focar no primeiro campo com erro (opcional, mas bom para UX)
-                const firstErrorKey = Object.keys(formattedErrors)[0];
+                const firstErrorKey = validationResult.error.errors[0]?.path?.[0] as string | undefined;
                 if (firstErrorKey) {
                     const errorElement = document.getElementsByName(firstErrorKey)[0];
                     if (errorElement) errorElement.focus();
@@ -84,16 +93,25 @@ export default function Checkout() {
             }
 
             // Enviar para backend para criar cotação
-            setSubmitting(true);
             const postUrl = (typeof route === 'function') ? route('quotation.store') : '/quotation';
-            router.post(postUrl, {
-                ...formData,
+            const csrf = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null)?.content;
+            transform((curr) => ({
+                ...curr,
+                ...(csrf ? { _token: csrf } : {}),
                 paymentMethod: selectedPaymentMethodId || null,
-                items: items.map(i => ({
-                    product_id: i.id,
-                    quantity: i.quantity,
-                })),
-            }, {
+                items: items.map(i => {
+                    const parts: string[] = [];
+                    if (i.color_name) parts.push(i.color_name);
+                    if (i.size_name) parts.push(i.size_name);
+                    const nameWithVariant = parts.length ? `${i.name} (${parts.join(' / ')})` : i.name;
+                    return {
+                        product_id: i.id,
+                        quantity: i.quantity,
+                        name: nameWithVariant,
+                    };
+                }),
+            }));
+            post(postUrl, {
                 forceFormData: true,
                 onSuccess: (page: unknown) => {
                     type InertiaLike = { props?: { flash?: Record<string, unknown>; quotation_number?: unknown } };
@@ -102,17 +120,12 @@ export default function Checkout() {
                     setOrderId(typeof qn === 'string' ? qn : null);
                     setOrderPlaced(true);
                     clearCart();
+                    reset();
                     window.scrollTo(0, 0);
                 },
-                onError: (errs) => {
-                    const formattedServer: Record<string, string> = {};
-                    Object.entries(errs).forEach(([k, v]) => {
-                       
-                    });
-                    setErrors(formattedServer);
+                onError: () => {
                     window.scrollTo(0, 0);
                 },
-                onFinish: () => setSubmitting(false),
             });
         };
 
@@ -160,12 +173,12 @@ export default function Checkout() {
                 <div className="container mx-auto px-4 py-16 text-center">
                     <CheckCircle className="h-20 w-20 mx-auto text-green-500 mb-6" />
                     <h1 className="text-3xl font-bold text-gray-900 mb-4">Cotação Solicitada!</h1>
-                    <p className="text-gray-700 mb-2">Obrigado, {formData.fullName.split(' ')[0]}.</p>
+                    <p className="text-gray-700 mb-2">Obrigado, {data.fullName.split(' ')[0]}.</p>
                     {orderId && (
                         <p className="text-gray-700 mb-6">Número da cotação: <span className="font-semibold text-orange-600">{orderId}</span></p>
                     )}
                     <p className="text-gray-600 mb-4">
-                        Em breve entraremos em contacto através de <span className="font-semibold">{formData.email}</span> ou telefone para confirmar detalhes.
+                        Em breve entraremos em contacto através de <span className="font-semibold">{data.email}</span> ou telefone para confirmar detalhes.
                     </p>
                     <p className="text-gray-500 text-sm mb-8">
                         (Guarde o número da sua cotação para referência.)
@@ -189,27 +202,22 @@ export default function Checkout() {
             name: string;
             type?: string;
             placeholder?: string;
-            icon?: React.ReactNode;
             value: string;
             onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
             error?: string | null;
         }
-        const InputField: React.FC<InputFieldProps & React.InputHTMLAttributes<HTMLInputElement>> = ({ label, name, type = "text", placeholder, icon, value, onChange, error, ...props }) => (
-            <div>
-                <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                <div className="relative">
-                    {icon && <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">{icon}</div>}
-                    <input
-                        type={type}
-                        name={name}
-                        id={name}
-                        value={value}
-                        onChange={onChange}
-                        placeholder={placeholder}
-                        className={`w-full p-2 border rounded-md ${icon ? 'pl-10' : ''} ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-500'}`}
-                        {...props}
-                    />
-                </div>
+        const InputField: React.FC<InputFieldProps> = ({ label, name, type = "text", placeholder, value, onChange, error }) => (
+            <div className="space-y-2">
+                <Label htmlFor={name} className="text-sm font-medium text-gray-700">{label}</Label>
+                <Input
+                    type={type}
+                    name={name}
+                    id={name}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    className={error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-500'}
+                />
                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
             </div>
         );
@@ -247,24 +255,24 @@ export default function Checkout() {
                                     <User className="w-6 h-6 mr-3 text-orange-600" /> Informações do cliente
                                 </h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <InputField label="Nome Completo" name="fullName" value={formData.fullName} onChange={(e) => handleChange(e)} error={errors.fullName || null} placeholder="Seu nome completo" />
-                                    <InputField label="Nome Da empresa" name="companyName" value={formData.companyName} onChange={(e) => handleChange(e)} error={errors.companyName || null} placeholder="Nome da empresa" />
-                                    <InputField label="Telefone" name="phone" type="tel" value={formData.phone} onChange={(e) => handleChange(e)} error={errors.phone || null} placeholder="8X XXX XXXX" />
-                                    <InputField label="Email" name="email" type="email" value={formData.email} onChange={(e) => handleChange(e)} error={errors.email || null} placeholder="seuemail@exemplo.com" />
+                                    <InputField label="Nome Completo" name="fullName" value={data.fullName} onChange={(e) => handleChange(e)} error={errors.fullName || null} placeholder="Seu nome completo" />
+                                    <InputField label="Nome Da empresa" name="companyName" value={data.companyName} onChange={(e) => handleChange(e)} error={errors.companyName || null} placeholder="Nome da empresa" />
+                                    <InputField label="Telefone" name="phone" type="tel" value={data.phone} onChange={(e) => handleChange(e)} error={errors.phone || null} placeholder="8X XXX XXXX" />
+                                    <InputField label="Email" name="email" type="email" value={data.email} onChange={(e) => handleChange(e)} error={errors.email || null} placeholder="seuemail@exemplo.com" />
                                 </div>
-                                <div className="md:col-span-2 mt-4">
-                                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notas Adicionais <span className="text-xs text-gray-500">(Opcional)</span></label>
-                                        <textarea
-                                            name="notes"
-                                            id="notes"
-                        rows={3}
-                                            value={formData.notes}
-                                            onChange={handleChange}
-                                            placeholder="Ex: Deixar na portaria, ponto de referência..."
-                                            className={`w-full p-2 border rounded-md ${errors.notes ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-500'}`}
-                                        ></textarea>
-                                        {errors.notes && <p className="text-red-500 text-xs mt-1">{errors.notes}</p>}
-                                    </div>
+                                <div className="md:col-span-2 mt-4 space-y-2">
+                                    <Label htmlFor="notes" className="text-sm font-medium text-gray-700">Notas Adicionais <span className="text-xs text-gray-500">(Opcional)</span></Label>
+                                    <Textarea
+                                        name="notes"
+                                        id="notes"
+                                        rows={3}
+                                        value={data.notes}
+                                        onChange={handleChange}
+                                        placeholder="Ex: Deixar na portaria, ponto de referência..."
+                                        className={errors.notes ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-orange-500 focus:ring-orange-500'}
+                                    />
+                                    {errors.notes && <p className="text-red-500 text-xs mt-1">{errors.notes}</p>}
+                                </div>
                             </section>
 
 
@@ -307,13 +315,13 @@ export default function Checkout() {
                                     <button
                                         type="submit"
                                         className="w-full flex justify-center items-center gap-2 px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                                        disabled={itemCount === 0 || submitting}
-                                        aria-busy={submitting}
-                                        aria-disabled={itemCount === 0 || submitting}
+                                        disabled={itemCount === 0 || processing}
+                                        aria-busy={processing}
+                                        aria-disabled={itemCount === 0 || processing}
                                     >
-                                        {submitting && <Loader2 className="h-5 w-5 animate-spin" />}
-                                        {submitting ? 'Processando...' : 'Solicitar Cotação'}
-                                        {!submitting && <ArrowRight className="ml-1 h-5 w-5" />}
+                                        {processing && <Loader2 className="h-5 w-5 animate-spin" />}
+                                        {processing ? 'Processando...' : 'Solicitar Cotação'}
+                                        {!processing && <ArrowRight className="ml-1 h-5 w-5" />}
                                     </button>
                                 </div>
                                 <p className="mt-4 text-xs text-gray-500 text-center">
@@ -325,27 +333,17 @@ export default function Checkout() {
                 </form>
             </div>
         );
-    };
+};
 
+export default function Checkout() {
     return (
         <SiteLayout>
             <Head title="Solicitar Cotação" />
-            {/* Adicione um estilo global para scrollbar customizado se desejar, ou use classes do Tailwind se disponíveis */}
             <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #c7c7c7;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #a3a3a3;
-                }
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7c7c7; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
             `}</style>
             <CheckoutContent />
         </SiteLayout>

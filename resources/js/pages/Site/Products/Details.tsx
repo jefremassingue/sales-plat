@@ -3,8 +3,8 @@
 import { useCart } from '@/contexts/CartContext';
 import SiteLayout from '@/layouts/site-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle, List, ShieldCheck, ShoppingCart, Truck, X, ZoomIn } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowLeft, CheckCircle, List, ShieldCheck, ShoppingCart, Truck, X, ZoomIn, FileText } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigation, Thumbs, Zoom } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperCore } from 'swiper/types'; // Importado para tipagem
@@ -72,7 +72,7 @@ interface Variant {
     price: number | null;
     stock: number;
     active: boolean;
-    attributes: any;
+    attributes: Record<string, unknown>;
     created_at: string;
     updated_at: string;
     color?: Color;
@@ -95,6 +95,12 @@ interface Inventory {
     quantity: number;
 }
 
+interface BrandRel {
+    id: number;
+    name: string;
+    logo_url?: string | null;
+}
+
 interface Product {
     id: string;
     name: string;
@@ -102,6 +108,7 @@ interface Product {
     description: string | null;
     technical_details: string | null;
     features: string | null;
+    description_pdf_url?: string | null;
     cost: number | null;
     sku: string | null;
     barcode: string | null;
@@ -112,7 +119,7 @@ interface Product {
     featured: boolean;
     certification: string | null;
     warranty: string | null;
-    brand: string | null;
+    brand: BrandRel | null;
     origin_country: string | null;
     currency: string;
     created_at: string;
@@ -164,8 +171,8 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
 
     // Estado para controlar a imagem selecionada
     const [selectedImage, setSelectedImage] = useState<Image | null>(null);
-    const [selectedColor, setSelectedColor] = useState<Color | null>(null);
-    const [selectedSize, setSelectedSize] = useState<Size | null>(null);
+    const [selectedColor, setSelectedColor] = useState<Color | null>(product.colors && product.colors.length > 0 ? product.colors[0] : null);
+    const [selectedSize, setSelectedSize] = useState<Size | null>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : null);
     const [quantity, setQuantity] = useState(1);
     const [thumbsSwiper, setThumbsSwiper] = useState<SwiperCore | null>(null);
     const [mainSwiper, setMainSwiper] = useState<SwiperCore | null>(null); // Estado para o Swiper principal
@@ -173,74 +180,36 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
     const [zoomImageUrl, setZoomImageUrl] = useState('');
     const [activeTab, setActiveTab] = useState('description');
 
+    // Lista de imagens exibidas com base na cor selecionada
+    const displayedImages = useMemo<Image[]>(() => {
+        if (selectedColor?.images && selectedColor.images.length > 0) {
+            return selectedColor.images as Image[];
+        }
+        return product.images;
+    }, [selectedColor, product.images]);
+
     // Encontrar a imagem principal ou usar a primeira imagem
     useEffect(() => {
-        if (product && product.images && product.images.length > 0) {
-            let initialImage = product.images.find((img) => img.is_main) || product.images[0];
+        if (displayedImages && displayedImages.length > 0) {
+            const initialImage = displayedImages.find((img) => img.is_main) || displayedImages[0];
+            setSelectedImage(initialImage);
 
-            if (product.colors && product.colors.length > 0) {
-                const firstColor = product.colors[0];
-                setSelectedColor(firstColor);
-
-                // Se a primeira cor tiver imagens associadas E essas imagens estiverem na galeria principal
-                if (firstColor.images && firstColor.images.length > 0) {
-                    const firstColorImageCandidate = firstColor.images[0];
-                    const imageInMainGallery = product.images.find((img) => img.id === firstColorImageCandidate.id);
-                    if (imageInMainGallery) {
-                        initialImage = imageInMainGallery; // Atualiza initialImage para a da cor
-                    }
-                }
-            }
-            setSelectedImage(initialImage); // Define a imagem selecionada final
-
-            if (product.sizes && product.sizes.length > 0) {
-                setSelectedSize(product.sizes[0]);
-            }
-
-            // Sincronizar o Swiper principal com a imagem inicial
-            if (mainSwiper && !mainSwiper.destroyed && initialImage) {
-                const initialImageIndex = product.images.findIndex((img) => img.id === initialImage.id);
-                if (initialImageIndex !== -1) {
-                    mainSwiper.slideTo(initialImageIndex, 0); // 0 para sem animação na carga inicial
-                }
+            // Sincronizar o Swiper principal com a imagem inicial da lista exibida
+            if (mainSwiper && !mainSwiper.destroyed) {
+                const initialImageIndex = displayedImages.findIndex((img) => img.id === initialImage.id);
+                mainSwiper.slideTo(initialImageIndex !== -1 ? initialImageIndex : 0, 0);
             }
         }
-    }, [product, mainSwiper]); // Adicionado mainSwiper como dependência para sincronizar após sua inicialização
+    }, [displayedImages, mainSwiper]);
 
     // Função para selecionar uma cor e mostrar a imagem associada
     const handleColorSelect = (color: Color) => {
         setSelectedColor(color);
-
-        let imageToDisplay: Image | undefined = undefined;
-
-        // Se a cor tiver imagens associadas, tente usar a primeira delas
-        if (color.images && color.images.length > 0) {
-            const colorFirstImage = color.images[0];
-            imageToDisplay = product.images.find((img) => img.id === colorFirstImage.id);
-        }
-
-        // Se não encontrou uma imagem específica para a cor ou a cor não tem imagens,
-        // use a imagem principal do produto ou a primeira imagem da galeria.
-        if (!imageToDisplay && product.images && product.images.length > 0) {
-            imageToDisplay = product.images.find((img) => img.is_main) || product.images[0];
-        }
-
-        if (imageToDisplay) {
-            setSelectedImage(imageToDisplay); // Para destacar a miniatura e outros usos
-
-            const imageIndex = product.images.findIndex((img) => img.id === imageToDisplay!.id);
-
-            if (imageIndex !== -1) {
-                // Deslizar o Swiper principal para a imagem
-                if (mainSwiper && !mainSwiper.destroyed) {
-                    mainSwiper.slideTo(imageIndex);
-                }
-                // Também deslizar o Swiper de miniaturas, se existir
-                if (thumbsSwiper && !thumbsSwiper.destroyed) {
-                    (thumbsSwiper as SwiperCore).slideTo(imageIndex);
-                }
-            }
-        }
+        const nextImages = (color.images && color.images.length > 0 ? (color.images as Image[]) : product.images) || [];
+        if (nextImages.length === 0) return;
+        setSelectedImage(nextImages[0]);
+        if (mainSwiper && !mainSwiper.destroyed) mainSwiper.slideTo(0);
+        if (thumbsSwiper && !thumbsSwiper.destroyed) (thumbsSwiper as SwiperCore).slideTo(0);
     };
 
     // Função para abrir o modal de zoom
@@ -295,13 +264,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
         router.visit('/quotation'); // Usando router do Inertia para navegação
     };
 
-    // Função para formatar preço
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-MZ', {
-            style: 'currency',
-            currency: product.currency || 'MZN',
-        }).format(value);
-    };
+    // ...
 
     // Verificar se o produto está em estoque
     const isInStock = product.total_stock > 0; // ATENÇÃO: Considerar estoque da variante
@@ -357,12 +320,12 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     onSwiper={setMainSwiper} // Captura a instância do Swiper principal
                                     onSlideChange={(swiper) => {
                                         // Atualiza selectedImage quando o slide do Swiper principal muda
-                                        if (product.images[swiper.activeIndex]) {
-                                            setSelectedImage(product.images[swiper.activeIndex]);
+                                        if (displayedImages[swiper.activeIndex]) {
+                                            setSelectedImage(displayedImages[swiper.activeIndex]);
                                         }
                                     }}
                                 >
-                                    {product.images.map((img) => (
+                                    {displayedImages.map((img) => (
                                         <SwiperSlide key={img.id} className="cursor-zoom-in !h-[500px]">
                                             <div className="swiper-zoom-container">
                                                 <img
@@ -383,8 +346,8 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     onClick={() => {
                                         const activeImageIndex = mainSwiper ? mainSwiper.activeIndex : -1;
                                         const imageUrlForZoom =
-                                            activeImageIndex !== -1 && product.images[activeImageIndex]
-                                                ? product.images[activeImageIndex].url
+                                            activeImageIndex !== -1 && displayedImages[activeImageIndex]
+                                                ? displayedImages[activeImageIndex].url
                                                 : selectedImage?.url;
 
                                         if (imageUrlForZoom) {
@@ -397,7 +360,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                 </button>
                             </div>
 
-                            {product.images.length > 1 && (
+                            {displayedImages.length > 1 && (
                                 <Swiper
                                     modules={[Navigation, Thumbs]}
                                     watchSlidesProgress
@@ -406,7 +369,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     onSwiper={setThumbsSwiper}
                                     className="product-thumbs-swiper"
                                 >
-                                    {product.images.map((img, index) => (
+                                    {displayedImages.map((img, index) => (
                                         <SwiperSlide key={img.id} className="cursor-pointer">
                                             <div
                                                 className={`flex aspect-square overflow-hidden rounded-md border transition-all duration-150 ${selectedImage?.id === img.id ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-1' : 'border-slate-200 hover:border-orange-400'} `}
@@ -437,9 +400,18 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                         {/* Informações do Produto e Ações */}
                         <div className="space-y-6">
                             <div>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap items-center gap-3">
                                     {product.brand && (
-                                        <p className="text-sm font-semibold tracking-wide text-orange-600 uppercase">{product.brand}</p>
+                                        <div className="flex items-center gap-2">
+                                            {product.brand.logo_url && (
+                                                <img
+                                                    src={product.brand.logo_url}
+                                                    alt={product.brand.name}
+                                                    className="h-5 w-5 rounded object-contain"
+                                                />
+                                            )}
+                                            <p className="text-sm font-semibold tracking-wide text-orange-600 uppercase">{product.brand.name}</p>
+                                        </div>
                                     )}
 
                                     <p className="text-sm font-semibold tracking-wide text-zinc-600 uppercase">
@@ -501,6 +473,11 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
 
                             {/* Quantidade e Botões de Ação */}
                             <div className="space-y-4 border-t border-slate-200 pt-4">
+                                {/* Preço por consulta inline */}
+                                <div className="flex items-center gap-2 text-sm text-slate-700">
+                                    <List size={18} className="text-orange-500" />
+                                    <span>Preço por consulta</span>
+                                </div>
                                 <div className="flex items-center gap-4">
                                     <label className="block text-sm font-medium text-slate-700">Quantidade:</label>
                                     <div className="flex items-center rounded-md border border-slate-300">
@@ -562,6 +539,19 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     <Truck size={18} className="text-orange-500" />
                                     <span>Entrega disponível para Maputo cidade e província. Outras regiões sob consulta.</span>
                                 </div>
+                                {product.description_pdf_url && (
+                                    <div className="flex items-center gap-2">
+                                        <FileText size={18} className="text-blue-600" />
+                                        <a
+                                            href={product.description_pdf_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline"
+                                        >
+                                            Ver ficha técnica (PDF)
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -620,6 +610,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                         Especificações
                                     </button>
                                 )}
+
                             </nav>
                         </div>
 
@@ -669,6 +660,8 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     </table>
                                 </div>
                             )}
+
+                            {/* Preço por consulta (removido das abas; agora aparece na área de ações) */}
                         </div>
                     </div>
                 </div>

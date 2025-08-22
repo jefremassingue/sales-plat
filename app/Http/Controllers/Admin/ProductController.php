@@ -44,7 +44,7 @@ class ProductController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $query = Product::query()
-            ->with('mainImage.versions', 'category');
+            ->with('mainImage.versions', 'category', 'brand');
 
         // Filtros
         if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
@@ -77,10 +77,12 @@ class ProductController extends Controller implements HasMiddleware
 
         $products = $query->paginate(15)->withQueryString();
         $categories = Category::all();
+        $brands = \App\Models\Brand::all();
 
         return Inertia::render('Admin/Products/Index', [
             'products' => $products,
             'categories' => $categories,
+            'brands' => $brands,
             'filters' => $request->only(['search', 'category_id', 'active', 'sort_field', 'sort_order'])
         ]);
     }
@@ -93,9 +95,11 @@ class ProductController extends Controller implements HasMiddleware
         $categories = Category::whereNull('parent_id')->with('subcategories')->get();
         $units = UnitEnum::toArray();
 
+        $brands = \App\Models\Brand::all();
         return Inertia::render('Admin/Products/Create', [
             'categories' => $categories,
-            'units' => $units
+            'units' => $units,
+            'brands' => $brands
         ]);
     }
 
@@ -131,9 +135,10 @@ class ProductController extends Controller implements HasMiddleware
                 // 'featured' => 'boolean',
                 'certification' => 'nullable|string|max:255',
                 'warranty' => 'nullable|string|max:255',
-                'brand' => 'nullable|string|max:255',
+                'brand_id' => 'nullable|exists:brands,id',
                 'origin_country' => 'nullable|string|max:100',
                 'currency' => 'nullable|string|size:3',
+                'description_pdf' => 'nullable|file|mimes:pdf|max:10240',
                 'images.*' => 'nullable|image|max:2048',
                 'main_image' => 'nullable|integer',
                 'colors' => 'nullable|array',
@@ -193,6 +198,17 @@ class ProductController extends Controller implements HasMiddleware
                 // Criar o produto
                 $product = Product::create($data);
 
+                // Guardar PDF de descrição (opcional)
+                if ($request->hasFile('description_pdf')) {
+                    try {
+                        $pdfPath = $request->file('description_pdf')->store('products/pdfs', 'public');
+                        $product->description_pdf = $pdfPath;
+                        $product->save();
+                    } catch (\Exception $e) {
+                        throw new \Exception('Erro ao carregar PDF da descrição: ' . $e->getMessage());
+                    }
+                }
+
                 // Processar cores
                 $colorIds = [];
                 if ($request->has('colors') && is_array($request->colors)) {
@@ -251,7 +267,6 @@ class ProductController extends Controller implements HasMiddleware
 
                 // Processar variantes
                 if ($request->has('variants') && is_array($request->variants)) {
-                    dd($request->variants);
                     foreach ($request->variants as $index => $variantData) {
                         try {
                             $colorId = null;
@@ -382,7 +397,8 @@ class ProductController extends Controller implements HasMiddleware
             'variants',
             'variants.color',
             'variants.size',
-            'inventories.warehouse' // Adicionar esta linha
+            'inventories.warehouse',
+            'brand'
         ]);
 
         return Inertia::render('Admin/Products/Show', [
@@ -403,16 +419,19 @@ class ProductController extends Controller implements HasMiddleware
             'attributes',
             'variants',
             'variants.color',
-            'variants.size'
+            'variants.size',
+            'brand'
         ]);
 
         $categories = Category::whereNull('parent_id')->with('subcategories')->get();
         $units = UnitEnum::toArray();
 
+        $brands = \App\Models\Brand::all();
         return Inertia::render('Admin/Products/Edit', [
             'units' => $units,
             'product' => $product,
-            'categories' => $categories
+            'categories' => $categories,
+            'brands' => $brands
         ]);
     }
 
@@ -451,9 +470,11 @@ class ProductController extends Controller implements HasMiddleware
                 // 'featured' => 'boolean',
                 'certification' => 'nullable|string|max:255',
                 'warranty' => 'nullable|string|max:255',
-                'brand' => 'nullable|string|max:255',
+                'brand_id' => 'nullable|exists:brands,id',
                 'origin_country' => 'nullable|string|max:100',
                 'currency' => 'nullable|string|size:3',
+                'description_pdf' => 'nullable|file|mimes:pdf|max:10240',
+                'remove_description_pdf' => 'nullable|in:1,true,on',
                 'images.*' => 'nullable|image|max:2048',
                 'main_image' => 'nullable|integer',
                 // Arrays para atualizações
@@ -522,6 +543,29 @@ class ProductController extends Controller implements HasMiddleware
 
                 // Atualizar o produto
                 $product->update($data);
+
+                // Remover PDF existente se solicitado
+                if ($request->boolean('remove_description_pdf')) {
+                    if ($product->description_pdf) {
+                        try { Storage::disk('public')->delete($product->description_pdf); } catch (\Throwable $e) { /* ignore */ }
+                    }
+                    $product->description_pdf = null;
+                    $product->save();
+                }
+
+                // Substituir/Carregar novo PDF
+                if ($request->hasFile('description_pdf')) {
+                    try {
+                        if ($product->description_pdf) {
+                            try { Storage::disk('public')->delete($product->description_pdf); } catch (\Throwable $e) { /* ignore */ }
+                        }
+                        $pdfPath = $request->file('description_pdf')->store('products/pdfs', 'public');
+                        $product->description_pdf = $pdfPath;
+                        $product->save();
+                    } catch (\Exception $e) {
+                        throw new \Exception('Erro ao carregar PDF da descrição: ' . $e->getMessage());
+                    }
+                }
 
                 // Processar cores
                 $colorIds = [];
@@ -1026,7 +1070,7 @@ class ProductController extends Controller implements HasMiddleware
                         $inventory->expiry_date = $item['expiry_date'] ?? null;
                         $inventory->status = $item['status'] ?? 'active';
                         $inventory->notes = $item['notes'] ?? null;
-                        $inventory->user_id = auth()->id();
+                        $inventory->user_id = Auth::id();
                         $inventory->save();
 
                         // Se a quantidade foi alterada, criar um ajuste automático
@@ -1048,7 +1092,7 @@ class ProductController extends Controller implements HasMiddleware
                                 'reason' => 'Ajuste automático devido a edição de inventário',
                                 'notes' => 'Este ajuste foi gerado automaticamente pelo sistema quando a quantidade foi alterada de ' .
                                     $oldQuantity . ' para ' . $newQuantity . ' na gestão de inventário.',
-                                'user_id' => auth()->id(),
+                                'user_id' => Auth::id(),
                             ]);
 
                             $adjustment->save();
@@ -1068,7 +1112,7 @@ class ProductController extends Controller implements HasMiddleware
                             'expiry_date' => $item['expiry_date'] ?? null,
                             'status' => $item['status'] ?? 'active',
                             'notes' => $item['notes'] ?? null,
-                            'user_id' => auth()->id(),
+                            'user_id' => Auth::id(),
                         ]);
 
                         // Criar um ajuste de inventário para o stock inicial
@@ -1081,7 +1125,7 @@ class ProductController extends Controller implements HasMiddleware
                                 'supplier_id' => null,
                                 'reason' => 'Stock inicial criado pelo sistema',
                                 'notes' => 'Este ajuste foi gerado automaticamente ao criar um novo registo de inventário.',
-                                'user_id' => auth()->id(),
+                                'user_id' => Auth::id(),
                             ]);
 
                             $adjustment->save();

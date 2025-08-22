@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\Brand;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,7 +20,7 @@ class ProductController extends Controller
         $productsQuery = Product::query()
             ->where('active', true)
             ->whereHas('ecommerce_inventory')
-            ->with(['category', 'images', 'mainImage', 'ecommerce_inventory']);
+            ->with(['category', 'images', 'mainImage', 'ecommerce_inventory', 'brand']);
 
         // Aplicar filtros se existirem
         if ($request->has('categories') && !empty($request->categories)) {
@@ -32,7 +33,8 @@ class ProductController extends Controller
         }
 
         if ($request->has('brands') && !empty($request->brands)) {
-            $productsQuery->whereIn('brand', $request->brands);
+            $brandIds = is_array($request->brands) ? $request->brands : [$request->brands];
+            $productsQuery->whereIn('brand_id', $brandIds);
         }
 
         if ($request->has('price_min') && is_numeric($request->price_min)) {
@@ -77,7 +79,7 @@ class ProductController extends Controller
         // Usar Inertia com Deferred Props para carregamento mais eficiente
         return Inertia::render('Site/Products/Index', [
             // Dados de produtos carregados de forma adiada (lazy)
-            'products' => $productsQuery->paginate(12)->through(function ($product) {
+        'products' => $productsQuery->paginate(12)->through(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -89,22 +91,23 @@ class ProductController extends Controller
                         'name' => $product->category->name,
                     ] : null,
                     'main_image' => $product->mainImage,
-                    'brand' => $product->brand,
+            'brand' => optional($product->brand)->name,
                     'isNew' => $product->created_at->diffInDays(now()) < 30,
                 ];
             }),
 
             // Marcas populares (também carregadas de forma adiada)
-            'brands' => Product::select('brand')
-                ->whereNotNull('brand')
-                ->whereHas('ecommerce_inventory')
-                ->distinct()
-                ->get()
-                ->pluck('brand')
+            'brands' => Brand::query()
+                ->whereHas('products', function ($q) {
+                    $q->where('active', true)
+                        ->whereHas('ecommerce_inventory');
+                })
+                ->orderBy('name')
+                ->get(['id', 'name'])
                 ->map(function ($brand) {
                     return [
-                        'id' => strtolower(str_replace(' ', '-', $brand)),
-                        'name' => $brand,
+                        'id' => $brand->id,
+                        'name' => $brand->name,
                     ];
                 }),
 
@@ -118,7 +121,7 @@ class ProductController extends Controller
      */
     public function show(string $id)
     {
-        $product = Product::where('slug', $id)
+        $product = Product::where(fn($query) => $query->where('id', $id)->orWhere('slug', $id))
             // ->whereHas('ecommerce_inventory')
             ->firstOrFail()
             ?->makeHidden(['price', 'created_at', 'updated_at', 'old_price']);
@@ -128,32 +131,33 @@ class ProductController extends Controller
             'images.versions',
             // 'images.colors',
             'mainImage.versions',
-            'colors.images',
+            'colors.images.versions',
             'sizes',
             'attributes',
             'variants',
             'variants.color',
             'variants.size',
-            'inventories.warehouse' // Adicionar esta linha
+            'inventories.warehouse', // Adicionar esta linha
+            'brand'
         ]);
 
         // $product->price = $product->ecommerce_inventory->unit_cost ?? $product->price;
         // $product->old_price = $product->ecommerce_inventory->old_cost ?? $product->old_price;
 
         // Buscar produtos relacionados
-        $relatedProducts = Product::where('id', '!=', $product->id)
+    $relatedProducts = Product::where('id', '!=', $product->id)
             // ->whereHas('ecommerce_inventory')
             ->where(function ($query) use ($product) {
                 // Produtos da mesma categoria
                 $query->where('category_id', $product->category_id);
 
                 // Ou produtos com a mesma marca, se existir
-                if ($product->brand) {
-                    $query->orWhere('brand', $product->brand);
+        if ($product->brand_id) {
+            $query->orWhere('brand_id', $product->brand_id);
                 }
             })
             ->where('active', true)
-            ->with(['category', 'images'])
+        ->with(['category', 'images', 'brand'])
             ->inRandomOrder()
             ->limit(5)
             ->get()
@@ -169,7 +173,7 @@ class ProductController extends Controller
                         'name' => $relatedProduct->category->name,
                     ] : null,
                     'main_image' => $relatedProduct->images->first(),
-                    'brand' => $relatedProduct->brand,
+                    'brand' => optional($relatedProduct->brand)->name,
                     'isNew' => $relatedProduct->created_at->diffInDays(now()) < 30,
                 ];
             });

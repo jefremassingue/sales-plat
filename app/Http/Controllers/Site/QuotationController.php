@@ -19,6 +19,8 @@ class QuotationController extends Controller
 {
     public function store(Request $request)
     {
+
+        // dd('dd');
         $validator = Validator::make($request->all(), [
             'fullName' => 'required|string|min:3|max:100',
             'companyName' => 'nullable|string|max:150',

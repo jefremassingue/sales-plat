@@ -94,6 +94,12 @@ interface Inventory {
     quantity: number;
 }
 
+interface Brand {
+    id: number;
+    name: string;
+    logo_url?: string;
+}
+
 interface Product {
     id: number;
     name: string;
@@ -112,9 +118,11 @@ interface Product {
     featured: boolean;
     certification: string | null;
     warranty: string | null;
-    brand: string | null;
+    brand_id?: number | null;
+    brand?: Brand | null;
     origin_country: string | null;
     currency: string;
+    description_pdf_url?: string | null;
     created_at: string;
     updated_at: string;
     category: Category;
@@ -412,9 +420,23 @@ export default function Show({ product }: Props) {
                                 <Separator />
 
                                 {product.brand && (
-                                    <div>
+                                    <div className="flex items-center gap-2">
                                         <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Marca</h3>
-                                        <p>{product.brand}</p>
+                                        {product.brand.logo_url && (
+                                            <img src={product.brand.logo_url} alt={product.brand.name} className="h-6 w-6 rounded-full border" />
+                                        )}
+                                        <span>{product.brand.name}</span>
+                                    </div>
+                                )}
+                                {product.description_pdf_url && (
+                                    <div className="flex items-center gap-2">
+                                        <File className="text-primary h-4 w-4" />
+                                        <div>
+                                            <h3 className="text-sm font-medium">Ficha técnica (PDF)</h3>
+                                            <a href={product.description_pdf_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline">
+                                                Ver/Transferir PDF
+                                            </a>
+                                        </div>
                                     </div>
                                 )}
                                 {product.certification && (

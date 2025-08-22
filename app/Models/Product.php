@@ -17,6 +17,7 @@ class Product extends Model
         'name',
         'slug',
         'description',
+        'description_pdf',
         'technical_details',
         'features',
         'price',
@@ -29,11 +30,18 @@ class Product extends Model
         'featured',
         'certification',
         'warranty',
-        'brand',
+        'brand_id',
         'origin_country',
         'currency',
         'unit'
     ];
+    /**
+     * Relação com a marca
+     */
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
 
     protected $casts = [
         'price' => 'float',
@@ -44,7 +52,7 @@ class Product extends Model
         'unit' => UnitEnum::class,
     ];
 
-    protected $appends = ['total_stock', 'inventory_price'];
+    protected $appends = ['total_stock', 'inventory_price', 'description_pdf_url'];
 
     /**
      * Gera automaticamente um slug ao criar o produto
@@ -200,5 +208,16 @@ class Product extends Model
     public function getUnitLabelAttribute(): string
     {
         return $this->unit ? $this->unit->label() : UnitEnum::UNIT->label();
+    }
+
+    /**
+     * Retorna a URL do PDF da descrição, se existir
+     */
+    public function getDescriptionPdfUrlAttribute()
+    {
+        if ($this->description_pdf) {
+            return asset('files/' . $this->description_pdf);
+        }
+        return null;
     }
 }

@@ -33,7 +33,8 @@ interface Category {
 
 interface Props {
     categories: Category[];
-    units: { value: string; label: string }[]; // Adicionado array de unidades
+    units: { value: string; label: string }[];
+    brands: { id: number; name: string; logo_url?: string }[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -51,12 +52,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Create({ categories, units }: Props) {
+export default function Create({ categories, units, brands }: Props) {
     const [activeTab, setActiveTab] = useState('basic');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [description, setDescription] = useState('');
     const [technicalDetails, setTechnicalDetails] = useState('');
     const [features, setFeatures] = useState('');
+    const [descriptionPdfFile, setDescriptionPdfFile] = useState<File | null>(null);
 
     // Estados para itens relacionados
     const [colors, setColors] = useState<ProductColor[]>([]);
@@ -102,10 +104,10 @@ export default function Create({ categories, units }: Props) {
         featured: false,
         certification: '',
         warranty: '',
-        brand: '',
+        brand_id: '',
         origin_country: 'Moçambique',
         currency: 'MZN',
-        unit: units && units.length > 0 ? units[0].value : '', // Definir a primeira unidade por padrão
+        unit: units && units.length > 0 ? units[0].value : '',
     });
 
     // Verificar se há erros e mudar para a aba correspondente
@@ -420,6 +422,11 @@ export default function Create({ categories, units }: Props) {
             formData.append('technical_details', technicalDetails);
             formData.append('features', features);
 
+            // PDF da descrição (opcional)
+            if (descriptionPdfFile) {
+                formData.append('description_pdf', descriptionPdfFile);
+            }
+
             // Cores
             colors.forEach((color, index) => {
                 formData.append(`colors[${index}][_tempId]`, color._tempId);
@@ -596,6 +603,7 @@ export default function Create({ categories, units }: Props) {
                                             errors={errors}
                                             categories={categories}
                                             units={units}
+                                            brands={brands}
                                         />
                                     </TabsContent>
 
@@ -609,6 +617,8 @@ export default function Create({ categories, units }: Props) {
                                             features={features}
                                             setFeatures={setFeatures}
                                             errors={errors}
+                                            descriptionPdfFile={descriptionPdfFile}
+                                            setDescriptionPdfFile={setDescriptionPdfFile}
                                         />
                                     </TabsContent>
 

@@ -13,7 +13,7 @@ export const hasTabErrors = (tab: string, errors: Record<string, string>): boole
             return !!errors.name || !!errors.slug || !!errors.price || !!errors.sku
                 || !!errors.category_id || !!errors.stock || !!errors.weight;
         case 'description':
-            return !!errors.description || !!errors.technical_details || !!errors.features;
+            return !!errors.description || !!errors.technical_details || !!errors.features || !!errors.description_pdf;
         case 'attributes':
             return !!errors.attributes;
         case 'variants':

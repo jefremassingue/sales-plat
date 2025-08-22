@@ -23,6 +23,8 @@ use Inertia\Inertia;
 
 
 Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admin')->name('admin.')->group(function () {
+    // Rotas para marcas
+    Route::resource('brands', \App\Http\Controllers\Admin\BrandController::class);
     Route::get('categories/tree', [CategoryController::class, 'tree'])->name('categories.tree');
     Route::resource('categories', CategoryController::class);
     Route::resource('blog-categories', BlogCategoryController::class);

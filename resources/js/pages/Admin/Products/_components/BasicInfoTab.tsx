@@ -26,6 +26,14 @@ interface Category {
     subcategories: Category[];
 }
 
+import BrandSelect from './BrandSelect';
+
+interface Brand {
+    id: number;
+    name: string;
+    logo_url?: string;
+}
+
 interface BasicInfoTabProps {
     data: {
         name: string;
@@ -40,20 +48,21 @@ interface BasicInfoTabProps {
         featured: boolean;
         certification: string;
         warranty: string;
-        brand: string;
+        brand_id: string | null;
         origin_country: string;
         currency: string;
-        unit: string; // Adicionado campo unit
+        unit: string;
     };
     setData: (key: string, value: any) => void;
     errors: Record<string, string>;
     categories: Category[];
-    units: { value: string; label: string }[]; // Adicionado array de unidades
+    units: { value: string; label: string }[];
+    brands: Brand[];
     isEditing?: boolean;
     productId?: number;
 }
 
-export default function BasicInfoTab({ data, setData, errors, categories, units, isEditing = false, productId }: BasicInfoTabProps) {
+export default function BasicInfoTab({ data, setData, errors, categories, units, brands, isEditing = false, productId }: BasicInfoTabProps) {
     // Efeito para formatar o slug quando o nome mudar
     useEffect(() => {
         if (data.name && (!data.slug || data.slug === '')) {
@@ -177,15 +186,12 @@ export default function BasicInfoTab({ data, setData, errors, categories, units,
                     </p>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="brand">Marca</Label>
-                    <Input
-                        id="brand"
-                        value={data.brand}
-                        onChange={(e) => setData('brand', e.target.value)}
-                        placeholder="Ex: 3M, MSA, Honeywell"
-                    />
-                </div>
+                <BrandSelect
+                    value={data.brand_id ?? ''}
+                    onChange={(value) => setData('brand_id', value)}
+                    brands={brands}
+                    error={errors.brand_id}
+                />
 
                 <div className="space-y-2">
                     <Label htmlFor="price" className="required">Preço (MZN) *</Label>

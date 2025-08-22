@@ -64,7 +64,7 @@ const mainNavItems = [
         ],
     },
     {
-        permissions: ['admin-category.index', 'admin-product.index', 'admin-inventory.index'],
+        permissions: ['admin-category.index', 'admin-product.index', 'admin-inventory.index', 'admin-brand.index'],
         group: 'Produtos',
         items: [
             {
@@ -80,6 +80,13 @@ const mainNavItems = [
                 icon: Tag,
                 activeRoutes: ['admin.products.index', 'admin.products.create', 'admin.products.edit', 'admin.products.show'],
                 permission: 'admin-product.index',
+            },
+            {
+                title: 'Marcas',
+                href: '/admin/brands',
+                icon: Tag,
+                activeRoutes: ['admin.brands.index', 'admin.brands.create', 'admin.brands.edit', 'admin.brands.show'],
+                permission: 'admin-brand.index',
             },
             {
                 title: 'Inventário',
