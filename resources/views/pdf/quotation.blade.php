@@ -516,7 +516,7 @@
                                         <td style=""><span style="font-weight: bold; color: #313131;">NIB:</span>
                                         </td>
                                         <td style="padding-left: 16px" colspan="3">
-                                            000800001610592910128</td>
+                                            0008 0000 16105929101 28</td>
                                     </tr>
 
 
