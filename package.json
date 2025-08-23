@@ -78,6 +78,7 @@
         "react-dom": "^19.0.0",
         "react-hook-form": "^7.56.1",
         "react-image-magnify": "^2.7.4",
+        "react-simple-wysiwyg": "^3.4.0",
         "slate": "^0.114.0",
         "slate-dom": "^0.117.4",
         "slate-history": "^0.113.1",
