@@ -1,8 +1,13 @@
-// src/components/HeroSlider.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Circle, Dot } from 'lucide-react'; // Usaremos Dot para o indicador ativo
+import { ChevronLeft, ChevronRight, Circle, Dot } from 'lucide-react';
+import { HeroSlider as HeroSliderType } from '@/types';
 
-const HeroSlider = ({ slides = [], autoplayInterval = 5000 }) => {
+interface HeroSliderProps {
+  slides: HeroSliderType[];
+  autoplayInterval?: number;
+}
+
+const HeroSlider = ({ slides = [], autoplayInterval = 5000 }: HeroSliderProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -14,14 +19,14 @@ const HeroSlider = ({ slides = [], autoplayInterval = 5000 }) => {
     setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
 
-  const goToSlide = (index) => {
+  const goToSlide = (index: number) => {
     setCurrentSlide(index);
   };
 
   useEffect(() => {
     if (autoplayInterval && !isPaused && slides.length > 1) {
       const timer = setInterval(nextSlide, autoplayInterval);
-      return () => clearInterval(timer); // Limpa o timer ao desmontar ou quando isPaused/autoplayInterval mudar
+      return () => clearInterval(timer);
     }
   }, [nextSlide, autoplayInterval, isPaused, slides.length]);
 
@@ -29,9 +34,7 @@ const HeroSlider = ({ slides = [], autoplayInterval = 5000 }) => {
     return <div className="text-center py-10">Sem slides para exibir.</div>;
   }
 
-  const activeSlide = slides[currentSlide];
-
-  const getTextAlignment = (position) => {
+  const getTextAlignment = (position: string) => {
     switch (position) {
       case 'left': return 'items-start text-left';
       case 'right': return 'items-end text-right';
@@ -42,27 +45,24 @@ const HeroSlider = ({ slides = [], autoplayInterval = 5000 }) => {
 
   return (
     <div
-      className="relative w-full h-[60vh] md:h-[70vh] lg:h-[80vh] max-h-[500px] lg:rounded-2xl overflow-hidden group" // Altura responsiva e bordas arredondadas
+      className="relative w-full h-[60vh] md:h-[70vh] lg:h-[80vh] max-h-[500px] lg:rounded-2xl overflow-hidden rounded-2xl group"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Slides Container */}
       <div className="w-full h-full">
         {slides.map((slide, index) => (
           <div
             key={slide.id}
             className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
             <img
-              src={slide.image_url}
+              src={slide.image_url || ''}
               alt={slide.title}
               className="w-full h-full object-cover"
             />
-            {/* Overlay */}
             {slide.overlay_color && slide.overlay_color !== 'none' && (
               <div className={`absolute inset-0 ${slide.overlay_color}`}></div>
             )}
 
-            {/* Content */}
             <div className={`absolute inset-0 flex flex-col justify-center p-4 sm:p-8 md:p-16 lg:p-24 ${getTextAlignment(slide.text_position)} ${slide.text_color}`}>
               {slide.supertitle && (
                 <p className="text-xs sm:text-sm md:text-base font-semibold tracking-wider uppercase mb-1 md:mb-2 opacity-80">
@@ -89,7 +89,6 @@ const HeroSlider = ({ slides = [], autoplayInterval = 5000 }) => {
         ))}
       </div>
 
-      {/* Navigation Buttons */}
       {slides.length > 1 && (
         <>
           <button
@@ -97,19 +96,18 @@ const HeroSlider = ({ slides = [], autoplayInterval = 5000 }) => {
             className="absolute top-1/2 left-2 sm:left-3 md:left-5 transform -translate-y-1/2 z-20 p-1 sm:p-2 bg-black/30 hover:bg-black/50 text-white rounded-full transition-opacity duration-300 opacity-0 group-hover:opacity-100"
             aria-label="Slide Anterior"
           >
-            <ChevronLeft size={24} sm:size={28} />
+            <ChevronLeft size={24} />
           </button>
           <button
             onClick={nextSlide}
             className="absolute top-1/2 right-2 sm:right-3 md:right-5 transform -translate-y-1/2 z-20 p-1 sm:p-2 bg-black/30 hover:bg-black/50 text-white rounded-full transition-opacity duration-300 opacity-0 group-hover:opacity-100"
             aria-label="Próximo Slide"
           >
-            <ChevronRight size={24} sm:size={28} />
+            <ChevronRight size={24} />
           </button>
         </>
       )}
 
-      {/* Slide Indicators */}
       {slides.length > 1 && (
         <div className="absolute bottom-3 sm:bottom-5 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
           {slides.map((_, index) => (
@@ -119,9 +117,9 @@ const HeroSlider = ({ slides = [], autoplayInterval = 5000 }) => {
               aria-label={`Ir para o slide ${index + 1}`}
               className={`p-1 transition-all duration-300 rounded-full ${index === currentSlide ? 'opacity-100' : 'opacity-50 hover:opacity-75'}`}>
               {index === currentSlide ? (
-                 <Dot size={12} sm:size={14} className="text-white bg-orange-600 rounded-full" /> // Ícone ativo maior ou com cor diferente
+                 <Dot size={12} className="text-white bg-orange-600 rounded-full" />
               ) : (
-                <Circle size={8} sm:size={10} className="text-white/70" fill="currentColor" /> // Ícone inativo preenchido
+                <Circle size={8} className="text-white/70" fill="currentColor" />
               )}
             </button>
           ))}

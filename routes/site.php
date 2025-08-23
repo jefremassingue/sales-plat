@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
 
-Route::resource('blog', BlogController::class)->only(['index', 'show']);
+Route::resource('blog', BlogController::class)
+    ->only(['index', 'show'])
+    ->parameters(['blog' => 'slug']);
 Route::resource('products', ProductController::class)->only(['index', 'show']);
 Route::resource('catalogs', SiteCatalogController::class)->only(['index']);
 

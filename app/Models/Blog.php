@@ -28,6 +28,15 @@ class Blog extends Model
         'status' => 'boolean'
     ];
 
+    /**
+     * Extra attributes to be appended when the model is serialized.
+     * These provide aliases expected by the frontend components.
+     */
+    protected $appends = [
+        'blog_category',
+        'author',
+    ];
+
     public function image()
     {
         return $this->morphOne(Image::class, 'typeable');
@@ -47,6 +56,32 @@ class Blog extends Model
      */
     public function category()
     {
-        return $this->belongsTo(BlogCategory::class);
+        return $this->belongsTo(BlogCategory::class, 'blog_category_id');
+    }
+
+    /**
+     * Alias the category relation as blog_category for the frontend.
+     */
+    public function getBlogCategoryAttribute()
+    {
+    return $this->relationLoaded('category') ? $this->getRelation('category') : null;
+    }
+
+    /**
+     * Alias the user relation as author for the frontend.
+     */
+    public function getAuthorAttribute()
+    {
+    return $this->relationLoaded('user') ? $this->getRelation('user') : null;
+    }
+
+    /**
+     * Scope for published blogs (status true and published_at in the past).
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('status', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 }

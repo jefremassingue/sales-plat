@@ -1,16 +1,33 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePage } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
+import { Head, usePage, Link } from '@inertiajs/react';
 import SiteLayout from '@/layouts/site-layout';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { ArrowLeft, Calendar, Tag, Clock, UserCircle, Share2 } from 'lucide-react';
 // import Head from '@/components/head';
 
+type BlogPost = {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt?: string;
+    content: string;
+    published_at?: string | null;
+    read_time?: number | null;
+    blog_category?: { id: string; name: string } | null;
+    category?: { id: string; name: string } | null;
+    author?: { name?: string; avatar?: string | null } | null;
+    image?: {
+        url?: string;
+        versions?: { version: string; url: string }[];
+    } | null;
+};
+
 export default function BlogShowPage() {
-    const { blog, relatedPosts } = usePage().props;
+    type LocalProps = { blog: BlogPost; relatedPosts: BlogPost[] };
+    const { blog, relatedPosts } = usePage().props as unknown as LocalProps;
     const [shareSuccess, setShareSuccess] = useState(false);
 
     const handleShare = () => {
@@ -34,7 +51,7 @@ export default function BlogShowPage() {
 
     return (
         <SiteLayout>
-            {/* <Head title={blog.title} description={blog.excerpt} /> */}
+            <Head title={blog.title} />
 
             {/* Cabeçalho do Artigo */}
             <div className="bg-gradient-to-b from-orange-50 to-white pt-20 pb-10 border-b border-slate-200/70">
@@ -55,13 +72,13 @@ export default function BlogShowPage() {
                     </div>
 
                     <div className="max-w-3xl mx-auto">
-                        {blog.blog_category && (
+            {(blog.blog_category || blog.category) && (
                             <Link
-                                href={`/blog?category_id=${blog.blog_category.id}`}
+                href={`/blog?category_id=${(blog.blog_category?.id ?? blog.category?.id) as string}`}
                                 className="inline-flex items-center bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-sm font-medium mb-4"
                             >
                                 <Tag size={14} className="mr-1.5 opacity-80" />
-                                {blog.blog_category.name}
+                {blog.blog_category?.name ?? blog.category?.name}
                             </Link>
                         )}
 
@@ -115,7 +132,7 @@ export default function BlogShowPage() {
                             <div className="mb-8">
                                 <img
                                     src={
-                                        blog.image?.versions?.find((image) => image.version == 'lg')?.url ||
+                                        blog.image?.versions?.find((image) => image.version === 'lg')?.url ||
                                         blog.image?.url
                                     }
                                     alt={blog.title}
@@ -157,8 +174,8 @@ export default function BlogShowPage() {
                                             <div className="aspect-video overflow-hidden">
                                                 <img
                                                     src={
-                                                        post.image?.versions?.find((image) => image.version == 'sm')?.url ||
-                                                        post.image?.versions?.find((image) => image.version == 'md')?.url ||
+                                                        post.image?.versions?.find((image) => image.version === 'sm')?.url ||
+                                                        post.image?.versions?.find((image) => image.version === 'md')?.url ||
                                                         post.image?.url
                                                     }
                                                     alt={post.title}

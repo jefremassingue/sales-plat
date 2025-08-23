@@ -65,10 +65,22 @@ const featuresData = [
 ];
 
 const faqData: FaqItem[] = [
-    { question: 'Quais são os prazos de entrega?', answer: 'O prazo de entrega varia conforme a sua localidade e a modalidade de frete escolhida. Em geral, para capitais, o prazo é de 3 a 7 dias úteis. Você pode calcular o prazo exato na página do produto ou no carrinho.' },
-    { question: 'Posso trocar um produto?', answer: 'Sim, você pode solicitar a troca do produto em até 7 dias corridos após o recebimento, desde que o produto esteja em perfeitas condições e com a embalagem original. Consulte nossa política de trocas para mais detalhes.' },
-    { question: 'Quais formas de pagamento são aceitas?', answer: 'Aceitamos cartões de crédito (Visa, Mastercard, Elo, Amex), boleto bancário e PIX. O parcelamento no cartão de crédito pode ser feito em até 10x sem juros, dependendo do valor da compra.' },
-    { question: 'Os produtos possuem garantia?', answer: 'Todos os nossos produtos possuem garantia contra defeitos de fabricação. O período de garantia varia conforme o fabricante e o tipo de produto. Verifique a descrição do produto ou entre em contato conosco para informações específicas.' },
+    { 
+        question: 'Quais são os prazos de entrega?', 
+        answer: 'O prazo de entrega varia conforme a província e o tipo de transporte escolhido. Para Maputo, Matola e cidades próximas, normalmente é de 1 a 3 dias úteis. Para outras províncias, pode levar de 5 a 10 dias úteis. Você pode confirmar o prazo exato durante a finalização da compra.' 
+    },
+    { 
+        question: 'Posso trocar um produto?', 
+        answer: 'Sim, pode solicitar a troca em até 7 dias corridos após a recepção, desde que o produto esteja em boas condições e com a embalagem original. Consulte a nossa política de trocas para mais detalhes.' 
+    },
+    { 
+        question: 'Quais formas de pagamento são aceitas?', 
+        answer: 'Aceitamos cartões de crédito e débito (Visa, Mastercard), M-Pesa, E-Mola, e transferência bancária. O parcelamento depende do banco emissor do cartão.' 
+    },
+    { 
+        question: 'Os produtos possuem garantia?', 
+        answer: 'Todos os nossos produtos têm garantia contra defeitos de fabrico. O período da garantia varia conforme o fabricante e o tipo de produto. Verifique na descrição do produto ou contacte-nos para informações específicas.' 
+    },
 ];
 
 // Componente reutilizável para FAQ Item (interno)

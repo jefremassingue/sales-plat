@@ -19,11 +19,8 @@ class BlogController extends Controller
         $categories = BlogCategory::orderBy('name')->get();
 
         // Iniciar a query
-        $query = Blog::with(['category', 'image'])
-            // ->where('published', true)
-            ->whereNotNull('published_at')
-            // ->where('published_at', '<=', now())
-        ;
+        $query = Blog::with(['category', 'image', 'user'])
+            ->published();
 
         // Aplicar filtro por categoria se fornecido
         if ($request->has('category_id') && $request->category_id !== 'all') {
@@ -50,7 +47,7 @@ class BlogController extends Controller
         // Retornar a view com os dados
         return Inertia::render('Site/Blog/Index', [
             'blogs' => $blogs,
-            'categories' => $categories,
+            '_categories' => $categories,
             'filters' => $request->only(['search', 'category_id']),
         ]);
     }
@@ -61,20 +58,16 @@ class BlogController extends Controller
     public function show(Request $request, $slug)
     {
         // Buscar o artigo pelo slug
-        $blog = Blog::with(['category', 'image'])
+        $blog = Blog::with(['category', 'image', 'user'])
             ->where('slug', $slug)
-            // ->where('published', true)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
+            ->published()
             ->firstOrFail();
 
         // Buscar artigos relacionados (da mesma categoria)
-        $relatedPosts = Blog::with(['category', 'image'])
+        $relatedPosts = Blog::with(['category', 'image', 'user'])
             ->where('blog_category_id', $blog->blog_category_id)
             ->where('id', '!=', $blog->id) // Excluir o artigo atual
-            ->where('published', true)
-            ->whereNotNull('published_at')
-            ->where('published_at', '<=', now())
+            ->published()
             ->orderBy('published_at', 'desc')
             ->limit(3)
             ->get();

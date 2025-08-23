@@ -3,24 +3,39 @@
 
 import React, { useState, useEffect } from 'react';
 import SiteLayout from '@/layouts/site-layout';
-import { usePage } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
-import {
-    Tag, Calendar, ArrowRight, Search, ListFilter, Newspaper, Clock, UserCircle, Filter, SearchX
-} from 'lucide-react';
+import { Head, usePage, Link, router } from '@inertiajs/react';
+import { Tag, Calendar, Search, Newspaper, Clock, UserCircle, Filter, SearchX } from 'lucide-react';
+import { format } from 'date-fns';
 
 // --- Componente Interno Reutilizável para Card do Post ---
-const BlogPostCard = ({ post }: any) => (
-    <a
+type BlogPost = {
+    id: string;
+    slug: string;
+    title: string;
+    excerpt?: string;
+    published_at?: string | null;
+    read_time?: number | null;
+    blog_category?: { id: string; name: string } | null;
+    category?: { id: string; name: string } | null;
+    author?: { name?: string; avatar?: string | null } | null;
+    image?: {
+        url?: string;
+        versions?: { version: string; url: string }[];
+    } | null;
+};
+
+const BlogPostCard = ({ post }: { post: BlogPost }) => (
+    <Link
         href={`/blog/${post.slug}`}
+        preserveScroll
         className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-lg flex flex-col transition-all duration-300 hover:-translate-y-0.5"
     >
         {/* Imagem com Aspect Ratio Consistente */}
         <div className="aspect-video overflow-hidden">
             <img
                 src={
-                    post.image?.versions?.find((image) => image.version == 'md')?.url ||
-                    post.image?.versions?.find((image) => image.version == 'lg')?.url ||
+                    post.image?.versions?.find((image) => image.version === 'md')?.url ||
+                    post.image?.versions?.find((image) => image.version === 'lg')?.url ||
                     post.image?.url ||
                     '/og-image.png' // Imagem placeholder
                 }
@@ -32,7 +47,7 @@ const BlogPostCard = ({ post }: any) => (
             {/* Metadata Superior (Categoria e Data) */}
             <div className="mb-3 flex items-center justify-between text-xs text-slate-500">
                 <span className="inline-flex items-center bg-orange-50 text-orange-700 px-2.5 py-1 rounded-full font-medium">
-                    <Tag size={12} className="mr-1.5 opacity-80" /> {post.blog_category?.name || 'Sem categoria'}
+                    <Tag size={12} className="mr-1.5 opacity-80" /> {(post.blog_category?.name ?? post.category?.name) || 'Sem categoria'}
                 </span>
                 <span className="inline-flex items-center">
                     <Calendar size={12} className="mr-1.5 opacity-80" /> {post.published_at ? new Date(post.published_at).toLocaleDateString('pt-BR', {
@@ -61,16 +76,26 @@ const BlogPostCard = ({ post }: any) => (
                     <span className="font-medium text-slate-600">{post.author?.name || 'Equipe EPI Segura'}</span>
                 </div>
                 <span className="inline-flex items-center">
-                    <Clock size={12} className="mr-1.5 opacity-80" /> {post.read_time || 5} min leitura
+                    <Clock size={12} className="mr-1.5 opacity-80" /> {format(post.published_at || post.created_at, 'PPp')}
                 </span>
             </div>
         </div>
-    </a>
+    </Link>
 );
 
 // --- Componente Principal da Página do Blog ---
 export default function BlogIndexPage() {
-    const { blogs, categories, filters } = usePage().props;
+    type Category = { id: string; name: string };
+    type LocalProps = {
+        blogs: {
+            data: BlogPost[];
+            links?: { url: string | null; label: string; active: boolean }[];
+        };
+        _categories: Category[];
+        filters: { search?: string; category_id?: string };
+    };
+
+    const { blogs, _categories, filters } = usePage().props as unknown as LocalProps;
 
     const [selectedCategory, setSelectedCategory] = useState(filters.category_id || 'all');
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
@@ -91,7 +116,7 @@ export default function BlogIndexPage() {
             return;
         }
 
-        const params = {};
+        const params: Record<string, string> = {};
         if (debouncedSearchTerm) params.search = debouncedSearchTerm;
         if (selectedCategory !== 'all') params.category_id = selectedCategory;
 
@@ -100,13 +125,13 @@ export default function BlogIndexPage() {
             replace: true,
             preserveScroll: true
         });
-    }, [debouncedSearchTerm, selectedCategory]);
+    }, [debouncedSearchTerm, selectedCategory, filters.search, filters.category_id]);
 
-    const handleSearchChange = (event) => {
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
     };
 
-    const handleCategoryChange = (categoryId) => {
+    const handleCategoryChange = (categoryId: string) => {
         setSelectedCategory(categoryId);
     };
 
@@ -116,18 +141,21 @@ export default function BlogIndexPage() {
     };
 
     // Adicionar categoria "Todos" ao início da lista
-    const allCategories = [
+    type CategoryItem = { id: string; name: string; icon?: React.ReactNode };
+    const allCategories: CategoryItem[] = [
         { id: 'all', name: 'Todos', icon: <Filter size={14} className="mr-1.5" /> },
-        ...categories
+        ..._categories.map((c) => ({ id: c.id, name: c.name })),
     ];
 
     return (
         <SiteLayout>
+
+            <Head title='Blog' />
             {/* Cabeçalho da Página do Blog */}
             <section className="bg-gradient-to-b from-orange-50 to-white pt-20 pb-16 border-b border-slate-200/70">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
                     <Newspaper size={48} className="text-orange-500 mx-auto mb-4 opacity-90" />
-                    <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3 tracking-tight">Blog EPI Segura</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3 tracking-tight">Blog</h1>
                     <p className="text-lg text-slate-600 max-w-2xl mx-auto">
                         Informação e conhecimento para um ambiente de trabalho mais seguro.
                     </p>
@@ -179,8 +207,8 @@ export default function BlogIndexPage() {
                     {blogs.data.length > 0 ? (
                         <>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                                {blogs.data.map(post => (
-                                    <BlogPostCard key={post.id} post={post} />
+                                {blogs.data.map((post: BlogPost) => (
+                                    <BlogPostCard key={post.id} post={post as BlogPost} />
                                 ))}
                             </div>
 
@@ -188,21 +216,18 @@ export default function BlogIndexPage() {
                             {blogs.links && blogs.links.length > 3 && (
                                 <div className="mt-12 flex justify-center">
                                     <nav className="flex items-center space-x-1">
-                                        {blogs.links.map((link, index) => {
+                                        {blogs.links!.map((link: { url: string | null; label: string; active: boolean }, index: number) => {
                                             // Ignorar os links "prev" e "next"
                                             if (link.label === "&laquo; Previous" || link.label === "Next &raquo;") {
                                                 return null;
                                             }
 
                                             return (
-                                                <a
+                                                <Link
                                                     key={index}
-                                                    href={link.url}
-                                                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors
-                                                        ${link.active
-                                                            ? 'bg-orange-600 text-white'
-                                                            : 'bg-white text-slate-700 hover:bg-slate-100'
-                                                        }`}
+                                                    href={link.url || '#'}
+                                                    preserveScroll
+                                                    className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${link.active ? 'bg-orange-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}`}
                                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                                 />
                                             );

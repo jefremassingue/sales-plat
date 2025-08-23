@@ -76,6 +76,7 @@ class HeroSliderController extends Controller
             'order' => 'required|integer',
             'image' => 'nullable|image',
         ]);
+        
 
         $heroSlider->update($data);
 
