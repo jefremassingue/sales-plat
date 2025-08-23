@@ -119,8 +119,8 @@ class HomeController extends Controller
                     'title' => $b->title,
                     'date' => optional($b->published_at)->format('d \d\e F, Y'),
                     'excerpt' => $b->excerpt ?? str($b->content)->limit(120),
-                    'imageUrl' => $b->featured_image ?: ($b->image?->path ?? 'https://picsum.photos/seed/blog_'.$b->id.'/400/250'),
                     'link' => '/blog/'.$b->slug,
+                    'image' => $b->image,
                     'category' => $b->category?->name,
                     'author' => $b->user?->name,
                 ]);
