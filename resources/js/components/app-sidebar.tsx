@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Building, Calculator, LayoutGrid, ListTree, Package, Settings, Shield, ShoppingCart, Tag, User, UserCog, Warehouse } from 'lucide-react';
+import { Building, Calculator, LayoutGrid, ListTree, Package, Settings, Shield, ShoppingCart, Tag, User, UserCog, Warehouse, BookOpen } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems = [
@@ -119,6 +119,19 @@ const mainNavItems = [
                 icon: Tag,
                 activeRoutes: ['admin.blog.index', 'admin.blog.create', 'admin.blog.edit', 'admin.blog.show'],
                 permission: 'admin-blog.index',
+            },
+        ],
+    },
+    {
+        permissions: ['admin-catalog.index'],
+        group: 'Marketing',
+        items: [
+            {
+                title: 'Catálogos',
+                href: '/admin/catalogs',
+                icon: BookOpen,
+                activeRoutes: ['admin.catalogs.index', 'admin.catalogs.create', 'admin.catalogs.edit'],
+                permission: 'admin-catalog.index',
             },
         ],
     },

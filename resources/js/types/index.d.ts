@@ -65,6 +65,24 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface Catalog {
+    id: number;
+    title: string;
+    slug: string;
+    description: string | null;
+    cover: string | null;
+    cover_url: string | null;
+    file: string;
+    file_url: string | null;
+    status: 'available' | 'unavailable';
+    version: string | null;
+    publish_year: number | null;
+    user_id: number | null;
+    user?: User;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Product {
     id: string;
     name: string;
