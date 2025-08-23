@@ -108,7 +108,7 @@ class HomeController extends Controller
 
         // Posts de blog recentes (cache)
         $blogPosts = Cache::remember('home:blog_posts', now()->addMinutes(30), function () {
-            return Blog::with(['category', 'user'])
+            return Blog::with(['category', 'user', 'image.versions'])
                 ->where('status', true)
                 ->whereNotNull('published_at')
                 ->orderByDesc('published_at')
