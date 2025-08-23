@@ -256,7 +256,7 @@
 }
 
 .dark .rsw-btn {
-    @apply !text-zinc-200;
+    @apply !text-zinc-200 hover:bg-zinc-700;
 }
 .dark .rsw-toolbar {
     @apply !bg-zinc-900 !border-zinc-700;
