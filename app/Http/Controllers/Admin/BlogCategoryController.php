@@ -92,7 +92,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
 
         $allCategories = $allCategoriesQuery->orderBy('order')->get();
 
-        return Inertia::render('Admin/Categories/Index', [
+        return Inertia::render('Admin/BlogCategories/Index', [
             'categories' => $rootCategories,
             'allCategories' => $allCategories,
             'filters' => $request->only(['search', 'active']),
@@ -124,7 +124,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
 
         $categories = $query->orderBy('order')->get();
 
-        return Inertia::render('Admin/Categories/Tree', [
+        return Inertia::render('Admin/BlogCategories/Tree', [
             'categories' => $categories,
             'filters' => $request->only(['search', 'active']),
         ]);
@@ -139,7 +139,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
             ->orderBy('order')
             ->get();
 
-        return Inertia::render('Admin/Categories/Create', [
+        return Inertia::render('Admin/BlogCategories/Create', [
             'categories' => $categories
         ]);
     }
@@ -191,7 +191,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
 
             DB::commit();
 
-            return redirect()->route('admin.categories.index')
+            return redirect()->route('admin.blog-categories.index')
                 ->with('success', 'Categoria criada com sucesso!');
         } catch (\Exception $e) {
             DB::rollback();
@@ -209,7 +209,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
         try {
             $category->load('parent', 'children');
 
-            return Inertia::render('Admin/Categories/Show', [
+            return Inertia::render('Admin/BlogCategories/Show', [
                 'category' => $category,
             ]);
         } catch (\Exception $e) {
@@ -226,7 +226,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
             ->whereNotIn('id', $this->getBlogCategoryChildrenIds($category))
             ->get();
 
-        return Inertia::render('Admin/Categories/Edit', [
+        return Inertia::render('Admin/BlogCategories/Edit', [
             'category' => $category,
             'categories' => $categories
         ]);
@@ -286,7 +286,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
 
             DB::commit();
 
-            return redirect()->route('admin.categories.index')
+            return redirect()->route('admin.blog-categories.index')
                 ->with('success', 'Categoria atualizada com sucesso!');
         } catch (\Exception $e) {
             DB::rollback();
@@ -308,7 +308,7 @@ class BlogCategoryController extends Controller implements HasMiddleware
 
             DB::commit();
 
-            return redirect()->route('admin.categories.index')
+            return redirect()->route('admin.blog-categories.index')
                 ->with('success', 'Categoria eliminada com sucesso!');
         } catch (\Exception $e) {
             DB::rollback();

@@ -30,6 +30,7 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     Route::get('categories/tree', [CategoryController::class, 'tree'])->name('categories.tree');
     Route::resource('categories', CategoryController::class);
     Route::resource('blog-categories', BlogCategoryController::class);
+    Route::get('blog-categories/tree', [BlogCategoryController::class, 'tree'])->name('blog-categories.tree');
 
     // Rotas para produtos
     Route::resource('products', ProductController::class);

@@ -232,7 +232,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                {can('admin-blog-category.show') && (
+                                {can('admin-blogcategory.show') && (
                                     <DropdownMenuItem asChild>
                                         <Link href={`/admin/blog-categories/${category.id}`}>
                                             <Eye className="mr-2 h-4 w-4" />
@@ -240,7 +240,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                                         </Link>
                                     </DropdownMenuItem>
                                 )}
-                                {can('admin-blog-category.edit') && (
+                                {can('admin-blogcategory.edit') && (
                                     <DropdownMenuItem asChild>
                                         <Link href={`/admin/blog-categories/${category.id}/edit`}>
                                             <Edit className="mr-2 h-4 w-4" />
@@ -248,7 +248,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                                         </Link>
                                     </DropdownMenuItem>
                                 )}
-                                {can('admin-blog-category.create') && (
+                                {can('admin-blogcategory.create') && (
                                     <DropdownMenuItem asChild>
                                         <Link href={`/admin/blog-categories/create?parent_id=${category.id}`}>
                                             <Plus className="mr-2 h-4 w-4" />
@@ -256,7 +256,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                                         </Link>
                                     </DropdownMenuItem>
                                 )}
-                                {can('admin-blog-category.destroy') && (
+                                {can('admin-blogcategory.destroy') && (
                                     <DropdownMenuItem
                                         onClick={() => handleDeleteClick(category.id)}
                                         className="text-destructive focus:text-destructive"
@@ -298,7 +298,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                             <div className="flex flex-wrap gap-1">
                                 {category.children.map(child => (
                                     <Badge key={child.id} variant="outline" className="mr-1 mb-1">
-                                        {can('admin-blog-category.show') ? (
+                                        {can('admin-blogcategory.show') ? (
                                             <Link href={`/admin/blog-categories/${child.id}`} className="hover:underline">
                                                 {child.name}
                                             </Link>
@@ -312,7 +312,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                     )}
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2 pt-2 border-t">
-                    {can('admin-blog-category.show') && (
+                    {can('admin-blogcategory.show') && (
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/blog-categories/${category.id}`}>
                                 <Eye className="h-4 w-4 mr-1" />
@@ -320,7 +320,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                             </Link>
                         </Button>
                     )}
-                    {can('admin-blog-category.edit') && (
+                    {can('admin-blogcategory.edit') && (
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/blog-categories/${category.id}/edit`}>
                                 <Edit className="h-4 w-4 mr-1" />
@@ -328,7 +328,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                             </Link>
                         </Button>
                     )}
-                    {can('admin-blog-category.create') && (
+                    {can('admin-blogcategory.create') && (
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/blog-categories/create?parent_id=${category.id}`}>
                                 <Plus className="h-4 w-4 mr-1" />
@@ -336,7 +336,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                             </Link>
                         </Button>
                     )}
-                    {can('admin-blog-category.destroy') && (
+                    {can('admin-blogcategory.destroy') && (
                         <Button
                             variant="ghost"
                             size="sm"
@@ -366,7 +366,7 @@ export default function Index({ categories, allCategories, filters = {} }: Props
                                 <span>Ver em Árvore</span>
                             </Link>
                         </Button>
-                        {can('admin-blog-category.create') && (
+                        {can('admin-blogcategory.create') && (
                             <Button asChild>
                                 <Link href="/admin/blog-categories/create">
                                     <Plus className="mr-2 h-4 w-4" />

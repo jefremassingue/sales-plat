@@ -103,7 +103,7 @@ const mainNavItems = [
         items: [
             {
                 title: 'Categorias',
-                href: '/admin/categories',
+                href: '/admin/blog-categories',
                 icon: ListTree,
                 activeRoutes: [
                     'admin.blog-categories.index',

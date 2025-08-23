@@ -49,13 +49,7 @@ const BlogPostCard = ({ post }: { post: BlogPost }) => (
                 <span className="inline-flex items-center bg-orange-50 text-orange-700 px-2.5 py-1 rounded-full font-medium">
                     <Tag size={12} className="mr-1.5 opacity-80" /> {(post.blog_category?.name ?? post.category?.name) || 'Sem categoria'}
                 </span>
-                <span className="inline-flex items-center">
-                    <Calendar size={12} className="mr-1.5 opacity-80" /> {post.published_at ? new Date(post.published_at).toLocaleDateString('pt-BR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    }) : 'Não publicado'}
-                </span>
+          
             </div>
             {/* Título */}
             <h3 className="text-lg font-semibold text-slate-800 mb-2 group-hover:text-orange-600 transition-colors line-clamp-2">
