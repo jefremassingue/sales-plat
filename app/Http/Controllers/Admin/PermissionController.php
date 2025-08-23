@@ -11,6 +11,7 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Jefre\SpatiePermissionGenerate\SpatiePermissionGenerate;
 
 class PermissionController extends Controller implements HasMiddleware
 {
@@ -173,6 +174,24 @@ class PermissionController extends Controller implements HasMiddleware
             return redirect()->back()
                 ->with('error', 'Ocorreu um erro ao atualizar a permissão: ' . $e->getMessage())
                 ->withInput();
+        }
+    }
+
+    public function updatePermissions()
+    {
+        try {
+            $hasGenarate = SpatiePermissionGenerate::synchronizelPermission();
+
+            if ($hasGenarate) {
+                return redirect()->route('admin.permissions.index')
+                    ->with('success', 'Permissões atualizadas com sucesso!');
+            } else {
+                return redirect()->route('admin.permissions.index')
+                    ->with('error', 'Ocorreu um erro ao atualizar as permissões.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao atualizar as permissões: ' . $e->getMessage());
         }
     }
 

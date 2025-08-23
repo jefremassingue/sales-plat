@@ -95,6 +95,7 @@ class ProductController extends Controller implements HasMiddleware
         $categories = Category::whereNull('parent_id')->with('subcategories')->get();
         $units = UnitEnum::toArray();
 
+        // dd($categories);
         $brands = \App\Models\Brand::all();
         return Inertia::render('Admin/Products/Create', [
             'categories' => $categories,
@@ -425,6 +426,7 @@ class ProductController extends Controller implements HasMiddleware
 
         $categories = Category::whereNull('parent_id')->with('subcategories')->get();
         $units = UnitEnum::toArray();
+        // dd($categories->toArray());
 
         $brands = \App\Models\Brand::all();
         return Inertia::render('Admin/Products/Edit', [

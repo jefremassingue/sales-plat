@@ -4,7 +4,7 @@ import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Search, Edit, Trash, ShieldAlert, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash, ShieldAlert, Loader2, LoaderIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   Card,
@@ -61,6 +61,7 @@ export default function Index({ permissions, filters = {} }: Props) {
   const [sortOrder, setSortOrder] = useState(filters.sort_order || 'asc');
   const [deletePermissionId, setDeletePermissionId] = useState<number | null>(null);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [generating, setGenerating] = useState<boolean>(false);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const { toast } = useToast();
@@ -151,6 +152,22 @@ export default function Index({ permissions, filters = {} }: Props) {
     setDeleteAlertOpen(true);
   };
 
+  // Gerar / sincronizar permissões a partir do backend
+  const generatePermissions = async () => {
+    if (generating) return;
+    setGenerating(true);
+
+    try {
+      await router.post('/admin/permissions/generate', {}, {
+        preserveState: false,
+      });
+    } catch {
+      // erros são tratados pelo Inertia/flash; apenas resetar o estado
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Gerir Permissões" />
@@ -167,6 +184,22 @@ export default function Index({ permissions, filters = {} }: Props) {
                 </Link>
               </Button>
             )}
+              <Button
+                variant="outline"
+                onClick={generatePermissions}
+              >
+                {generating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Atualizando...</span>
+                  </>
+                ) : (
+                  <>
+                  <LoaderIcon className="mr-2 h-4 w-4" />
+                  <span>Actualizar Permissões</span>
+                  </>
+                )}
+              </Button>
           </div>
         </div>
 

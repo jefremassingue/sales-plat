@@ -774,7 +774,7 @@ export default function Edit({ product, categories, units, brands }: Props) {
                                             data={data}
                                             setData={handleSetData}
                                             errors={errors}
-                                            categories={categories.map(cat => ({ ...cat, subcategories: [] }))}
+                                            categories={categories}
                                             units={units}
                                             brands={brands}
                                             isEditing={true}

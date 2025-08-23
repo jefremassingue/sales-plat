@@ -130,7 +130,8 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
 
     // Permissões
     Route::resource('permissions', PermissionController::class);
-    Route::post('permissions/generate', [PermissionController::class, 'generatePermissions'])->name('permissions.generate');
+    // Rota para sincronizar/atualizar permissões a partir do código
+    Route::post('permissions/generate', [PermissionController::class, 'updatePermissions'])->name('permissions.generate');
 
     // Gerir funções de utilizadores
     Route::resource('user-roles', UserRoleController::class)->only(['index', 'edit', 'update', 'show']);

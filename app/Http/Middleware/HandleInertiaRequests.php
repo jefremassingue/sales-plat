@@ -95,7 +95,7 @@ class HandleInertiaRequests extends Middleware
                 });
         });
 
-
+        // dd($categories);
         // Só compartilhar defaultWarehouse em rotas de admin
         $isAdminRoute = str($request->path())->startsWith('admin');
         $defaultWarehouse = null;
