@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Blog;
+use App\Models\HeroSlider;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
@@ -125,12 +126,17 @@ class HomeController extends Controller
                 ]);
         });
 
+        $heroSlides = Cache::remember('home:hero_slides', now()->addMinutes(30), function () {
+            return HeroSlider::where('active', true)->orderBy('order')->get();
+        });
+
         return Inertia::render('Site/Home', [
             'featuredProducts' => $featuredProducts,
             'popularProducts' => $popularProducts,
             'newProducts' => $newProducts,
             '_categories' => $categories,
             'blogPosts' => $blogPosts,
+            'heroSlides' => $heroSlides,
         ]);
     }
 

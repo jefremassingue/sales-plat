@@ -114,6 +114,8 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
+
+    --primary: oklch(0.646 0.222 41.116);
 }
 
 .dark {
@@ -190,6 +192,7 @@
         --chart-3: 197 37% 24%;
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
+    --primary: oklch(0.646 0.222 41.116);
     }
 
     .dark {
@@ -247,7 +250,7 @@
 .border-gray-500 { @apply border border-gray-500; }
 .border-orange-500 { @apply border border-orange-500; }
 
-
+/* .bg-primary { @apply bg-orange-600; } */
 .swiper-button-next, .swiper-button-prev {
     @apply !text-orange-600;
 }

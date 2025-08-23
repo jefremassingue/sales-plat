@@ -83,6 +83,22 @@ export interface Catalog {
     updated_at: string;
 }
 
+export interface HeroSlider {
+    id: number;
+    supertitle: string | null;
+    title: string;
+    subtitle: string | null;
+    cta_text: string | null;
+    cta_link: string | null;
+    text_position: 'left' | 'right' | 'center';
+    text_color: string;
+    overlay_color: string;
+    active: boolean;
+    order: number;
+    image_url: string | null;
+    image?: Image;
+}
+
 export interface Product {
     id: string;
     name: string;

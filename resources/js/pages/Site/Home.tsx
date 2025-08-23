@@ -52,6 +52,7 @@ interface HomeProps {
     newProducts: ProductFromServer[] | null;
     _categories: Category[] | null;
     blogPosts?: BlogPost[] | null;
+    heroSlides?: any[];
 }
 
 // --- DADOS MOCKADOS INTERNOS PARA AS NOVAS SEÇÕES (TEMA CLARO) ---
@@ -92,7 +93,7 @@ const FaqItem: React.FC<{ faq: FaqItem; isOpen: boolean; onToggle: () => void }>
     </div>
 );
 
-export default function Home({ featuredProducts, popularProducts, newProducts, _categories, blogPosts }: HomeProps) {
+export default function Home({ featuredProducts, popularProducts, newProducts, _categories, blogPosts, heroSlides }: HomeProps) {
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
     const toggleFaq = (index: number) => {
@@ -106,7 +107,7 @@ export default function Home({ featuredProducts, popularProducts, newProducts, _
             {/* Hero Section with improved spacing */}
             <div className="bg-gradient-to-b  py-6 md:py-8">
                 <div className="container mx-auto px-4">
-                    <HeroSlider />
+                    <HeroSlider slides={heroSlides} />
                 </div>
             </div>
 

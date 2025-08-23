@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\CatalogController;
+use App\Http\Controllers\Admin\HeroSliderController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\WarehouseController;
@@ -102,6 +103,7 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     // Rotas para gestão de fornecedores
     Route::resource('suppliers', SupplierController::class);
     Route::resource('catalogs', CatalogController::class);
+    Route::resource('hero-sliders', HeroSliderController::class);
 
     // Rotas para gestão de armazéns
     Route::resource('warehouses', WarehouseController::class);

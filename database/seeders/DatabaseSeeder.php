@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             BankSettingsSeeder::class,
             CustomerSeeder::class,
             BlogCategoriesSeeder::class,
+            HeroSliderSeeder::class,
         ]);
     }
 }

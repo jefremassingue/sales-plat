@@ -133,6 +133,13 @@ const mainNavItems = [
                 activeRoutes: ['admin.catalogs.index', 'admin.catalogs.create', 'admin.catalogs.edit'],
                 permission: 'admin-catalog.index',
             },
+            {
+                title: 'Hero Sliders',
+                href: '/admin/hero-sliders',
+                icon: BookOpen,
+                activeRoutes: ['admin.hero-sliders.index', 'admin.hero-sliders.create', 'admin.hero-sliders.edit'],
+                permission: 'admin-heroslider.index',
+            },
         ],
     },
 
