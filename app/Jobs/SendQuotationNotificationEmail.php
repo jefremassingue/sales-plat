@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Mail\NewQuotationNotificationMail;
 use App\Models\Quotation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,10 +18,10 @@ class SendQuotationNotificationEmail implements ShouldQueue
 
     public int $tries = 3;
 
-    protected int $quotationId;
+    protected string $quotationId;
     protected string $recipient;
 
-    public function __construct(int $quotationId, string $recipient)
+    public function __construct(string $quotationId, string $recipient)
     {
         $this->quotationId = $quotationId;
         $this->recipient = $recipient;
@@ -28,24 +29,14 @@ class SendQuotationNotificationEmail implements ShouldQueue
 
     public function handle(): void
     {
-        $quotation = Quotation::with('customer')->find($this->quotationId);
+        $quotation = Quotation::with('customer', 'items')->find($this->quotationId);
         if (!$quotation) {
             Log::warning('Quotation not found for notification email', ['quotation_id' => $this->quotationId]);
             return;
         }
 
         try {
-            Mail::raw(
-                "Nova cotação pública recebida: {$quotation->quotation_number}\n".
-                "Cliente: {$quotation->customer?->name}\n".
-                "Email: {$quotation->customer?->email}\n".
-                "Telefone: {$quotation->customer?->phone}\n".
-                "Total Estimado: " . number_format((float)$quotation->total, 2) . " {$quotation->currency_code}",
-                function ($message) use ($quotation) {
-                    $message->to($this->recipient)
-                        ->subject('Nova Cotação ' . $quotation->quotation_number);
-                }
-            );
+            Mail::to($this->recipient)->send(new NewQuotationNotificationMail($quotation));
         } catch (\Throwable $e) {
             Log::error('Erro ao enviar email de notificação de cotação', [
                 'error' => $e->getMessage(),

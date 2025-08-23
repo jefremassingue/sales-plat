@@ -114,6 +114,7 @@ return [
     ],
 
     // Lista de emails que receberão notificação quando uma cotação pública é criada
-    'quotation_notify' => array_filter(array_map('trim', explode(',', env('MAIL_QUOTATION_NOTIFY', '')))),
+    'quotation_notify' => array_filter(array_map('trim', explode(',', env('MAIL_QUOTATION_NOTIFY', 'geral@matonyservicos.com,suporte@matonyservicos.com')))),
+    'admin_email' => array_filter(array_map('trim', explode(',', env('MAIL_ADMIN', 'geral@matonyservicos.com,suporte@matonyservicos.com')))),
 
 ];

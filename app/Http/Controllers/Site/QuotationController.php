@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use App\Jobs\SendQuotationNotificationEmail;
+use App\Jobs\SendQuotationConfirmationEmail;
 
 class QuotationController extends Controller
 {
@@ -57,7 +58,7 @@ class QuotationController extends Controller
             $exchangeRate = $currency?->exchange_rate ?: 1.0;
 
             $quotation = Quotation::create([
-                'quotation_number' => Quotation::generateQuotationNumber(),
+                'quotation_number' => Quotation::generateQuotationNumber('W'),
                 'customer_id' => $customer->id,
                 'user_id' => null,
                 'issue_date' => now()->toDateString(),
@@ -118,7 +119,10 @@ class QuotationController extends Controller
                 'total' => $grandTotal,
             ]);
 
-            // Disparar Job por destinatário (fila)
+            // Enviar email de confirmação para o cliente via Job
+            SendQuotationConfirmationEmail::dispatch($quotation->id, $customer->email);
+
+            // Disparar Job para notificação de admins
             $recipients = config('mail.quotation_notify', []);
             if (is_array($recipients) && !empty($recipients)) {
                 foreach ($recipients as $email) {
@@ -135,6 +139,7 @@ class QuotationController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+            // dd($e);
             Log::error('Erro ao criar cotação pública', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return back()->withErrors(['error' => 'Ocorreu um erro ao processar a sua cotação.'])->withInput();
         }

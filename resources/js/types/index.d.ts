@@ -83,6 +83,18 @@ export interface Catalog {
     updated_at: string;
 }
 
+export interface ContactMessage {
+    id: number;
+    name: string;
+    email: string;
+    phone: string | null;
+    subject: string;
+    message: string;
+    read: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface HeroSlider {
     id: number;
     supertitle: string | null;

@@ -16,12 +16,12 @@ use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SupplierController;
 use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\HeroSliderController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\DeliveryGuideController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 
 Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admin')->name('admin.')->group(function () {
@@ -105,6 +105,7 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     Route::resource('suppliers', SupplierController::class);
     Route::resource('catalogs', CatalogController::class);
     Route::resource('hero-sliders', HeroSliderController::class);
+    Route::resource('contact-messages', ContactMessageController::class)->only(['index', 'show', 'destroy']);
 
     // Rotas para gestão de armazéns
     Route::resource('warehouses', WarehouseController::class);

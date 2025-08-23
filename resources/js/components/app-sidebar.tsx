@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Building, Calculator, LayoutGrid, ListTree, Package, Settings, Shield, ShoppingCart, Tag, User, UserCog, Warehouse, BookOpen, Award, FileText, Image, Folder } from 'lucide-react';
+import { Building, Calculator, LayoutGrid, ListTree, Package, Settings, Shield, ShoppingCart, Tag, User, UserCog, Warehouse, BookOpen, Award, FileText, Image, Folder, Mail } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems = [
@@ -17,6 +17,13 @@ const mainNavItems = [
                 icon: LayoutGrid,
                 activeRoutes: ['dashboard'],
                 permission: '',
+            },
+                  {
+                title: 'Mensagens',
+                href: '/admin/contact-messages',
+                icon: Mail,
+                activeRoutes: ['admin.contact-messages.index', 'admin.contact-messages.show'],
+                permission: 'admin-contactmessage.index',
             },
         ],
     },
@@ -178,6 +185,7 @@ const mainNavItems = [
                 activeRoutes: ['admin.permissions.index', 'admin.permissions.create', 'admin.permissions.edit', 'admin.permissions.show'],
                 permission: 'admin-permission.index',
             },
+      
             // {
             //     title: 'Funcionários',
             //     href: '/admin/employees',

@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Models\ContactMessage;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\SendContactFormEmail;
+use App\Jobs\SendContactConfirmationEmail;
 
 class ContactController extends Controller
 {
@@ -33,8 +36,21 @@ class ContactController extends Controller
         // Log para debug
         Log::info('ContactController: Formulário de contato recebido', $validated);
 
-        // Aqui você pode implementar o envio de e-mail ou salvar no banco de dados
-        // Por exemplo: Mail::to('seu@email.com')->send(new ContactFormMail($validated));
+        ContactMessage::create($validated);
+
+        // Enviar email de confirmação para o cliente
+        SendContactConfirmationEmail::dispatch($validated, $validated['email']);
+
+        // Enviar email para o admin via Job
+        $recipients = config('mail.admin_email', []);
+        if (is_array($recipients) && !empty($recipients)) {
+            foreach ($recipients as $email) {
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    continue;
+                }
+                SendContactFormEmail::dispatch($validated, $email);
+            }
+        }
 
         // Retornar para a página de contato com mensagem de sucesso
         return redirect()->route('contact')->with('success', 'Mensagem enviada com sucesso! Entraremos em contato em breve.');

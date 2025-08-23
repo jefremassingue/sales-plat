@@ -45,13 +45,13 @@ class Quotation extends Model
     /**
      * Gerar automaticamente o número da cotação
      */
-    public static function generateQuotationNumber(): string
+    public static function generateQuotationNumber($suffix = ''): string
     {
         $lastQuotation = self::withTrashed()->orderBy('created_at', 'desc')->first();
-        $nextId = $lastQuotation ? (int) substr($lastQuotation->quotation_number, -5) + 1 : 1;
+        $nextId = $lastQuotation ? (int) substr($lastQuotation->quotation_number, -5) + 1 : 100;
         $year = date('Y');
 
-        return "COT-{$year}-" . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+        return $suffix . "COT-{$year}-" . str_pad($nextId, 5, '0', STR_PAD_LEFT);
     }
 
     /**
