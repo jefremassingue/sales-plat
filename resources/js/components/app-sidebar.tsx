@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Building, Calculator, LayoutGrid, ListTree, Package, Settings, Shield, ShoppingCart, Tag, User, UserCog, Warehouse, BookOpen } from 'lucide-react';
+import { Building, Calculator, LayoutGrid, ListTree, Package, Settings, Shield, ShoppingCart, Tag, User, UserCog, Warehouse, BookOpen, Award, FileText, Image, Folder } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems = [
@@ -84,7 +84,7 @@ const mainNavItems = [
             {
                 title: 'Marcas',
                 href: '/admin/brands',
-                icon: Tag,
+                icon: Award,
                 activeRoutes: ['admin.brands.index', 'admin.brands.create', 'admin.brands.edit', 'admin.brands.show'],
                 permission: 'admin-brand.index',
             },
@@ -104,7 +104,7 @@ const mainNavItems = [
             {
                 title: 'Categorias',
                 href: '/admin/blog-categories',
-                icon: ListTree,
+                icon: Folder,
                 activeRoutes: [
                     'admin.blog-categories.index',
                     'admin.blog-categories.create',
@@ -116,7 +116,7 @@ const mainNavItems = [
             {
                 title: 'Blog',
                 href: '/admin/blog',
-                icon: Tag,
+                icon: FileText,
                 activeRoutes: ['admin.blog.index', 'admin.blog.create', 'admin.blog.edit', 'admin.blog.show'],
                 permission: 'admin-blog.index',
             },
@@ -136,7 +136,7 @@ const mainNavItems = [
             {
                 title: 'Hero Sliders',
                 href: '/admin/hero-sliders',
-                icon: BookOpen,
+                icon: Image,
                 activeRoutes: ['admin.hero-sliders.index', 'admin.hero-sliders.create', 'admin.hero-sliders.edit'],
                 permission: 'admin-heroslider.index',
             },
