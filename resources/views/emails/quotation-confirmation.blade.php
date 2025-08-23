@@ -1,13 +1,13 @@
 @component('mail::message')
-# Confirmação da Sua Cotação
+# Confirmação da Sua Solicitação de Cotação
 
-Olá {{ $quotation->customer->name ?? 'Cliente' }},
+Olá {{ $quotation->customer->name ?? 'Prezado' }},
 
-Recebemos sua solicitação de cotação com o número **#{{ $quotation->quotation_number }}**.
+Recebemos sua solicitação de cotação nº **#{{ $quotation->quotation_number }}**.
 
-Nossa equipe está analisando seu pedido e entrará em contato em breve com os detalhes.
+Nossa equipe já está analisando o seu pedido e em breve você receberá a **cotação completa com todos os valores e condições**.
 
-**Detalhes da Cotação:**
+**Resumo do Pedido Solicitado:**
 
 @component('mail::table')
 | Produto | Quantidade |
@@ -15,13 +15,14 @@ Nossa equipe está analisando seu pedido e entrará em contato em breve com os d
 @foreach($quotation->items as $item)
 | {{ $item->name }} | {{ $item->quantity }} |
 @endforeach
-
 @endcomponent
 
-Se tiver alguma dúvida, por favor, responda a este e-mail.
+Fique atento à sua caixa de entrada — em breve enviaremos os detalhes completos da sua cotação.  
 
-Obrigado por escolher {{ config('app.name') }}!
+Se tiver alguma dúvida, estamos à disposição para ajudar.
 
-Atenciosamente,
+Obrigado por escolher {{ config('app.name') }}!  
+
+Atenciosamente,  
 {{ config('app.name') }}
 @endcomponent
