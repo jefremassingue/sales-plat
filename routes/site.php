@@ -26,7 +26,7 @@ Route::get('/about', [HomeController::class, 'about'])->name('about');
 
 
 Route::inertia('/cart', 'Site/Cart/Index')->name('cart');
-Route::post('/quotation', [SiteQuotationController::class, 'store'])->name('quotation.store');
+Route::post('/quotation/store', [SiteQuotationController::class, 'store'])->name('quotation.store');
 Route::inertia('/quotation', 'Site/Checkout/Index')->name('quotation');
 
 // Rotas do perfil do customer (protegidas por autenticação)
