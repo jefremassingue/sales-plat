@@ -265,3 +265,7 @@
 .dark .rsw-separator {
     @apply !border-zinc-800;
 }
+
+.no-tailwind {
+  all: unset;
+}

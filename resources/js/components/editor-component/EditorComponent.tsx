@@ -33,7 +33,7 @@ export const EditorComponent: React.FC<EditorComponentProps> = ({
 
     return (
         <div
-            className={`overflow-hidden rounded-md border border-gray-300 bg-white shadow-md focus-within:ring-1 focus-within:ring-gray-400 dark:border-zinc-600 dark:bg-zinc-800 dark:focus-within:ring-zinc-400 ${className}`}
+            className={`overflow-hidden  rounded-md border border-gray-300 bg-white shadow-md focus-within:ring-1 focus-within:ring-gray-400 dark:border-zinc-600 dark:bg-zinc-800 dark:focus-within:ring-zinc-400 ${className}`}
             style={{ height: `${height}px` }}
         >
             <Editor

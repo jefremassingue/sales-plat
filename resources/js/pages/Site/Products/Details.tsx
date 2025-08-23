@@ -3,7 +3,7 @@
 import { useCart } from '@/contexts/CartContext';
 import SiteLayout from '@/layouts/site-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle, List, ShieldCheck, ShoppingCart, Truck, X, ZoomIn, FileText } from 'lucide-react';
+import { ArrowLeft, CheckCircle, FileText, List, ShieldCheck, ShoppingCart, Truck, X, ZoomIn } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Navigation, Thumbs, Zoom } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -146,19 +146,19 @@ export default function ProductDetails({ product, relatedProducts }: Props) {
         <SiteLayout>
             <Head title={product.name}>
                 <meta name="description" content={product.description || ''} />
-                    <link rel="canonical" href={`${window.location.origin}/products/${product.slug}`} />
-                    {/* og:image */}
-                    <meta
-                        property="og:image"
-                        content={
-                            product.main_image?.versions?.find((image) => image.version == 'sm')?.url ||
-                            product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
-                            product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
-                            product.main_image?.url ||
-                            window.location.origin + '/og.png'
-                        }
-                    />
-                    <meta property="og:image:alt" content={product.name} />
+                <link rel="canonical" href={`${window.location.origin}/products/${product.slug}`} />
+                {/* og:image */}
+                <meta
+                    property="og:image"
+                    content={
+                        product.main_image?.versions?.find((image) => image.version == 'sm')?.url ||
+                        product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
+                        product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
+                        product.main_image?.url ||
+                        window.location.origin + '/og.png'
+                    }
+                />
+                <meta property="og:image:alt" content={product.name} />
             </Head>
             <ProductDetailsContent product={product} relatedProducts={relatedProducts} />
         </SiteLayout>
@@ -310,7 +310,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                     <div className="grid grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2">
                         {/* Galeria de Imagens com Swiper */}
                         <div className="space-y-4">
-                            <div className="relative aspect-square overflow-hidden rounded-lg border  !h-[500px] w-full border-slate-200">
+                            <div className="relative aspect-square !h-[500px] w-full overflow-hidden rounded-lg border border-slate-200">
                                 <Swiper
                                     modules={[Navigation, Thumbs, Zoom]}
                                     navigation
@@ -326,7 +326,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     }}
                                 >
                                     {displayedImages.map((img) => (
-                                        <SwiperSlide key={img.id} className="cursor-zoom-in !h-[500px]">
+                                        <SwiperSlide key={img.id} className="!h-[500px] cursor-zoom-in">
                                             <div className="swiper-zoom-container">
                                                 <img
                                                     src={
@@ -347,8 +347,9 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                         const activeImageIndex = mainSwiper ? mainSwiper.activeIndex : -1;
                                         const imageUrlForZoom =
                                             activeImageIndex !== -1 && displayedImages[activeImageIndex]
-                                                ? displayedImages[activeImageIndex].url
-                                                : selectedImage?.url;
+                                                ? displayedImages[activeImageIndex].versions?.find((image) => image.version == 'lg')?.url ||
+                                                  displayedImages[activeImageIndex].url
+                                                : selectedImage?.versions?.find((image) => image.version == 'lg')?.url || selectedImage?.url;
 
                                         if (imageUrlForZoom) {
                                             openZoomModal(imageUrlForZoom);
@@ -370,7 +371,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     className="product-thumbs-swiper"
                                 >
                                     {displayedImages.map((img, index) => (
-                                        <SwiperSlide key={img.id} className="cursor-pointer">
+                                        <SwiperSlide itemRef={`thumb-${img.id}`} key={img.id} className="cursor-pointer">
                                             <div
                                                 className={`flex aspect-square overflow-hidden rounded-md border transition-all duration-150 ${selectedImage?.id === img.id ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-1' : 'border-slate-200 hover:border-orange-400'} `}
                                                 onClick={() => {
@@ -380,6 +381,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                                     }
                                                 }}
                                             >
+                                            
                                                 <img
                                                     src={
                                                         img.versions?.find((image) => image.version == 'sm')?.url ||
@@ -541,13 +543,14 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                 </div>
                                 {product.description_pdf_url && (
                                     <div className="flex items-center gap-2">
-                                        <FileText size={18} className="text-blue-600" />
                                         <a
                                             href={product.description_pdf_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline"
+                                            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-base font-semibold text-white shadow hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors duration-200"
+                                            style={{ textDecoration: 'none' }}
                                         >
+                                            <FileText size={20} className="text-white" />
                                             Ver ficha técnica (PDF)
                                         </a>
                                     </div>
@@ -563,7 +566,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                             <nav className="-mb-px flex flex-wrap">
                                 <button
                                     onClick={() => setActiveTab('description')}
-                                    className={`mr-8 border-b-2 py-2 px-4 text-sm font-medium transition-colors ${
+                                    className={`mr-8 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
                                         activeTab === 'description'
                                             ? 'border-orange-500 text-orange-600'
                                             : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
@@ -610,7 +613,6 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                         Especificações
                                     </button>
                                 )}
-
                             </nav>
                         </div>
 
