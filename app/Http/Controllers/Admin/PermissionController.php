@@ -31,30 +31,29 @@ class PermissionController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-            $query = Permission::query();
+        $query = Permission::query();
 
-            // Filtro de busca
-            if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
-                $search = trim($request->search);
-                $query->where('name', 'like', '%' . $search . '%');
-            }
+        // Filtro de busca
+        if ($request->has('search') && $request->search !== null && trim($request->search) !== '') {
+            $search = trim($request->search);
+            $query->where('name', 'like', '%' . $search . '%');
+        }
 
-            // Ordenação
-            $sortField = $request->input('sort_field', 'name');
-            $sortOrder = $request->input('sort_order', 'asc');
-            $query->orderBy($sortField, $sortOrder);
+        // Ordenação
+        $sortField = $request->input('sort_field', 'name');
+        $sortOrder = $request->input('sort_order', 'asc');
+        $query->orderBy($sortField, $sortOrder);
 
-            // Incluir funções relacionadas
-            $query->with('roles:id,name,guard_name');
+        // Incluir funções relacionadas
+        $query->with('roles:id,name,guard_name');
 
-            // Paginação
-            $permissions = $query->paginate(10)->withQueryString();
+        // Paginação
+        $permissions = $query->paginate(10)->withQueryString();
 
-            return Inertia::render('Admin/Permissions/Index', [
-                'permissions' => $permissions,
-                'filters' => $request->only(['search', 'sort_field', 'sort_order']),
-            ]);
-
+        return Inertia::render('Admin/Permissions/Index', [
+            'permissions' => $permissions,
+            'filters' => $request->only(['search', 'sort_field', 'sort_order']),
+        ]);
     }
 
     /**
@@ -62,8 +61,7 @@ class PermissionController extends Controller implements HasMiddleware
      */
     public function create()
     {
-            return Inertia::render('Admin/Permissions/Create');
-
+        return Inertia::render('Admin/Permissions/Create');
     }
 
     /**
@@ -114,13 +112,12 @@ class PermissionController extends Controller implements HasMiddleware
      */
     public function show(Permission $permission)
     {
-            // Carregar as funções relacionadas
-            $permission->load('roles');
+        // Carregar as funções relacionadas
+        $permission->load('roles');
 
-            return Inertia::render('Admin/Permissions/Show', [
-                'permission' => $permission,
-            ]);
-
+        return Inertia::render('Admin/Permissions/Show', [
+            'permission' => $permission,
+        ]);
     }
 
     /**
@@ -128,10 +125,9 @@ class PermissionController extends Controller implements HasMiddleware
      */
     public function edit(Permission $permission)
     {
-            return Inertia::render('Admin/Permissions/Edit', [
-                'permission' => $permission,
-            ]);
-  
+        return Inertia::render('Admin/Permissions/Edit', [
+            'permission' => $permission,
+        ]);
     }
 
     /**
@@ -181,6 +177,24 @@ class PermissionController extends Controller implements HasMiddleware
     {
         try {
             $hasGenarate = SpatiePermissionGenerate::synchronizelPermission();
+
+
+            Permission::all()->each(function ($permission) {
+                // Substituir apenas o último hífen por um ponto
+                $lastHyphenPos = strrpos($permission->name, '-');
+                if ($lastHyphenPos !== false) {
+                    $permission->name = substr_replace($permission->name, '.', $lastHyphenPos, 1);
+                    if (Permission::where('name', $permission->name)->exists()) {
+                        // Se já existir uma permissão com o novo nome, eliminar a permissão atual
+                        $permission->delete();
+                        return; // Sair da função de callback
+                    }
+                }
+                $permission->save();
+            });
+            $permissions = Permission::pluck('id', 'id')->all();
+            $role = Role::where('name', 'Admin')->first();
+            $role->syncPermissions($permissions);
 
             if ($hasGenarate) {
                 return redirect()->route('admin.permissions.index')
