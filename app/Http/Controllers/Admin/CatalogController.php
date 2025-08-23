@@ -122,6 +122,8 @@ class CatalogController extends Controller
                 'version' => 'original',
                 'is_main' => true,
             ]);
+        } else {
+            $data['cover'] = $catalog->cover;
         }
 
         if ($request->hasFile('file')) {
@@ -129,6 +131,9 @@ class CatalogController extends Controller
                 Storage::disk('public')->delete($catalog->file);
             }
             $data['file'] = $request->file('file')->store('catalogs/files', 'public');
+        }
+        else {
+            $data['file'] = $catalog->file;
         }
 
         $catalog->update($data);

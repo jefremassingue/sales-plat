@@ -26,6 +26,7 @@ interface PageProps {
 const navLinks = [
     { name: 'Início', href: '/' },
     { name: 'Produtos', href: '/products' },
+    { name: 'Catálogos', href: '/catalogs' },
     { name: 'Categorias', href: '/products' }, // Note: href points to /products, not a categories page
     { name: 'Blog', href: '/blog' },
     { name: 'Contato', href: '/contact' },

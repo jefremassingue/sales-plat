@@ -8,6 +8,7 @@ use App\Http\Controllers\Site\ContactController;
 use App\Http\Controllers\Site\ProfileController;
 use App\Http\Controllers\Site\CustomerVerificationController;
 use App\Http\Controllers\Site\QuotationController as SiteQuotationController;
+use App\Http\Controllers\Site\CatalogController as SiteCatalogController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -16,6 +17,7 @@ Route::get('/search', [SearchController::class, 'index'])->name('search');
 
 Route::resource('blog', BlogController::class)->only(['index', 'show']);
 Route::resource('products', ProductController::class)->only(['index', 'show']);
+Route::resource('catalogs', SiteCatalogController::class)->only(['index']);
 
 // Rotas para a página de contato
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
