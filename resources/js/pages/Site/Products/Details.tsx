@@ -4,15 +4,9 @@ import { useCart } from '@/contexts/CartContext';
 import SiteLayout from '@/layouts/site-layout';
 import { Head, Link, router } from '@inertiajs/react';
 import { ArrowLeft, CheckCircle, FileText, List, ShieldCheck, ShoppingCart, Truck, X, ZoomIn } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-import { Navigation, Thumbs, Zoom } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import type { Swiper as SwiperCore } from 'swiper/types'; // Importado para tipagem
-
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/thumbs';
-import 'swiper/css/zoom';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import ImageGallery from 'react-image-gallery';
+import 'react-image-gallery/styles/css/image-gallery.css';
 import ProductCard from '../_components/ProductCard';
 
 // Interfaces para os tipos de dados
@@ -174,19 +168,88 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
     const [selectedColor, setSelectedColor] = useState<Color | null>(product.colors && product.colors.length > 0 ? product.colors[0] : null);
     const [selectedSize, setSelectedSize] = useState<Size | null>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : null);
     const [quantity, setQuantity] = useState(1);
-    const [thumbsSwiper, setThumbsSwiper] = useState<SwiperCore | null>(null);
-    const [mainSwiper, setMainSwiper] = useState<SwiperCore | null>(null); // Estado para o Swiper principal
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [galleryRef, setGalleryRef] = useState<ImageGallery | null>(null);
     const [showZoomModal, setShowZoomModal] = useState(false);
     const [zoomImageUrl, setZoomImageUrl] = useState('');
     const [activeTab, setActiveTab] = useState('description');
 
-    // Lista de imagens exibidas com base na cor selecionada
-    const displayedImages = useMemo<Image[]>(() => {
-        if (selectedColor?.images && selectedColor.images.length > 0) {
-            return selectedColor.images as Image[];
-        }
-        return product.images;
-    }, [selectedColor, product.images]);
+    // Nova lógica de imagens:
+    // 1) Sempre mostrar TODAS as imagens do produto na galeria
+    // 2) Ao clicar em uma cor, navegar para o índice da imagem que corresponde à cor
+    const displayedImages = useMemo<Image[]>(() => product.images, [product.images]);
+
+    // Helper: encontra o índice da imagem que corresponde à cor
+    const findImageIndexForColor = useCallback(
+        (color: Color | null): number => {
+            if (!color) return 0;
+            const imgs = product.images || [];
+
+            // Se a cor tem imagens vinculadas, tentar casar por id/nome com as imagens do produto
+            if (color.images && color.images.length > 0) {
+                for (const cimg of color.images) {
+                    const byId = imgs.findIndex((img) => img.id === cimg.id);
+                    if (byId !== -1) return byId;
+
+                    const byName = imgs.findIndex(
+                        (img) =>
+                            (!!cimg.name && img.name === cimg.name) || (!!cimg.original_name && img.original_name === cimg.original_name),
+                    );
+                    if (byName !== -1) return byName;
+                }
+            }
+
+            // Fallback: tentar por nome da cor contido no nome da imagem
+            const colorName = (color.name || '').toLowerCase();
+            if (colorName) {
+                const byColorName = imgs.findIndex(
+                    (img) => (img.name || '').toLowerCase().includes(colorName) || (img.original_name || '').toLowerCase().includes(colorName),
+                );
+                if (byColorName !== -1) return byColorName;
+            }
+
+            // Fallback final: imagem principal se existir, senão primeira
+            const mainIdx = imgs.findIndex((img) => !!img.is_main);
+            return mainIdx !== -1 ? mainIdx : 0;
+        },
+        [product.images],
+    );
+
+    // Helper: encontra a cor correspondente a uma imagem
+    const findColorForImage = useCallback(
+        (image: Image | null): Color | null => {
+            if (!image || !product.colors || product.colors.length === 0) return null;
+
+            // 1) Match direto por ID em color.images
+            for (const color of product.colors) {
+                if (color.images && color.images.some((cimg) => cimg.id === image.id)) {
+                    return color;
+                }
+            }
+
+            // 2) Match por nome exato em color.images
+            for (const color of product.colors) {
+                if (
+                    color.images &&
+                    color.images.some(
+                        (cimg) => (!!cimg.name && cimg.name === image.name) || (!!cimg.original_name && cimg.original_name === image.original_name),
+                    )
+                ) {
+                    return color;
+                }
+            }
+
+            // 3) Fallback: nome da cor contido no nome da imagem
+            const iname = (image.name || image.original_name || '').toLowerCase();
+            if (iname) {
+                const byContains = product.colors.find((color) => (color.name || '').toLowerCase() && iname.includes((color.name || '').toLowerCase()));
+                if (byContains) return byContains;
+            }
+
+            return null;
+        },
+        [product.colors],
+    );
 
     // Encontrar a imagem principal ou usar a primeira imagem
     useEffect(() => {
@@ -194,22 +257,24 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
             const initialImage = displayedImages.find((img) => img.is_main) || displayedImages[0];
             setSelectedImage(initialImage);
 
-            // Sincronizar o Swiper principal com a imagem inicial da lista exibida
-            if (mainSwiper && !mainSwiper.destroyed) {
-                const initialImageIndex = displayedImages.findIndex((img) => img.id === initialImage.id);
-                mainSwiper.slideTo(initialImageIndex !== -1 ? initialImageIndex : 0, 0);
-            }
+            // Sincronizar a galeria com a imagem inicial da lista exibida
+            const initialImageIndex = displayedImages.findIndex((img) => img.id === initialImage.id);
+            setCurrentIndex(initialImageIndex !== -1 ? initialImageIndex : 0);
+            galleryRef?.slideToIndex(initialImageIndex !== -1 ? initialImageIndex : 0);
         }
-    }, [displayedImages, mainSwiper]);
+    }, [displayedImages, galleryRef]);
 
-    // Função para selecionar uma cor e mostrar a imagem associada
+    // Função para selecionar uma cor e mostrar a imagem associada (apenas mover o índice na galeria)
     const handleColorSelect = (color: Color) => {
         setSelectedColor(color);
-        const nextImages = (color.images && color.images.length > 0 ? (color.images as Image[]) : product.images) || [];
-        if (nextImages.length === 0) return;
-        setSelectedImage(nextImages[0]);
-        if (mainSwiper && !mainSwiper.destroyed) mainSwiper.slideTo(0);
-        if (thumbsSwiper && !thumbsSwiper.destroyed) (thumbsSwiper as SwiperCore).slideTo(0);
+
+        // Descobrir o índice na lista completa de imagens
+        const idx = findImageIndexForColor(color);
+        const safeIdx = idx >= 0 && idx < displayedImages.length ? idx : 0;
+        const img = displayedImages[safeIdx];
+        if (img) setSelectedImage(img);
+        setCurrentIndex(safeIdx);
+        galleryRef?.slideToIndex(safeIdx);
     };
 
     // Função para abrir o modal de zoom
@@ -308,43 +373,49 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                     </nav>
 
                     <div className="grid grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2">
-                        {/* Galeria de Imagens com Swiper */}
+                        {/* Galeria de Imagens com react-image-gallery */}
                         <div className="space-y-4">
-                            <div className="relative aspect-square !h-[500px] w-full overflow-hidden rounded-lg border border-slate-200">
-                                <Swiper
-                                    modules={[Navigation, Thumbs, Zoom]}
-                                    navigation
-                                    thumbs={{ swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null }}
-                                    zoom={{ maxRatio: 4 }}
-                                    className="product-main-swiper"
-                                    onSwiper={setMainSwiper} // Captura a instância do Swiper principal
-                                    onSlideChange={(swiper) => {
-                                        // Atualiza selectedImage quando o slide do Swiper principal muda
-                                        if (displayedImages[swiper.activeIndex]) {
-                                            setSelectedImage(displayedImages[swiper.activeIndex]);
+                            <div className="relative w-full rounded-lg border border-slate-200">
+                                <ImageGallery
+                                    ref={(instance) => setGalleryRef(instance)}
+                                    items={displayedImages.map((img) => ({
+                                        original:
+                                            img.versions?.find((image) => image.version == 'md')?.url ||
+                                            img.versions?.find((image) => image.version == 'lg')?.url ||
+                                            img.url,
+                                        thumbnail:
+                                            img.versions?.find((image) => image.version == 'sm')?.url ||
+                                            img.versions?.find((image) => image.version == 'md')?.url ||
+                                            img.url,
+                                        originalAlt: product.name,
+                                        thumbnailAlt: `Miniatura ${product.name}`,
+                                        originalClass: 'w-full object-contain p-2',
+                                        thumbnailClass: 'object-contain',
+                                    }))}
+                                    startIndex={currentIndex}
+                                    onSlide={(index) => {
+                                        setCurrentIndex(index);
+                                        const img = displayedImages[index];
+                                        if (img) {
+                                            setSelectedImage(img);
+                                            const color = findColorForImage(img);
+                                            if (color && color.id !== selectedColor?.id) {
+                                                setSelectedColor(color);
+                                            }
                                         }
                                     }}
-                                >
-                                    {displayedImages.map((img) => (
-                                        <SwiperSlide key={img.id} className="!h-[500px] cursor-zoom-in">
-                                            <div className="swiper-zoom-container">
-                                                <img
-                                                    src={
-                                                        img.versions?.find((image) => image.version == 'md')?.url ||
-                                                        img.versions?.find((image) => image.version == 'lg')?.url ||
-                                                        img.url
-                                                    }
-                                                    alt={product.name}
-                                                    className="h-full w-full object-contain p-2"
-                                                />
-                                            </div>
-                                        </SwiperSlide>
-                                    ))}
-                                </Swiper>
+                                    showPlayButton={false}
+                                    showFullscreenButton={false}
+                                    showNav={true}
+                                    
+                                    showThumbnails={displayedImages.length > 1}
+                                    thumbnailPosition="bottom"
+                                    additionalClass=""
+                                />
                                 <button
-                                    className="absolute right-4 bottom-4 z-10 rounded-full bg-white/80 p-2 shadow-md transition-colors hover:bg-white"
+                                    className="absolute top-4 right-4 z-10 rounded-full bg-white/80 p-2 shadow-md transition-colors hover:bg-white"
                                     onClick={() => {
-                                        const activeImageIndex = mainSwiper ? mainSwiper.activeIndex : -1;
+                                        const activeImageIndex = currentIndex;
                                         const imageUrlForZoom =
                                             activeImageIndex !== -1 && displayedImages[activeImageIndex]
                                                 ? displayedImages[activeImageIndex].versions?.find((image) => image.version == 'lg')?.url ||
@@ -360,43 +431,6 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     <ZoomIn size={20} className="text-slate-700" />
                                 </button>
                             </div>
-
-                            {displayedImages.length > 1 && (
-                                <Swiper
-                                    modules={[Navigation, Thumbs]}
-                                    watchSlidesProgress
-                                    slidesPerView={4}
-                                    spaceBetween={10}
-                                    onSwiper={setThumbsSwiper}
-                                    className="product-thumbs-swiper"
-                                >
-                                    {displayedImages.map((img, index) => (
-                                        <SwiperSlide itemRef={`thumb-${img.id}`} key={img.id} className="cursor-pointer">
-                                            <div
-                                                className={`flex aspect-square overflow-hidden rounded-md border transition-all duration-150 ${selectedImage?.id === img.id ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-1' : 'border-slate-200 hover:border-orange-400'} `}
-                                                onClick={() => {
-                                                    setSelectedImage(img);
-                                                    if (mainSwiper && !mainSwiper.destroyed) {
-                                                        mainSwiper.slideTo(index);
-                                                    }
-                                                }}
-                                            >
-                                            
-                                                <img
-                                                    src={
-                                                        img.versions?.find((image) => image.version == 'sm')?.url ||
-                                                        img.versions?.find((image) => image.version == 'md')?.url ||
-                                                        img.versions?.find((image) => image.version == 'lg')?.url ||
-                                                        img.url
-                                                    }
-                                                    alt={`Miniatura ${product.name}`}
-                                                    className="h-full w-full object-contain"
-                                                />
-                                            </div>
-                                        </SwiperSlide>
-                                    ))}
-                                </Swiper>
-                            )}
                         </div>
 
                         {/* Informações do Produto e Ações */}
@@ -547,7 +581,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                             href={product.description_pdf_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-base font-semibold text-white shadow hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors duration-200"
+                                            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-base font-semibold text-white shadow transition-colors duration-200 hover:bg-orange-600 focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none"
                                             style={{ textDecoration: 'none' }}
                                         >
                                             <FileText size={20} className="text-white" />

@@ -269,3 +269,18 @@
 .no-tailwind {
   all: unset;
 }
+.image-gallery-image {
+    @apply object-contain !max-h-[500px];
+}
+
+.image-gallery-thumbnail.active, .image-gallery-thumbnail:focus {
+    /* outline: none;
+    border: 4px solid #337ab7; */
+
+    @apply outline-none border-4 !border-orange-500;
+}
+
+.image-gallery-icon.image-gallery-left-nav, .image-gallery-icon.image-gallery-right-nav {
+    @apply hover:!text-orange-500;
+}
+

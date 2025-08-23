@@ -129,7 +129,7 @@ class ProductController extends Controller
         $product->load([
             'category.parent',
             'images.versions',
-            // 'images.colors',
+            'images.colors',
             'mainImage.versions',
             'colors.images.versions',
             'sizes',

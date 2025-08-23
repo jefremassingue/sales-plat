@@ -327,27 +327,23 @@ class ProductController extends Controller implements HasMiddleware
                                 'is_main' => $isMain
                             ]);
 
-                            // Se houver um color_id associado à imagem
-                            if (isset($imageColors[$index]) && $imageColors[$index]) {
-                                $colorTempId = $imageColors[$index];
-                                $colorId = $colorIds[$colorTempId] ?? null;
+                            // 1) Guardar sempre a imagem para o produto
+                            $product->images()->save($image);
 
-                                if ($colorId) {
-                                    $color = ProductColor::find($colorId);
-                                    if ($color) {
-                                        $color->images()->save($image);
-                                    } else {
-                                        $product->images()->save($image);
-                                    }
-                                } else {
-                                    $product->images()->save($image);
+                            // 2) Se houver uma cor associada, fazer o attach na pivot color_images
+                            if (isset($imageColors[$index]) && $imageColors[$index]) {
+                                $colorKey = $imageColors[$index];
+                                // aceitar tanto _tempId (mapeado em $colorIds) como um ID já persistido
+                                $resolvedColorId = $colorIds[$colorKey] ?? $colorKey;
+
+                                if ($resolvedColorId) {
+                                    $image->colors()->syncWithoutDetaching([
+                                        $resolvedColorId => ['id' => (string) Str::ulid()]
+                                    ]);
                                 }
-                            } else {
-                                // Associar ao produto
-                                $product->images()->save($image);
                             }
                         } catch (\Exception $e) {
-                            // Se houver erro, remover a imagem caso já tenha sido salva
+                            // Se houver erro, remover o ficheiro caso já tenha sido guardado
                             if (isset($path) && Storage::disk('public')->exists($path)) {
                                 Storage::disk('public')->delete($path);
                             }
@@ -831,24 +827,20 @@ class ProductController extends Controller implements HasMiddleware
                                 'typeable_id' => $product->id
                             ]);
 
-                            // Se houver um color_id associado à imagem
-                            if (isset($imageColors[$index]) && $imageColors[$index]) {
-                                $colorTempId = $imageColors[$index];
-                                $colorId = $colorIds[$colorTempId] ?? null;
+                            // 1) Guardar sempre a imagem para o produto
+                            $product->images()->save($image);
 
-                                if ($colorId) {
-                                    $color = ProductColor::find($colorId);
-                                    if ($color) {
-                                        $color->images()->save($image);
-                                    } else {
-                                        $product->images()->save($image);
-                                    }
-                                } else {
-                                    $product->images()->save($image);
+                            // 2) Se houver uma cor associada, fazer o attach na pivot color_images
+                            if (isset($imageColors[$index]) && $imageColors[$index]) {
+                                $colorKey = $imageColors[$index];
+                                // aceitar tanto _tempId (mapeado em $colorIds) como um ID já persistido
+                                $resolvedColorId = $colorIds[$colorKey] ?? $colorKey;
+
+                                if ($resolvedColorId) {
+                                    $image->colors()->syncWithoutDetaching([
+                                        $resolvedColorId => ['id' => (string) Str::ulid()]
+                                    ]);
                                 }
-                            } else {
-                                // Associar ao produto
-                                $product->images()->save($image);
                             }
 
                             // Se for a imagem principal, atualizar as outras imagens
