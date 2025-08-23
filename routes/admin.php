@@ -36,6 +36,7 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     Route::resource('products', ProductController::class);
     Route::get('products/{product}/inventory', [ProductController::class, 'manageInventory'])->name('products.inventory');
     Route::post('products/update-inventory', [ProductController::class, 'updateInventory'])->name('products.update-inventory');
+    Route::post('products/{product}/duplicate', [ProductController::class, 'duplicate'])->name('products.duplicate');
 
     // Rotas para gestão de inventário
     Route::resource('inventories', InventoryController::class);

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ import AppLayout from '@/layouts/app-layout';
 import { can } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ChevronDown, Edit, Eye, Filter, GridIcon, ListIcon, MoreHorizontal, PackageSearch, Plus, Store, Trash, WarehouseIcon } from 'lucide-react';
+import { ChevronDown, Copy, Edit, Eye, Filter, GridIcon, ListIcon, MoreHorizontal, PackageSearch, Plus, Store, Trash, WarehouseIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Image {
@@ -246,6 +246,25 @@ export default function Index({ products, categories, filters }: Props) {
         setBulkDeleteAlertOpen(false);
     };
 
+    const handleDuplicate = (id: number) => {
+        router.post(`/admin/products/${id}/duplicate`, {}, {
+            onSuccess: () => {
+                toast({
+                    title: 'Produto duplicado',
+                    description: 'O produto foi duplicado com sucesso!',
+                    variant: 'success',
+                });
+            },
+            onError: () => {
+                toast({
+                    title: 'Erro',
+                    description: 'Ocorreu um erro ao duplicar o produto.',
+                    variant: 'destructive',
+                });
+            }
+        });
+    };
+
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('pt-MZ', {
             style: 'currency',
@@ -283,7 +302,7 @@ export default function Index({ products, categories, filters }: Props) {
                     <CardTitle className="line-clamp-1">{product.name}</CardTitle>
                     <div className="flex items-center justify-between">
                         <div className="text-lg font-bold">{formatCurrency(product.price)}</div>
-                        <Badge variant={product.active ? 'success' : 'secondary'}>{product.active ? 'Activo' : 'Inactivo'}</Badge>
+                        <Badge variant={product.active ? 'default' : 'secondary'}>{product.active ? 'Activo' : 'Inactivo'}</Badge>
                     </div>
                     {/* <CardDescription className="line-clamp-2">{product.description || 'Sem descrição'}</CardDescription> */}
                 </CardHeader>
@@ -350,6 +369,16 @@ export default function Index({ products, categories, filters }: Props) {
                                 <Edit className="mr-1 h-4 w-4" />
                                 Editar
                             </Link>
+                        </Button>
+                    )}
+                    {can('admin-product.create') && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDuplicate(product.id)}
+                        >
+                            <Copy className="mr-1 h-4 w-4" />
+                            Duplicar
                         </Button>
                     )}
                     {can('admin-product.destroy') && (
@@ -563,7 +592,7 @@ export default function Index({ products, categories, filters }: Props) {
                                                                 )}
                                                             </TableCell>
                                                             <TableCell>
-                                                                <Badge variant={product.active ? 'success' : 'secondary'}>
+                                                                <Badge variant={product.active ? 'default' : 'secondary'}>
                                                                     {product.active ? 'Activo' : 'Inactivo'}
                                                                 </Badge>
                                                                 {product.featured && (
@@ -603,6 +632,14 @@ export default function Index({ products, categories, filters }: Props) {
                                                                                     <Edit className="mr-2 h-4 w-4" />
                                                                                     <span>Editar</span>
                                                                                 </Link>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        {can('admin-product.create') && (
+                                                                            <DropdownMenuItem
+                                                                                onClick={() => handleDuplicate(product.id)}
+                                                                            >
+                                                                                <Copy className="mr-2 h-4 w-4" />
+                                                                                <span>Duplicar</span>
                                                                             </DropdownMenuItem>
                                                                         )}
                                                                         {can('admin-product.destroy') && (

@@ -35,6 +35,7 @@ class ProductController extends Controller implements HasMiddleware
             new Middleware('permission:admin-product.edit', only: ['edit', 'update']),
             new Middleware('permission:admin-product.show', only: ['show']),
             new Middleware('permission:admin-product.destroy', only: ['destroy']),
+            new Middleware('permission:admin-product.create', only: ['duplicate']),
         ];
     }
 
@@ -1158,6 +1159,193 @@ class ProductController extends Controller implements HasMiddleware
             return redirect()->back()
                 ->withErrors(['error' => 'Ocorreu um erro ao validar os dados: ' . $e->getMessage()])
                 ->withInput();
+        }
+    }
+
+    /**
+     * Duplicate the specified product
+     */
+    public function duplicate(Product $product)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Carregar todas as relações necessárias
+            $product->load([
+                'images.versions',
+                'colors.images.versions',
+                'sizes',
+                'attributes',
+                'variants.color',
+                'variants.size'
+            ]);
+
+            // Criar uma cópia do produto com dados básicos
+            $productData = $product->toArray();
+            
+            // Remover campos que não devem ser duplicados
+            unset($productData['id'], $productData['created_at'], $productData['updated_at']);
+            
+            // Modificar o nome e slug para indicar que é uma cópia
+            $productData['name'] = $productData['name'] . ' (Cópia)';
+            $productData['slug'] = Str::slug($productData['name']);
+            
+            // Garantir que o slug seja único
+            $baseSlug = $productData['slug'];
+            $counter = 1;
+            while (Product::where('slug', $productData['slug'])->exists()) {
+                $productData['slug'] = $baseSlug . '-' . $counter;
+                $counter++;
+            }
+            
+            // Limpar SKU para evitar duplicatas (será gerado automaticamente ou deixado vazio)
+            $productData['sku'] = null;
+            $productData['barcode'] = null;
+            
+            // Criar o novo produto
+            $newProduct = Product::create($productData);
+
+            // Duplicar cores
+            $colorMapping = [];
+            foreach ($product->colors as $color) {
+                $colorData = $color->toArray();
+                unset($colorData['id'], $colorData['product_id'], $colorData['created_at'], $colorData['updated_at']);
+                $colorData['product_id'] = $newProduct->id;
+                
+                $newColor = ProductColor::create($colorData);
+                $colorMapping[$color->id] = $newColor->id;
+
+                // Duplicar imagens da cor
+                foreach ($color->images as $image) {
+                    $imageData = $image->toArray();
+                    unset($imageData['id'], $imageData['imageable_id'], $imageData['created_at'], $imageData['updated_at']);
+                    $imageData['imageable_id'] = $newColor->id;
+                    
+                    // Copiar o arquivo físico se existir
+                    if ($image->path && Storage::disk($image->storage)->exists($image->path)) {
+                        $fileExtension = pathinfo($image->path, PATHINFO_EXTENSION);
+                        $newPath = 'products/' . $newProduct->id . '/colors/' . $newColor->id . '/' . Str::uuid() . '.' . $fileExtension;
+                        
+                        if (Storage::disk($image->storage)->copy($image->path, $newPath)) {
+                            $imageData['path'] = $newPath;
+                        }
+                    }
+                    
+                    $newImage = Image::create($imageData);
+
+                    // Duplicar versões da imagem
+                    foreach ($image->versions as $version) {
+                        $versionData = $version->toArray();
+                        unset($versionData['id'], $versionData['original_image_id'], $versionData['created_at'], $versionData['updated_at']);
+                        $versionData['original_image_id'] = $newImage->id;
+                        
+                        // Copiar o arquivo da versão se existir
+                        if ($version->path && Storage::disk($version->storage)->exists($version->path)) {
+                            $fileExtension = pathinfo($version->path, PATHINFO_EXTENSION);
+                            $newVersionPath = 'products/' . $newProduct->id . '/colors/' . $newColor->id . '/versions/' . $version->version . '/' . Str::uuid() . '.' . $fileExtension;
+                            
+                            if (Storage::disk($version->storage)->copy($version->path, $newVersionPath)) {
+                                $versionData['path'] = $newVersionPath;
+                            }
+                        }
+                        
+                        Image::create($versionData);
+                    }
+                }
+            }
+
+            // Duplicar tamanhos
+            $sizeMapping = [];
+            foreach ($product->sizes as $size) {
+                $sizeData = $size->toArray();
+                unset($sizeData['id'], $sizeData['product_id'], $sizeData['created_at'], $sizeData['updated_at']);
+                $sizeData['product_id'] = $newProduct->id;
+                
+                $newSize = ProductSize::create($sizeData);
+                $sizeMapping[$size->id] = $newSize->id;
+            }
+
+            // Duplicar atributos
+            foreach ($product->attributes as $attribute) {
+                $attributeData = $attribute->toArray();
+                unset($attributeData['id'], $attributeData['product_id'], $attributeData['created_at'], $attributeData['updated_at']);
+                $attributeData['product_id'] = $newProduct->id;
+                
+                ProductAttribute::create($attributeData);
+            }
+
+            // Duplicar variantes
+            foreach ($product->variants as $variant) {
+                $variantData = $variant->toArray();
+                unset($variantData['id'], $variantData['product_id'], $variantData['created_at'], $variantData['updated_at']);
+                $variantData['product_id'] = $newProduct->id;
+                
+                // Mapear as novas cores e tamanhos
+                if ($variant->color_id && isset($colorMapping[$variant->color_id])) {
+                    $variantData['color_id'] = $colorMapping[$variant->color_id];
+                }
+                
+                if ($variant->size_id && isset($sizeMapping[$variant->size_id])) {
+                    $variantData['size_id'] = $sizeMapping[$variant->size_id];
+                }
+                
+                // Limpar SKU da variante para evitar duplicatas
+                $variantData['sku'] = null;
+                
+                ProductVariant::create($variantData);
+            }
+
+            // Duplicar imagens principais do produto
+            foreach ($product->images as $image) {
+                $imageData = $image->toArray();
+                unset($imageData['id'], $imageData['imageable_id'], $imageData['created_at'], $imageData['updated_at']);
+                $imageData['imageable_id'] = $newProduct->id;
+                
+                // Copiar o arquivo físico se existir
+                if ($image->path && Storage::disk($image->storage)->exists($image->path)) {
+                    $fileExtension = pathinfo($image->path, PATHINFO_EXTENSION);
+                    $newPath = 'products/' . $newProduct->id . '/' . Str::uuid() . '.' . $fileExtension;
+                    
+                    if (Storage::disk($image->storage)->copy($image->path, $newPath)) {
+                        $imageData['path'] = $newPath;
+                    }
+                }
+                
+                $newImage = Image::create($imageData);
+
+                // Duplicar versões da imagem
+                foreach ($image->versions as $version) {
+                    $versionData = $version->toArray();
+                    unset($versionData['id'], $versionData['original_image_id'], $versionData['created_at'], $versionData['updated_at']);
+                    $versionData['original_image_id'] = $newImage->id;
+                    
+                    // Copiar o arquivo da versão se existir
+                    if ($version->path && Storage::disk($version->storage)->exists($version->path)) {
+                        $fileExtension = pathinfo($version->path, PATHINFO_EXTENSION);
+                        $newVersionPath = 'products/' . $newProduct->id . '/versions/' . $version->version . '/' . Str::uuid() . '.' . $fileExtension;
+                        
+                        if (Storage::disk($version->storage)->copy($version->path, $newVersionPath)) {
+                            $versionData['path'] = $newVersionPath;
+                        }
+                    }
+                    
+                    Image::create($versionData);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.products.edit', $newProduct)
+                ->with('success', 'Produto duplicado com sucesso! Pode agora editar a cópia criada.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Erro ao duplicar produto: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'product_id' => $product->id
+            ]);
+
+            return redirect()->back()->with('error', 'Ocorreu um erro ao duplicar o produto: ' . $e->getMessage());
         }
     }
 }
