@@ -375,7 +375,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                     <div className="grid grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2">
                         {/* Galeria de Imagens com react-image-gallery */}
                         <div className="space-y-4">
-                            <div className="relative w-full rounded-lg border border-slate-200">
+                            <div className="relative w-full overflow-hidden ">
                                 <ImageGallery
                                     ref={(instance) => setGalleryRef(instance)}
                                     items={displayedImages.map((img) => ({
@@ -389,7 +389,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                             img.url,
                                         originalAlt: product.name,
                                         thumbnailAlt: `Miniatura ${product.name}`,
-                                        originalClass: 'w-full object-contain p-2',
+                                        originalClass: 'w-full aspect-[4/3] object-contain p-3',
                                         thumbnailClass: 'object-contain',
                                     }))}
                                     startIndex={currentIndex}
@@ -413,7 +413,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     additionalClass=""
                                 />
                                 <button
-                                    className="absolute top-4 right-4 z-10 rounded-full bg-white/80 p-2 shadow-md transition-colors hover:bg-white"
+                                    className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 shadow-md ring-1 ring-slate-200 transition-colors hover:bg-white"
                                     onClick={() => {
                                         const activeImageIndex = currentIndex;
                                         const imageUrlForZoom =
@@ -434,8 +434,10 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                         </div>
 
                         {/* Informações do Produto e Ações */}
-                        <div className="space-y-6">
-                            <div>
+                        <div className="lg:sticky lg:top-24">
+                            <div className="space-y-6 rounded-xl border border-slate-200 bg-white/60 p-6 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/50">
+                                {/* Cabeçalho */}
+                                <div className="min-w-0">
                                 <div className="flex flex-wrap items-center gap-3">
                                     {product.brand && (
                                         <div className="flex items-center gap-2">
@@ -454,72 +456,112 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                         | {product.category.parent?.name} - {product.category.name}
                                     </p>
                                 </div>
-                                <h1 className="mt-4 mb-2 text-3xl font-bold text-slate-800 md:text-4xl">{product.name}</h1>
+                                <h1 className="mt-3 mb-2 text-2xl font-bold leading-snug text-slate-900 md:text-3xl">{product.name}</h1>
 
-                                <div className="mb-3 flex items-center space-x-2">
-                                    {product.certification && (
-                                        <span className="rounded bg-green-100 px-2 py-0.5 text-sm text-green-800">{product.certification}</span>
+                                <div className="mb-4 flex flex-wrap items-center gap-2">
+                                    {isInStock && (
+                                        <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                                            <CheckCircle size={14} /> Em estoque {product.total_stock ? `(${product.total_stock})` : ''}
+                                        </span>
                                     )}
-                                    {product.featured && <span className="rounded bg-orange-100 px-2 py-0.5 text-sm text-orange-800">Destaque</span>}
+                                    {product.certification && (
+                                        <span className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                                            {product.certification}
+                                        </span>
+                                    )}
+                                    {product.featured && (
+                                        <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700">
+                                            Destaque
+                                        </span>
+                                    )}
+                                    {product.sku && (
+                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">SKU: {product.sku}</span>
+                                    )}
+                                    {product.barcode && (
+                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">EAN: {product.barcode}</span>
+                                    )}
                                 </div>
 
-                                <div className="text-zinc-700" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+                                <div className="text-slate-700" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+                                </div>
+
+                            {/* Opções */}
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Opções</h3>
+                                {/* Opções de Cor */}
+                                {product.colors && product.colors.length > 0 && (
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr] sm:items-center">
+                                        <label className="text-sm font-medium text-slate-700">
+                                            Cor:
+                                            <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">{selectedColor?.name}</span>
+                                        </label>
+                                        <div className="flex flex-wrap gap-2.5">
+                                            {product.colors.map((color) => (
+                                                <button
+                                                    key={color.id}
+                                                    onClick={() => handleColorSelect(color)}
+                                                    title={color.name}
+                                                    className={`relative h-9 w-9 rounded-full border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 ${
+                                                        selectedColor?.id === color.id
+                                                            ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-1'
+                                                            : 'border-slate-300 hover:border-orange-400'
+                                                    }`}
+                                                    aria-pressed={selectedColor?.id === color.id}
+                                                    style={{ backgroundColor: color.hex_code || '#ccc' }}
+                                                    aria-label={`Selecionar cor ${color.name}`}
+                                                >
+                                                    {selectedColor?.id === color.id && (
+                                                        <span className="absolute inset-0 m-auto flex h-full w-full items-center justify-center rounded-full">
+                                                            <CheckCircle size={16} className="text-white/90 drop-shadow" />
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Opções de Tamanho */}
+                                {product.sizes && product.sizes.length > 0 && (
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr] sm:items-center">
+                                        <label className="text-sm font-medium text-slate-700">Tamanho:</label>
+                                        <div className="flex flex-wrap gap-2.5">
+                                            {product.sizes.map((size) => (
+                                                <button
+                                                    key={size.id}
+                                                    onClick={() => setSelectedSize(size)}
+                                                    className={`rounded-md border px-3.5 py-2 text-sm font-medium transition-colors duration-150 ${
+                                                        selectedSize?.id === size.id
+                                                            ? 'border-orange-500 bg-orange-500 text-white'
+                                                            : 'border-slate-300 bg-white text-slate-700 hover:border-orange-400 hover:text-orange-600'
+                                                    }`}
+                                                    aria-pressed={selectedSize?.id === size.id}
+                                                    title={size.name}
+                                                >
+                                                    {size.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Opções de Cor */}
-                            {product.colors && product.colors.length > 0 && (
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-slate-700">
-                                        Cor: <span className="font-semibold">{selectedColor?.name}</span>
-                                    </label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {product.colors.map((color) => (
-                                            <button
-                                                key={color.id}
-                                                onClick={() => handleColorSelect(color)}
-                                                title={color.name}
-                                                className={`h-8 w-8 rounded-full border-2 border-zinc-500 transition-all duration-150 ${selectedColor?.id === color.id ? 'ring-2 ring-orange-500 ring-offset-1' : 'border-transparent hover:opacity-80'}`}
-                                                style={{ backgroundColor: color.hex_code || '#ccc' }}
-                                                aria-label={`Selecionar cor ${color.name}`}
-                                            >
-                                                {selectedColor?.id === color.id && <CheckCircle size={16} className="m-auto text-white opacity-75" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Opções de Tamanho */}
-                            {product.sizes && product.sizes.length > 0 && (
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-slate-700">Tamanho:</label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {product.sizes.map((size) => (
-                                            <button
-                                                key={size.id}
-                                                onClick={() => setSelectedSize(size)}
-                                                className={`rounded-md border px-4 py-1.5 text-sm font-medium transition-colors duration-150 ${selectedSize?.id === size.id ? 'border-orange-500 bg-orange-500 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-orange-400 hover:text-orange-600'}`}
-                                            >
-                                                {size.name}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Quantidade e Botões de Ação */}
+                            {/* Quantidade e Ações */}
                             <div className="space-y-4 border-t border-slate-200 pt-4">
-                                {/* Preço por consulta inline */}
-                                <div className="flex items-center gap-2 text-sm text-slate-700">
-                                    <List size={18} className="text-orange-500" />
-                                    <span>Preço por consulta</span>
+                                <div className="rounded-lg border border-orange-200 bg-orange-50/60 px-4 py-3 text-sm text-orange-800">
+                                    <div className="flex items-center gap-2">
+                                        <List size={18} className="text-orange-500" />
+                                        <span className="font-medium">Preço sob consulta</span>
+                                    </div>
+                                    <p className="mt-1 text-xs text-orange-700">Envie uma solicitação de cotação que retornaremos com o melhor preço.</p>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <label className="block text-sm font-medium text-slate-700">Quantidade:</label>
-                                    <div className="flex items-center rounded-md border border-slate-300">
+
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Quantidade</h3>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <div className="flex items-center overflow-hidden rounded-md border border-slate-300">
                                         <button
                                             onClick={() => handleQuantityChange(-1)}
-                                            className="rounded-l-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100"
+                                            className="rounded-l-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
                                             aria-label="Diminuir quantidade"
                                         >
                                             -
@@ -529,12 +571,12 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                             readOnly
                                             value={quantity}
                                             min="1"
-                                            className="w-12 border-x border-slate-300 py-2 text-center text-sm font-medium text-slate-700 focus:outline-none"
+                                            className="w-16 border-x border-slate-300 py-2 text-center text-sm font-semibold text-slate-800 focus:outline-none"
                                             aria-label="Quantidade"
                                         />
                                         <button
                                             onClick={() => handleQuantityChange(1)}
-                                            className="rounded-r-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100"
+                                            className="rounded-r-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
                                             aria-label="Aumentar quantidade"
                                         >
                                             +
@@ -542,20 +584,19 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3">
+                                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Ações</h3>
+                <div className="flex flex-col gap-3 sm:flex-row">
                                     <button
                                         onClick={handleAddToCart}
-                                        className={`flex cursor-pointer items-center justify-center gap-2 rounded-md bg-zinc-600 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-zinc-700`}
-                                        disabled={!isInStock} // Exemplo: desabilitar se fora de estoque
+                    className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-zinc-700 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-zinc-800 sm:w-auto`}
                                     >
                                         <ShoppingCart size={16} />
-                                        Adicionar a cotação
+                                        Adicionar à cotação
                                     </button>
 
                                     <button
                                         onClick={handleBuyNow}
-                                        className="flex cursor-pointer items-center justify-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-orange-600"
-                                        disabled={!isInStock} // Exemplo: desabilitar se fora de estoque
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-orange-600 sm:w-auto"
                                     >
                                         <List size={20} />
                                         Solicitar cotação
@@ -564,7 +605,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                             </div>
 
                             {/* Informações Adicionais */}
-                            <div className="space-y-3 pt-4 text-sm text-slate-600">
+                            <div className="space-y-3 pt-2 text-sm text-slate-600">
                                 {product.warranty && (
                                     <div className="flex items-center gap-2">
                                         <ShieldCheck size={18} className="text-green-500" />
@@ -581,7 +622,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                             href={product.description_pdf_url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-base font-semibold text-white shadow transition-colors duration-200 hover:bg-orange-600 focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none"
+                                            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-base font-semibold text-white shadow transition-colors duration-200 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
                                             style={{ textDecoration: 'none' }}
                                         >
                                             <FileText size={20} className="text-white" />
@@ -589,6 +630,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                         </a>
                                     </div>
                                 )}
+                            </div>
                             </div>
                         </div>
                     </div>
@@ -600,7 +642,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                             <nav className="-mb-px flex flex-wrap">
                                 <button
                                     onClick={() => setActiveTab('description')}
-                                    className={`mr-8 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                                    className={`mr-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors md:mr-6 ${
                                         activeTab === 'description'
                                             ? 'border-orange-500 text-orange-600'
                                             : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
@@ -612,7 +654,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                 {product.technical_details && (
                                     <button
                                         onClick={() => setActiveTab('technical')}
-                                        className={`mr-8 border-b-2 py-4 text-sm font-medium transition-colors ${
+                                        className={`mr-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors md:mr-6 ${
                                             activeTab === 'technical'
                                                 ? 'border-orange-500 text-orange-600'
                                                 : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
@@ -625,7 +667,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                 {product.features && (
                                     <button
                                         onClick={() => setActiveTab('features')}
-                                        className={`mr-8 border-b-2 py-4 text-sm font-medium transition-colors ${
+                                        className={`mr-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors md:mr-6 ${
                                             activeTab === 'features'
                                                 ? 'border-orange-500 text-orange-600'
                                                 : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
@@ -638,7 +680,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                 {product.attributes && product.attributes.length > 0 && (
                                     <button
                                         onClick={() => setActiveTab('attributes')}
-                                        className={`mr-8 border-b-2 py-4 text-sm font-medium transition-colors ${
+                                        className={`mr-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors md:mr-6 ${
                                             activeTab === 'attributes'
                                                 ? 'border-orange-500 text-orange-600'
                                                 : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700'
@@ -721,9 +763,9 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
 
             {/* Produtos Relacionados */}
             {relatedProducts && relatedProducts.length > 0 && (
-                <div className="mt-16 pb-16">
+                <div className="mt-16 bg-slate-50 py-12">
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                        <h2 className="mb-6 text-2xl font-bold text-slate-800">Produtos Relacionados</h2>
+                        <h2 className="mb-6 text-2xl font-bold text-slate-900">Produtos Relacionados</h2>
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                             {relatedProducts.map((product) => (
