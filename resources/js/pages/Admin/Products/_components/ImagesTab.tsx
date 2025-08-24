@@ -1,12 +1,11 @@
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle, ImageIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProductColor } from './VariantsTab';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 
 export interface ImagePreview {
@@ -32,17 +31,16 @@ interface ImagesTabProps {
 
 export default function ImagesTab({
     imageFiles,
-    setImageFiles,
     colors,
     handleImageChange,
     handleRemoveImage,
     handleSetMainImage,
     handleAssignImageColor,
     errors,
-    mainImageIndex
 }: ImagesTabProps) {
     const [isDragging, setIsDragging] = useState(false);
     const { toast } = useToast();
+    const [clipboardSupported, setClipboardSupported] = useState(false);
 
     const validateFiles = (files: File[]): File[] => {
         const validFiles: File[] = [];
@@ -109,7 +107,7 @@ export default function ImagesTab({
                         target: {
                             files: validFiles
                         }
-                    } as React.ChangeEvent<HTMLInputElement>;
+                    } as unknown as React.ChangeEvent<HTMLInputElement>;
                     handleImageChange(event);
                 }
             }
@@ -130,6 +128,123 @@ export default function ImagesTab({
 
     const handleDragLeave = () => {
         setIsDragging(false);
+    };
+
+    // Allow pasting images from clipboard (Cmd/Ctrl + V)
+    useEffect(() => {
+        // Feature detection for the clipboard.read API
+        try {
+            const supported = typeof window !== 'undefined' && window.isSecureContext && 'clipboard' in navigator && 'read' in navigator.clipboard;
+            setClipboardSupported(!!supported);
+        } catch {
+            setClipboardSupported(false);
+        }
+
+        const onPaste = (e: ClipboardEvent) => {
+            try {
+                // Don't hijack paste while typing into inputs/textareas/contentEditable
+                const target = e.target as HTMLElement | null;
+                const tag = (target?.tagName || '').toLowerCase();
+                const isEditable =
+                    !!target && (target.isContentEditable || tag === 'input' || tag === 'textarea');
+                if (isEditable) return;
+
+                const items = Array.from(e.clipboardData?.items || []);
+                const imageItems = items.filter((item) => item.type.startsWith('image/'));
+                if (imageItems.length === 0) return;
+
+                const files: File[] = [];
+                for (const item of imageItems) {
+                    const file = item.getAsFile();
+                    if (file) {
+                        // Ensure a sensible filename
+                        const ext = (file.type.split('/')[1] || 'png').replace('+xml', '');
+                        const name = file.name && file.name.trim().length > 0
+                            ? file.name
+                            : `pasted-${Date.now()}.${ext}`;
+                        const normalized = new File([file], name, { type: file.type, lastModified: Date.now() });
+                        files.push(normalized);
+                    }
+                }
+
+                if (files.length > 0) {
+                    const validFiles = validateFiles(files);
+                    if (validFiles.length > 0) {
+                        const event = { target: { files: validFiles } } as unknown as React.ChangeEvent<HTMLInputElement>;
+                        handleImageChange(event);
+                        toast({
+                            title: 'Imagem colada',
+                            description: `${validFiles.length} imagem(ns) adicionada(s) do clipboard.`
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao processar imagens coladas:', error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Erro',
+                    description: 'Ocorreu um erro ao colar a imagem. Por favor, tente novamente.'
+                });
+            }
+        };
+
+        window.addEventListener('paste', onPaste as unknown as EventListener);
+        return () => window.removeEventListener('paste', onPaste as unknown as EventListener);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [handleImageChange, toast]);
+
+    // Button handler to read images directly from clipboard
+    const handleClipboardRead = async () => {
+        try {
+            if (!(typeof window !== 'undefined' && window.isSecureContext && 'clipboard' in navigator && 'read' in navigator.clipboard)) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Não suportado',
+                    description: 'A leitura direta da área de transferência não é suportada neste navegador. Use Ctrl+V / ⌘V.'
+                });
+                return;
+            }
+
+            // Some browsers require permission; errors should be caught below
+            const items = await (navigator.clipboard as typeof navigator.clipboard).read();
+            const files: File[] = [];
+            for (const item of items) {
+                // item.types is string[] per spec; getType returns Promise<Blob>
+                for (const type of item.types) {
+                    if (typeof type === 'string' && type.startsWith('image/')) {
+                        const blob = await item.getType(type);
+                        const ext = (type.split('/')[1] || 'png').replace('+xml', '');
+                        const name = `clipboard-${Date.now()}.${ext}`;
+                        const file = new File([blob], name, { type, lastModified: Date.now() });
+                        files.push(file);
+                    }
+                }
+            }
+
+            if (files.length === 0) {
+                toast({
+                    title: 'Sem imagem no clipboard',
+                    description: 'Copie uma imagem e tente novamente.'
+                });
+                return;
+            }
+
+            const validFiles = validateFiles(files);
+            if (validFiles.length > 0) {
+                const event = { target: { files: validFiles } } as unknown as React.ChangeEvent<HTMLInputElement>;
+                handleImageChange(event);
+                toast({ title: 'Imagem adicionada', description: `${validFiles.length} imagem(ns) adicionada(s).` });
+            }
+        } catch (err: unknown) {
+            const hasMessage = (e: unknown): e is { message: string } =>
+                typeof e === 'object' && e !== null && 'message' in e && typeof (e as Record<string, unknown>).message === 'string';
+            const msg = hasMessage(err) ? err.message : 'Ocorreu um erro ao acessar a área de transferência.';
+            toast({
+                variant: 'destructive',
+                title: 'Erro ao ler clipboard',
+                description: `${msg} Dica: você pode usar Ctrl+V / ⌘V dentro desta página.`
+            });
+        }
     };
 
     return (
@@ -158,6 +273,14 @@ export default function ImagesTab({
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
+                // Allow pasting when this area is focused
+                onPaste={(e) => {
+                    // If the paste happens here, let the global handler handle it; prevent default text paste artifacts
+                    if (Array.from(e.clipboardData?.items || []).some(i => i.type.startsWith('image/'))) {
+                        e.preventDefault();
+                    }
+                }}
+                tabIndex={0}
             >
                 <input
                     id="imageUpload"
@@ -176,7 +299,7 @@ export default function ImagesTab({
                         {isDragging ? "Largue as imagens aqui" : "Clique para carregar imagens"}
                     </span>
                     <span className="text-sm text-muted-foreground">
-                        Suporta JPG, PNG e GIF até 2MB
+                        Suporta JPG, PNG e GIF até 2MB — ou cole uma imagem (Ctrl+V / ⌘V)
                     </span>
                     <Button
                         type="button"
@@ -186,6 +309,11 @@ export default function ImagesTab({
                         Escolher ficheiros
                     </Button>
                 </label>
+                <div className="mt-3 flex justify-center">
+                    <Button type="button" variant="secondary" onClick={handleClipboardRead} disabled={!clipboardSupported}>
+                        Colar da área de transferência
+                    </Button>
+                </div>
             </div>
 
             {imageFiles.length > 0 && (
