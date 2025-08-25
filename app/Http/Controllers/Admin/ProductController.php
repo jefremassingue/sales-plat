@@ -315,7 +315,7 @@ class ProductController extends Controller implements HasMiddleware
 
                             $path = $imageFile->store('products', 'public');
                             $isMain = $index == $mainImageIndex;
-                            
+
                             $image = new Image([
                                 'version' => 'original',
                                 'storage' => 'public',
@@ -706,17 +706,27 @@ class ProductController extends Controller implements HasMiddleware
                         try {
                             $colorId = null;
                             if (!empty($variantData['color_id'])) {
-                                $colorId = $colorIds[$variantData['color_id']] ?? $variantData['color_id'];
-                                if (!$colorId) {
-                                    throw new \Exception('Cor não encontrada para a variante');
+                                // Only use valid DB IDs, never temp IDs
+                                if (isset($colorIds[$variantData['color_id']])) {
+                                    $colorId = $colorIds[$variantData['color_id']];
+                                } elseif (!Str::startsWith((string) $variantData['color_id'], 'temp') && ProductColor::where('id', $variantData['color_id'])->exists()) {
+                                    $colorId = $variantData['color_id'];
+                                } else {
+                                    // Invalid color_id, skip this variant
+                                    Log::warning('Variant skipped: invalid color_id', ['color_id' => $variantData['color_id']]);
+                                    continue;
                                 }
                             }
 
                             $sizeId = null;
                             if (!empty($variantData['size_id'])) {
-                                $sizeId = $sizeIds[$variantData['size_id']] ?? $variantData['size_id'];
-                                if (!$sizeId) {
-                                    throw new \Exception('Tamanho não encontrado para a variante');
+                                if (isset($sizeIds[$variantData['size_id']])) {
+                                    $sizeId = $sizeIds[$variantData['size_id']];
+                                } elseif (!Str::startsWith((string) $variantData['size_id'], 'temp') && ProductSize::where('id', $variantData['size_id'])->exists()) {
+                                    $sizeId = $variantData['size_id'];
+                                } else {
+                                    Log::warning('Variant skipped: invalid size_id', ['size_id' => $variantData['size_id']]);
+                                    continue;
                                 }
                             }
 
@@ -836,11 +846,34 @@ class ProductController extends Controller implements HasMiddleware
                                 // aceitar tanto _tempId (mapeado em $colorIds) como um ID já persistido
                                 $resolvedColorId = $colorIds[$colorKey] ?? $colorKey;
 
-                                if ($resolvedColorId) {
-                                    $image->colors()->syncWithoutDetaching([
-                                        $resolvedColorId => ['id' => (string) Str::ulid()]
+                                // Se ainda não existir (ou for temp), criar automaticamente a cor
+                                if (Str::startsWith((string) $resolvedColorId, 'temp') || !ProductColor::where('id', $resolvedColorId)->exists()) {
+                                    $newColorData = null;
+                                    if (is_array($request->colors ?? null)) {
+                                        foreach ($request->colors as $c) {
+                                            if (($c['_tempId'] ?? null) === $colorKey || (isset($c['id']) && (string) $c['id'] === (string) $colorKey)) {
+                                                $newColorData = $c;
+                                                break;
+                                            }
+                                        }
+                                    }
+
+                                    $newColor = $product->colors()->create([
+                                        'name' => $newColorData['name'] ?? 'Sem nome',
+                                        'hex_code' => $newColorData['hex_code'] ?? null,
+                                        'active' => $newColorData['active'] ?? true,
+                                        'order' => ($product->colors()->max('order') ?? 0) + 1,
                                     ]);
+                                    $resolvedColorId = $newColor->id;
+                                    // Atualizar o mapeamento para usos subsequentes
+                                    if (is_string($colorKey)) {
+                                        $colorIds[$colorKey] = $resolvedColorId;
+                                    }
                                 }
+
+                                $image->colors()->syncWithoutDetaching([
+                                    $resolvedColorId => ['id' => (string) Str::ulid()]
+                                ]);
                             }
 
                             // Se for a imagem principal, atualizar as outras imagens
