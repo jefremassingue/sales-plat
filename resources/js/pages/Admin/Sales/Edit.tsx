@@ -1,107 +1,99 @@
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Sale } from '@/types'; // Supondo que você tenha um tipo Sale
-import { zodResolver } from '@hookform/resolvers/zod';
+import { type Sale, type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, User, Package, CreditCard, Check, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { FieldErrors, useFieldArray, useForm } from 'react-hook-form';
+import { useForm, useFieldArray, FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
 
-// Importar os subcomponentes (mesmos do Create)
-import ItemEditDialog from './_components/ItemEditDialog';
-import ManualItemDialog from './_components/ManualItemDialog';
-import ProductCatalog from './_components/ProductCatalog';
+// Importar os componentes
 import SaleDetails from './_components/SaleDetails';
 import SaleSummary from './_components/SaleSummary';
-import ShoppingCartComponent from './_components/ShoppingCart';
+// Importar componentes das cotações para reutilizar
+import ProductSelector from '../Quotations/_components/ProductSelector';
+import ItemForm, { ItemFormValues } from '../Quotations/_components/ItemForm';
+import ItemsTab from '../Quotations/_components/ItemsTab';
 
-// Schema de validação (geralmente o mesmo, mas pode ser ajustado se necessário)
+// Schema de validação para o formulário
 const formSchema = z.object({
-    sale_number: z.string().optional().nullable(),
-    customer_id: z.string().optional().nullable(),
-    issue_date: z.date({ required_error: 'Data de emissão é obrigatória' }),
-    due_date: z.date().optional().nullable(),
-    status: z.enum(['draft', 'pending', 'paid', 'partial', 'cancelled']),
-    currency_code: z.string().min(1, { message: 'Moeda é obrigatória' }),
-    exchange_rate: z
-        .string()
-        .min(1, { message: 'Taxa de câmbio é obrigatória' })
-        .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-        .refine((val) => parseFloat(val) > 0, { message: 'Deve ser maior que zero' }),
-    include_tax: z.boolean().default(true),
-    notes: z.string().optional(),
-    terms: z.string().optional(),
-    shipping_amount: z
-        .string()
-        .optional()
-        .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-        .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-    shipping_address: z.string().optional(),
-    billing_address: z.string().optional(),
-    payment_method: z.string().optional(),
-    amount_paid: z
-        .string()
-        .optional()
-        .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-        .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-      items: z
-        .array(
-            z.object({
-                id: z.any().optional(), // ID do item existente
-                product_id: z.string().optional().nullable(),
-                product_variant_id: z.string().optional().nullable(),
-                warehouse_id: z.string().optional().nullable(),
-                name: z.string().min(1, { message: 'Nome é obrigatório' }),
-                // description: z.null().optional(),
-                quantity: z
-                    .string()
-                    .min(1, { message: 'Quantidade é obrigatória' })
-                    .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => parseFloat(val) > 0, { message: 'Deve ser maior que zero' }),
-                unit: z.string().optional(),
-                unit_price: z
-                    .string()
-                    .min(1, { message: 'Preço é obrigatório' })
-                    .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-                discount_percentage: z
-                    .string()
-                    .optional()
-                    .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
-                    .refine((val) => val === '' || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
-                tax_percentage: z
-                    .string()
-                    .optional()
-                    .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-            }),
-        )
-        .min(1, { message: 'Adicione pelo menos 1 item à venda' }),
+  sale_number: z.string().optional().nullable(),
+  customer_id: z.string().optional(),
+  issue_date: z.date({ required_error: "Data de emissão é obrigatória" }),
+  due_date: z.date().optional().nullable(),
+  status: z.enum(['draft', 'pending', 'paid', 'partial', 'cancelled']),
+  currency_code: z.string().min(1, { message: "Moeda é obrigatória" }),
+  exchange_rate: z.string().min(1, { message: "Taxa de câmbio é obrigatória" })
+    .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+    .refine(val => parseFloat(val) > 0, { message: "Deve ser maior que zero" }),
+  include_tax: z.boolean().default(true),
+  notes: z.string().optional(),
+  terms: z.string().optional(),
+  shipping_amount: z.string().optional()
+    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+  shipping_address: z.string().optional(),
+  billing_address: z.string().optional(),
+  payment_method: z.string().optional(),
+  amount_paid: z.string().optional()
+    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+  reference: z.string().optional(),
+  items: z.array(
+    z.object({
+      id: z.string().optional(),
+      product_id: z.string().optional(),
+      product_variant_id: z.string().optional(),
+      warehouse_id: z.string().optional(),
+      name: z.string().min(1, { message: "Nome é obrigatório" }),
+      description: z.string().optional(),
+      quantity: z.string().min(1, { message: "Quantidade é obrigatória" })
+        .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+        .refine(val => parseFloat(val) > 0, { message: "Deve ser maior que zero" }),
+      unit: z.string().optional(),
+      unit_price: z.string().min(1, { message: "Preço é obrigatório" })
+        .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+        .refine(val => parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+      discount_percentage: z.string().optional()
+        .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+        .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" })
+        .refine(val => val === '' || parseFloat(val) <= 100, { message: "Deve ser no máximo 100%" }),
+      tax_percentage: z.string().optional()
+        .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+        .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+    })
+  ).min(1, { message: "Adicione pelo menos 1 item à venda" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface Customer { id: string; name: string; }
+interface Product { id: string; name: string; price: number; unit?: string; description?: string; category?: { id: string; name: string }; }
+interface Warehouse { id: string; name: string; }
+interface Currency { code: string; exchange_rate: number; decimal_separator: string; thousand_separator: string; decimal_places: number; symbol: string; }
+interface TaxRate { value: number; is_default?: boolean; }
+interface PaymentMethod { value: string; label: string; }
+
 interface Props {
-    sale: Sale; // A prop principal agora é a venda
-    customers: any[];
-    products: any[];
-    warehouses: any[];
-    currencies: any[];
-    defaultCurrency: any;
-    taxRates: any[];
+    sale: Sale;
+    customers: Customer[];
+    products: Product[];
+    warehouses: Warehouse[];
+    currencies: Currency[];
+    defaultCurrency: Currency;
+    taxRates: TaxRate[];
     units: { value: string; label: string }[];
-    statuses: any[];
-    discountTypes: any[];
-    paymentMethods: { value: string; label: string }[];
+    statuses: string[];
+    paymentMethods: PaymentMethod[];
 }
 
 export default function Edit({
-    sale, // Recebe a venda a ser editada
+    sale,
     customers,
     products,
     warehouses,
@@ -110,17 +102,17 @@ export default function Edit({
     taxRates,
     statuses,
     units,
-    discountTypes,
     paymentMethods,
 }: Props) {
     const { toast } = useToast();
+
+    const { errors } = usePage().props as { errors?: Record<string, string | string[]> };
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [activeView, setActiveView] = useState<'products' | 'details'>('details');
-    const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>(warehouses.length > 0 ? warehouses[0].id.toString() : '');
-    const [itemBeingEdited, setItemBeingEdited] = useState<any | null>(null);
-    const [itemEditDialogOpen, setItemEditDialogOpen] = useState(false);
-    const [manualItemDialogOpen, setManualItemDialogOpen] = useState(false);
-    const { errors } = usePage().props as any;
+    const [activeTab, setActiveTab] = useState('items');
+    const [productSelectorOpen, setProductSelectorOpen] = useState(false);
+    const [itemFormOpen, setItemFormOpen] = useState(false);
+    const [onSearch, setOnSearch] = useState('');
+    const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
 
     // Breadcrumbs dinâmicos para a página de edição
     const breadcrumbs: BreadcrumbItem[] = [
@@ -144,10 +136,12 @@ export default function Edit({
             billing_address: sale.billing_address || '',
             notes: sale.notes || '',
             terms: sale.terms || '',
+            reference: sale.reference || '',
+            include_tax: sale.include_tax ?? true,
             items:
-                sale.items?.map((item: any) => ({
+                sale.items?.map((item) => ({
                     ...item,
-                    id: item.id, // Manter o ID do item existente
+                    id: item.id?.toString(), // Manter o ID do item existente
                     product_id: item.product_id ? item.product_id.toString() : undefined,
                     product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
                     warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : undefined,
@@ -155,6 +149,8 @@ export default function Edit({
                     unit_price: item.unit_price.toString(),
                     discount_percentage: item.discount_percentage?.toString() || '0',
                     tax_percentage: item.tax_percentage?.toString() || '0',
+                    description: item.description || '',
+                    unit: item.unit || 'unit',
                 })) || [],
         },
     });
@@ -168,7 +164,7 @@ export default function Edit({
     const watchPaymentAmount = form.watch('amount_paid');
     const watchPaymentMethod = form.watch('payment_method');
 
-    // Lógica para lidar com erros e atualização de moeda (idêntica ao Create)
+    // Lógica para lidar com erros e atualização de moeda
     useEffect(() => {
         const selectedCurrency = currencies.find((c) => c.code === watchCurrency);
         if (selectedCurrency) {
@@ -180,102 +176,145 @@ export default function Edit({
         if (errors) {
             Object.keys(errors).forEach((key) => {
                 if (key.startsWith('items.')) {
-                    const [_, index, field] = key.split('.');
-                    form.setError(`items.${index}.${field}` as any, {
+                    const parts = key.split('.');
+                    const index = parts[1];
+                    const field = parts[2];
+                    form.setError(`items.${index}.${field}` as keyof FormValues, {
                         type: 'manual',
-                        message: errors[key],
+                        message: Array.isArray(errors[key]) ? errors[key][0] : errors[key],
                     });
                 } else {
-                    form.setError(key as any, {
+                    form.setError(key as keyof FormValues, {
                         type: 'manual',
-                        message: errors[key],
+                        message: Array.isArray(errors[key]) ? errors[key][0] : errors[key],
                     });
                 }
             });
             if (Object.keys(errors).some((key) => !key.startsWith('items.'))) {
-                setActiveView('details');
+                setActiveTab('details');
             }
         }
     }, [errors, form]);
 
-    const addProductToCart = async (productId: string, warehouseId?: string) => {
-        const selectedProduct = products.find((p) => p.id.toString() === productId);
+    // Lidar com a seleção de um produto no seletor
+    const handleProductSelect = (productId: string) => {
+        setProductSelectorOpen(false);
+
+        // Obter o produto selecionado
+        const selectedProduct = products.find((p) => p.id === productId);
         if (!selectedProduct) return;
 
-        try {
-            let unitPrice = selectedProduct.price.toString();
-            if (warehouseId) {
-                // Lógica para buscar preço do inventário (pode ser extraída para uma função helper)
-            }
+        // Se estiver editando um item existente
+        if (editingItemIndex !== null) {
+            // Atualizar o item existente com os dados do produto
+            const currentItem = { ...fields[editingItemIndex] };
+            update(editingItemIndex, {
+                ...currentItem,
+                product_id: productId,
+                name: selectedProduct.name,
+                unit_price: selectedProduct.price.toString(),
+                unit: selectedProduct.unit || 'unit',
+            });
+        } else {
+            // Criar um novo item com os dados do produto
+            const newItem = {
+                product_id: productId,
+                name: selectedProduct.name,
+                quantity: '1',
+                unit_price: selectedProduct.price.toString(),
+                unit: selectedProduct.unit || 'unit',
+                discount_percentage: '0',
+                tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value?.toString() || '16',
+                warehouse_id: warehouses.length > 0 ? warehouses[0].id.toString() : "",
+                description: '',
+            };
 
-            const existingItemIndex = fields.findIndex(
-                (item) => item.product_id === productId && item.warehouse_id === (warehouseId || selectedWarehouseId),
-            );
+            // Adicionar diretamente no form
+            append(newItem);
 
-            if (existingItemIndex >= 0) {
-                const currentItem = fields[existingItemIndex];
-                const newQuantity = (parseFloat(currentItem.quantity) + 1).toString();
-                update(existingItemIndex, { ...currentItem, quantity: newQuantity });
-                toast({ title: 'Quantidade atualizada' });
-            } else {
-                append({
-                    id: undefined, // Novo item não tem ID
-                    product_id: productId,
-                    name: selectedProduct.name,
-                    description: selectedProduct.description || '',
-                    quantity: '1',
-                    unit: selectedProduct.unit || 'unit',
-                    unit_price: unitPrice,
-                    warehouse_id: warehouseId || selectedWarehouseId,
-                    discount_percentage: '0',
-                    tax_percentage: taxRates.find((tax) => tax.is_default)?.value.toString() || '16',
-                });
-                toast({ title: 'Produto adicionado', variant: 'success' });
-            }
-        } catch (error) {
-            toast({ title: 'Erro', description: 'Ocorreu um erro ao adicionar o produto.', variant: 'destructive' });
+            // Definir o item recém adicionado como item em edição
+            setTimeout(() => {
+                setEditingItemIndex(fields.length);
+                // Abrir formulário de item para editar detalhes adicionais
+                setItemFormOpen(true);
+            }, 0);
         }
     };
 
-    const handleUpdateItem = (index: number, field: string, value: string) => {
-        const currentItem = { ...fields[index] };
-        update(index, { ...currentItem, [field]: value });
+    // Adicionar um novo item
+    const handleAddItem = (item: ItemFormValues) => {
+        if (editingItemIndex !== null) {
+            // Atualizar item existente
+            update(editingItemIndex, { ...item, id: fields[editingItemIndex].id });
+            setEditingItemIndex(null);
+            toast({ title: 'Item atualizado com sucesso', variant: 'success' });
+        } else {
+            // Adicionar novo item
+            append(item);
+            toast({ title: 'Item adicionado com sucesso', variant: 'success' });
+        }
+        setItemFormOpen(false);
     };
 
+    // Editar um item existente
     const handleEditItem = (index: number) => {
-        setItemBeingEdited({ ...fields[index], index });
-        setItemEditDialogOpen(true);
+        setEditingItemIndex(index);
+        setItemFormOpen(true);
     };
 
-    const handleSaveItemEdit = (editedItem: any) => {
-        const { index, ...itemToUpdate } = editedItem;
-        update(index, itemToUpdate);
-        setItemBeingEdited(null);
+    const handleDuplicateItem = (index: number) => {
+        const itemToDuplicate = fields[index];
+        if (itemToDuplicate) {
+            // Create a shallow copy of the item without ID
+            const duplicatedItem = { ...itemToDuplicate };
+            if ('id' in duplicatedItem) {
+                delete (duplicatedItem as any).id;
+            }
+            // Append the duplicated item to the end of the array
+            append(duplicatedItem);
+            toast({ title: 'Item duplicado com sucesso', variant: 'success' });
+        }
     };
 
-    const handleAddManualItem = (item: any) => append({ ...item, product_id: undefined, id: undefined });
+    // Remover um item
+    const handleRemoveItem = (index: number) => {
+        remove(index);
+        toast({ title: 'Item removido com sucesso', variant: 'success' });
+    };
 
     const calculateItemValues = (item: any) => {
         const quantity = parseFloat(item.quantity) || 0;
         const unitPrice = parseFloat(item.unit_price) || 0;
-        const discountPercentage = parseFloat(item.discount_percentage) || 0;
-        const taxPercentage = parseFloat(item.tax_percentage) || 0;
+        const discountPercentage = parseFloat(item.discount_percentage || '0') || 0;
+        const taxPercentage = parseFloat(item.tax_percentage || '0') || 0;
+
+        // Calcular subtotal (quantidade * preço unitário)
         const subtotal = quantity * unitPrice;
+
+        // Calcular valor do desconto
         const discountAmount = subtotal * (discountPercentage / 100);
+
+        // Calcular valor do imposto (após descontos)
         const taxAmount = (subtotal - discountAmount) * (taxPercentage / 100);
+
+        // Calcular total
         const total = subtotal - discountAmount + taxAmount;
-        return { subtotal, discount_amount: discountAmount, tax_amount: taxAmount, total };
+
+        return {
+            subtotal: subtotal.toFixed(2),
+            discount_amount: discountAmount.toFixed(2),
+            tax_amount: taxAmount.toFixed(2),
+            total: total.toFixed(2),
+        };
     };
 
     const calculateTotals = () => {
-        let subtotal = 0,
-            taxAmount = 0,
-            discountAmount = 0;
-        fields.forEach((item) => {
+        let subtotal = 0, taxAmount = 0, discountAmount = 0;
+        fields.forEach(item => {
             const values = calculateItemValues(item);
-            subtotal += values.subtotal;
-            taxAmount += values.tax_amount;
-            discountAmount += values.discount_amount;
+            subtotal += parseFloat(values.subtotal);
+            taxAmount += parseFloat(values.tax_amount);
+            discountAmount += parseFloat(values.discount_amount);
         });
         const shippingAmount = parseFloat(form.watch('shipping_amount') || '0');
         let total = subtotal - discountAmount;
@@ -286,21 +325,38 @@ export default function Edit({
         return { subtotal, taxAmount, discountAmount, shippingAmount, total };
     };
 
-    const formatCurrency = (value: number) => {
+    const formatCurrency = (value: number | null | undefined, withSymbol = true) => {
         if (value === null || value === undefined) return 'N/A';
         const selectedCurrencyCode = form.getValues('currency_code');
-        const selectedCurrency = currencies.find((c) => c.code === selectedCurrencyCode) || defaultCurrency;
-        return new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: selectedCurrency?.code || 'MZN' }).format(value);
+        const selectedCurrency = currencies.find(c => c.code === selectedCurrencyCode) || defaultCurrency;
+        if (!selectedCurrency) {
+            return new Intl.NumberFormat('pt-PT', { style: withSymbol ? 'currency' : 'decimal', currency: 'MZN' }).format(value);
+        }
+        const { decimal_separator, thousand_separator, decimal_places, symbol } = selectedCurrency;
+        const formattedValue = value
+            .toFixed(decimal_places)
+            .replace('.', 'DECIMAL')
+            .replace(/\B(?=(\d{3})+(?!\d))/g, thousand_separator)
+            .replace('DECIMAL', decimal_separator);
+        return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
     };
 
     const handlePaymentMethodChange = (method: string) => form.setValue('payment_method', method);
-    const handlePaymentAmountChange = (amount: string) => form.setValue('amount_paid', amount);
+
+    const handlePaymentAmountChange = (amount: string) => {
+        form.setValue('amount_paid', amount);
+        const amountValue = parseFloat(amount) || 0;
+        const total = calculateTotals().total;
+        if (total > 0 && amountValue >= total) form.setValue('status', 'paid');
+        else if (amountValue > 0) form.setValue('status', 'partial');
+        else form.setValue('status', 'pending');
+    };
 
     const processSubmit = (values: FormValues) => {
         setIsSubmitting(true);
         const data = {
             ...values,
-            _method: 'PUT', // Adiciona o método para o Laravel
+            _method: 'PUT',
             customer_id: values.customer_id || null,
             exchange_rate: parseFloat(values.exchange_rate),
             issue_date: format(values.issue_date, 'yyyy-MM-dd'),
@@ -309,7 +365,7 @@ export default function Edit({
             amount_paid: values.amount_paid ? parseFloat(values.amount_paid) : 0,
             items: values.items.map((item) => ({
                 ...item,
-                id: item.id || null, // Envia o ID do item se existir
+                id: item.id || null,
                 product_id: item.product_id || null,
                 product_variant_id: item.product_variant_id || null,
                 warehouse_id: item.warehouse_id || null,
@@ -353,62 +409,55 @@ export default function Edit({
                             <p className="text-muted-foreground">Número da Fatura: #{sale.sale_number}</p>
                         </div>
                     </div>
-                    <div>
-                        <Button
-                            variant={activeView === 'products' ? 'default' : 'outline'}
-                            onClick={() => setActiveView('products')}
-                            className="mr-2"
-                            type="button"
-                        >
-                            Produtos
-                        </Button>
-                        <Button variant={activeView === 'details' ? 'default' : 'outline'} onClick={() => setActiveView('details')} type="button">
-                            Detalhes da Venda
-                        </Button>
-                    </div>
                 </div>
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(processSubmit, onInvalid)} className="space-y-8">
                         <div className="grid grid-cols-12 gap-6">
                             <div className="col-span-12 lg:col-span-8">
-                                {activeView === 'products' ? (
-                                    <div>
-                                        <ProductCatalog
+                                <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab}>
+                                    <TabsList>
+                                        <TabsTrigger value="details">
+                                            <User className="mr-2 h-4 w-4" />
+                                            Dados Gerais
+                                        </TabsTrigger>
+                                        <TabsTrigger value="items">
+                                            <Package className="mr-2 h-4 w-4" />
+                                            Produtos {fields.length > 0 && `(${fields.length})`}
+                                        </TabsTrigger>
+                                    </TabsList>
+
+                                    {/* Tab de Dados Gerais */}
+                                    <TabsContent value="details" className="mt-6">
+                                        <SaleDetails control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
+                                    </TabsContent>
+
+                                    {/* Tab de Produtos */}
+                                    <TabsContent value="items" className="mt-6">
+                                        <ItemsTab
+                                            fieldArray={{ fields, append, remove, update }}
                                             products={products}
-                                            categories={products.reduce(
-                                                (acc: any[], p) =>
-                                                    !p.category || acc.some((c) => c.id === p.category.id) ? acc : [...acc, p.category],
-                                                [],
-                                            )}
-                                            onProductSelect={addProductToCart}
                                             warehouses={warehouses}
-                                            selectedWarehouseId={selectedWarehouseId}
-                                            onWarehouseChange={setSelectedWarehouseId}
-                                            className="mb-6"
+                                            taxRates={taxRates}
+                                            units={units}
+                                            form={form}
+                                            currencies={currencies}
+                                            calculateItemValues={calculateItemValues}
+                                            formatCurrency={formatCurrency}
+                                            onAddItemManual={() => {
+                                                setEditingItemIndex(null);
+                                                setItemFormOpen(true);
+                                            }}
+                                            onAddProduct={() => {
+                                                setEditingItemIndex(null);
+                                                setProductSelectorOpen(true);
+                                            }}
+                                            onEditItem={handleEditItem}
+                                            onDuplicateItem={handleDuplicateItem}
+                                            onRemoveItem={handleRemoveItem}
                                         />
-                                        <div className="mb-4 flex justify-end">
-                                            <Button variant="outline" onClick={() => setManualItemDialogOpen(true)} type="button">
-                                                <Plus className="mr-2 h-4 w-4" />
-                                                Adicionar Item Manual
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <SaleDetails control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
-                                )}
-                                <div className="mt-6">
-                                    <h2 className="mb-3 text-lg font-semibold">Carrinho de Compras</h2>
-                                    <ShoppingCartComponent
-                                        items={fields}
-                                        warehouses={warehouses}
-                                        onUpdateItem={handleUpdateItem}
-                                        onRemoveItem={remove}
-                                        formatCurrency={formatCurrency}
-                                        calculateItemValues={calculateItemValues}
-                                        onEditItem={handleEditItem}
-                                    />
-                                </div>
+                                    </TabsContent>
+                                </Tabs>
                             </div>
 
                             <div className="col-span-12 space-y-6 lg:col-span-4">
@@ -421,34 +470,66 @@ export default function Edit({
                                     paymentMethods={paymentMethods}
                                     onPaymentMethodChange={handlePaymentMethodChange}
                                     onPaymentAmountChange={handlePaymentAmountChange}
-                                    paymentMethod={watchPaymentMethod}
-                                    paymentAmount={watchPaymentAmount}
-                                    submitButtonText="Atualizar Venda"
+                                    paymentMethod={watchPaymentMethod || ''}
+                                    paymentAmount={watchPaymentAmount || ''}
                                 />
                             </div>
+                        </div>
+
+                        {/* Botões na parte inferior */}
+                        <div className="bg-background sticky bottom-0 flex items-center justify-between border-t p-4 shadow-lg">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => router.get(`/admin/sales/${sale.id}`)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={isSubmitting}>
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        A atualizar...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="mr-2 h-4 w-4" />
+                                        Atualizar Venda
+                                    </>
+                                )}
+                            </Button>
                         </div>
                     </form>
                 </Form>
 
-                {itemBeingEdited && (
-                    <ItemEditDialog
-                        open={itemEditDialogOpen}
-                        onOpenChange={setItemEditDialogOpen}
-                        item={itemBeingEdited}
-                        onSave={handleSaveItemEdit}
-                        warehouses={warehouses}
-                        taxRates={taxRates}
-                        units={units}
-                    />
-                )}
-                <ManualItemDialog
-                    open={manualItemDialogOpen}
-                    onOpenChange={setManualItemDialogOpen}
-                    onSubmit={handleAddManualItem}
+                {/* Modal de Seleção de Produto */}
+                <ProductSelector
+                    open={productSelectorOpen}
+                    onOpenChange={setProductSelectorOpen}
+                    onAddItemManual={() => {
+                        setProductSelectorOpen(false)
+                        setEditingItemIndex(null);
+                        setItemFormOpen(true);
+                    }}
+                    setOnSearch={setOnSearch}
+                    products={products}
+                    onSelect={handleProductSelect}
+                />
+
+                {/* Formulário de Item */}
+                <ItemForm
+                    open={itemFormOpen}
+                    onOpenChange={setItemFormOpen}
+                    onSubmit={handleAddItem}
+                    products={products}
+                    name={onSearch || ''}
+                    warehouses={warehouses}
                     taxRates={taxRates}
                     units={units}
-                    warehouses={warehouses}
-                    selectedWarehouseId={selectedWarehouseId}
+                    setOnSearch={setOnSearch}
+                    initialValues={editingItemIndex !== null ? fields[editingItemIndex] : undefined}
+                    title={editingItemIndex !== null ? 'Editar Item' : 'Adicionar Item'}
+                    isManualItemMode={editingItemIndex === null && !productSelectorOpen}
                 />
             </div>
         </AppLayout>

@@ -288,7 +288,7 @@ const footerNavItems: NavItem[] = [
     // },
     {
         title: 'PDV',
-        href: 'admin/sales',
+        href: '/admin/sales',
         icon: ShoppingCart,
     },
 ];

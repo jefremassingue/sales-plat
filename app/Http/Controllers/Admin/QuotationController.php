@@ -846,6 +846,8 @@ class QuotationController extends Controller implements HasMiddleware
                     'sale_id' => $sale->id,
                     'product_id' => $quotationItem->product_id,
                     'product_variant_id' => $quotationItem->product_variant_id,
+                    'product_color_id' => $quotationItem->product_color_id,
+                    'product_size_id' => $quotationItem->product_size_id,
                     'warehouse_id' => $quotationItem->warehouse_id,
                     'name' => $quotationItem->name,
                     'description' => $quotationItem->description,

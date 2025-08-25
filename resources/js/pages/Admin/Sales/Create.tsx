@@ -1,24 +1,25 @@
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, User, Package, CreditCard, Check, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useFieldArray, FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
 
 // Importar os componentes
-import ProductCatalog from './_components/ProductCatalog';
-import ShoppingCartComponent from './_components/ShoppingCart';
-import SaleSummary from './_components/SaleSummary';
 import SaleDetails from './_components/SaleDetails';
-import ItemEditDialog from './_components/ItemEditDialog';
-import ManualItemDialog from './_components/ManualItemDialog';
+import SaleSummary from './_components/SaleSummary';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+// Importar componentes das cotações para reutilizar
+import ProductSelector from '../Quotations/_components/ProductSelector';
+import ItemForm, { ItemFormValues } from '../Quotations/_components/ItemForm';
+import ItemsTab from '../Quotations/_components/ItemsTab';
 
 // Schema de validação para o formulário
 const formSchema = z.object({
@@ -135,19 +136,20 @@ export default function Create({
 
   const { defaultWarehouse, errors } = usePage().props as { defaultWarehouse?: Warehouse; errors?: Record<string, string | string[]> };
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeView, setActiveView] = useState<'products' | 'details'>('products');
+  const [activeTab, setActiveTab] = useState('items');
+  const [productSelectorOpen, setProductSelectorOpen] = useState(false);
+  const [itemFormOpen, setItemFormOpen] = useState(false);
+  const [onSearch, setOnSearch] = useState('');
+  const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>(
     defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : "")
   );
-  const [itemBeingEdited, setItemBeingEdited] = useState<(QuotationItem & { index: number }) | null>(null);
-  const [itemEditDialogOpen, setItemEditDialogOpen] = useState(false);
-  const [manualItemDialogOpen, setManualItemDialogOpen] = useState(false);
   // errors already destructured above
 
   // Calcular datas padrão
   const today = new Date();
   const dueDate = new Date();
-  dueDate.setDate(today.getDate() + 30);
+  dueDate.setDate(today.getDate() + 7); // Data de vencimento padrão de 7 dias (uma semana)
 
   // Chave para localStorage
   const LOCAL_STORAGE_KEY = 'new_sale_form';
@@ -230,109 +232,97 @@ export default function Create({
           const field = parts[2];
           form.setError(`items.${index}.${field}` as keyof FormValues, {
             type: 'manual',
-            message: errors[key],
+            message: Array.isArray(errors[key]) ? errors[key][0] : errors[key],
           });
         } else {
           form.setError(key as keyof FormValues, {
             type: 'manual',
-            message: errors[key],
+            message: Array.isArray(errors[key]) ? errors[key][0] : errors[key],
           });
         }
       });
       if (Object.keys(errors).some(key => !key.startsWith('items.'))) {
-        setActiveView('details');
+        setActiveTab('details');
       }
     }
   }, [errors, form]);
 
-  const addProductToCart = async (productId: string, warehouseId?: string) => {
-    const selectedProduct = products.find(p => p.id.toString() === productId);
+  // Lidar com a seleção de um produto no seletor
+  const handleProductSelect = (productId: string) => {
+    setProductSelectorOpen(false);
+
+    // Obter o produto selecionado
+    const selectedProduct = products.find((p) => p.id === productId);
     if (!selectedProduct) return;
 
-    try {
-      let unitPrice = selectedProduct.price.toString();
-      if (warehouseId) {
-        try {
-          const response = await fetch(`/admin/api/product-inventory?product_id=${productId}&warehouse_id=${warehouseId}`);
-          const data = await response.json();
-          if (data.success && data.inventory && data.inventory.unit_cost) {
-            unitPrice = data.inventory.unit_cost.toString();
-          }
-        } catch (error) {
-          console.error("Erro ao buscar preço do inventário:", error);
-        }
-      }
-
-      const existingItemIndex = fields.findIndex(
-        item => item.product_id === productId && item.warehouse_id === warehouseId
-      );
-
-      if (existingItemIndex >= 0) {
-        const currentItem = fields[existingItemIndex];
-        const newQuantity = (parseFloat(currentItem.quantity) + 1).toString();
-        update(existingItemIndex, { ...currentItem, quantity: newQuantity });
-        toast({
-          title: "Quantidade atualizada",
-          description: `A quantidade de ${selectedProduct.name} foi atualizada.`,
-        });
-      } else {
-        append({
-          product_id: productId,
-          name: selectedProduct.name,
-          description: selectedProduct.description || '',
-          quantity: '1',
-          unit: selectedProduct.unit || 'unit',
-          unit_price: unitPrice,
-          warehouse_id: warehouseId || defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : ""),
-          discount_percentage: '0',
-          tax_percentage: taxRates.find(tax => tax.is_default == true)?.value.toString() || '16',
-        });
-        toast({
-          title: "Produto adicionado",
-          description: `${selectedProduct.name} foi adicionado à venda.`,
-          variant: "success",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao adicionar o produto.",
-        variant: "destructive",
+    // Se estiver editando um item existente
+    if (editingItemIndex !== null) {
+      // Atualizar o item existente com os dados do produto
+      const currentItem = { ...fields[editingItemIndex] };
+      update(editingItemIndex, {
+        ...currentItem,
+        product_id: productId,
+        name: selectedProduct.name,
+        unit_price: selectedProduct.price.toString(),
+        unit: selectedProduct.unit || 'unit',
       });
-      console.error("Erro ao adicionar produto:", error);
+    } else {
+      // Criar um novo item com os dados do produto
+      const newItem = {
+        product_id: productId,
+        name: selectedProduct.name,
+        quantity: '1',
+        unit_price: selectedProduct.price.toString(),
+        unit: selectedProduct.unit || 'unit',
+        discount_percentage: '0',
+        tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value?.toString() || '16',
+        warehouse_id: defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : ""),
+      };
+
+      // Adicionar diretamente no form
+      append(newItem);
+
+      // Definir o item recém adicionado como item em edição
+      setTimeout(() => {
+        setEditingItemIndex(fields.length);
+        // Abrir formulário de item para editar detalhes adicionais
+        setItemFormOpen(true);
+      }, 0);
     }
   };
 
-  const handleUpdateItem = async (index: number, field: string, value: string) => {
-    const currentItem = { ...fields[index] };
-    if (field === 'warehouse_id' && currentItem.product_id) {
-      try {
-        const response = await fetch(`/admin/api/product-inventory?product_id=${currentItem.product_id}&warehouse_id=${value}`);
-        const data = await response.json();
-        if (data.success && data.inventory && data.inventory.unit_cost) {
-          update(index, { ...currentItem, [field]: value, unit_price: data.inventory.unit_cost.toString() });
-          return;
-        }
-      } catch (error) {
-        console.error("Erro ao buscar preço do inventário:", error);
-      }
+  // Adicionar um novo item
+  const handleAddItem = (item: ItemFormValues) => {
+    if (editingItemIndex !== null) {
+      // Atualizar item existente
+      update(editingItemIndex, item);
+      setEditingItemIndex(null);
+    } else {
+      // Adicionar novo item
+      append(item);
     }
-    update(index, { ...currentItem, [field]: value });
+    setItemFormOpen(false);
   };
 
+  // Editar um item existente
   const handleEditItem = (index: number) => {
-    setItemBeingEdited({ ...fields[index], index });
-    setItemEditDialogOpen(true);
+    setEditingItemIndex(index);
+    setItemFormOpen(true);
   };
 
-  const handleSaveItemEdit = (editedItem: QuotationItem & { index: number }) => {
-    const { index, ...itemToUpdate } = editedItem;
-    update(index, itemToUpdate);
-    setItemBeingEdited(null);
+  const handleDuplicateItem = (index: number) => {
+    const itemToDuplicate = fields[index];
+    if (itemToDuplicate) {
+      // Create a shallow copy of the item
+      const duplicatedItem = { ...itemToDuplicate };
+      // Append the duplicated item to the end of the array
+      append(duplicatedItem);
+    }
   };
 
-  const handleAddManualItem = (item: QuotationItem) => {
-    append({ ...item, product_id: undefined });
+  // Remover um item
+  const handleRemoveItem = (index: number) => {
+    remove(index);
   };
 
   const calculateItemValues = (item: QuotationItem) => {
@@ -340,20 +330,34 @@ export default function Create({
     const unitPrice = parseFloat(item.unit_price) || 0;
     const discountPercentage = parseFloat(item.discount_percentage || '0') || 0;
     const taxPercentage = parseFloat(item.tax_percentage || '0') || 0;
+
+    // Calcular subtotal (quantidade * preço unitário)
     const subtotal = quantity * unitPrice;
+
+    // Calcular valor do desconto
     const discountAmount = subtotal * (discountPercentage / 100);
+
+    // Calcular valor do imposto (após descontos)
     const taxAmount = (subtotal - discountAmount) * (taxPercentage / 100);
+
+    // Calcular total
     const total = subtotal - discountAmount + taxAmount;
-    return { subtotal, discount_amount: discountAmount, tax_amount: taxAmount, total };
+
+    return {
+      subtotal: subtotal.toFixed(2),
+      discount_amount: discountAmount.toFixed(2),
+      tax_amount: taxAmount.toFixed(2),
+      total: total.toFixed(2),
+    };
   };
 
   const calculateTotals = () => {
     let subtotal = 0, taxAmount = 0, discountAmount = 0;
     fields.forEach(item => {
       const values = calculateItemValues(item);
-      subtotal += values.subtotal;
-      taxAmount += values.tax_amount;
-      discountAmount += values.discount_amount;
+      subtotal += parseFloat(values.subtotal);
+      taxAmount += parseFloat(values.tax_amount);
+      discountAmount += parseFloat(values.discount_amount);
     });
     const shippingAmount = parseFloat(form.watch('shipping_amount') || '0');
     let total = subtotal - discountAmount;
@@ -416,7 +420,11 @@ export default function Create({
     };
 
     router.post('/admin/sales', data, {
-      onSuccess: () => toast({ title: "Venda criada", description: "A venda foi criada com sucesso.", variant: "success" }),
+      onSuccess: () => {
+        toast({ title: "Venda criada", description: "A venda foi criada com sucesso.", variant: "success" });
+        form.reset(initialDefaultValues);
+        setSavedFormData(initialDefaultValues);
+      },
       onError: () => toast({ title: "Erro", description: "Verifique os erros no formulário.", variant: "destructive" }),
       onFinish: () => setIsSubmitting(false),
     });
@@ -447,51 +455,60 @@ export default function Create({
               {quotation && <p className="text-muted-foreground">Baseado na cotação #{quotation.quotation_number}</p>}
             </div>
           </div>
-          <div>
-            <Button variant={activeView === 'products' ? 'default' : 'outline'} onClick={() => setActiveView('products')} className="mr-2" type="button">Produtos</Button>
-            <Button variant={activeView === 'details' ? 'default' : 'outline'} onClick={() => setActiveView('details')} type="button">Detalhes da Venda</Button>
-          </div>
         </div>
 
         {/*// << CORREÇÃO: Envolver tudo no Form Provider e na tag <form> */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(processSubmit, onInvalid)} className="space-y-8">
             <div className="grid grid-cols-12 gap-6">
+              {/* Área principal com tabs */}
               <div className="col-span-12 lg:col-span-8">
-                {activeView === 'products' ? (
-                  <div>
-                    <ProductCatalog
+                <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab}>
+                  <TabsList>
+                    <TabsTrigger value="details">
+                      <User className="mr-2 h-4 w-4" />
+                      Dados Gerais
+                    </TabsTrigger>
+                    <TabsTrigger value="items">
+                      <Package className="mr-2 h-4 w-4" />
+                      Produtos {fields.length > 0 && `(${fields.length})`}
+                    </TabsTrigger>
+                  </TabsList>
+
+                  {/* Tab de Dados Gerais */}
+                  <TabsContent value="details" className="mt-6">
+                    <SaleDetails control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
+                  </TabsContent>
+
+                  {/* Tab de Produtos */}
+                  <TabsContent value="items" className="mt-6">
+                    <ItemsTab
+                      fieldArray={{ fields, append, remove, update }}
                       products={products}
-                      categories={products.reduce((acc: { id: string; name: string }[], p) => (!p.category || acc.some(c => c.id === p.category!.id) ? acc : [...acc, p.category!]), [])}
-                      onProductSelect={addProductToCart}
                       warehouses={warehouses}
-                      selectedWarehouseId={selectedWarehouseId}
-                      onWarehouseChange={setSelectedWarehouseId}
-                      className="mb-6"
+                      taxRates={taxRates}
+                      units={units}
+                      form={form}
+                      currencies={currencies}
+                      calculateItemValues={calculateItemValues}
+                      formatCurrency={formatCurrency}
+                      onAddItemManual={() => {
+                        setEditingItemIndex(null);
+                        setItemFormOpen(true);
+                      }}
+                      onAddProduct={() => {
+                        setEditingItemIndex(null);
+                        setProductSelectorOpen(true);
+                      }}
+                      onEditItem={handleEditItem}
+                      onDuplicateItem={handleDuplicateItem}
+                      onRemoveItem={handleRemoveItem}
                     />
-                    <div className="flex justify-end mb-4">
-                      <Button variant="outline" onClick={() => setManualItemDialogOpen(true)} type="button">
-                        <Plus className="mr-2 h-4 w-4" />Adicionar Item Manual
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <SaleDetails control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
-                )}
-                <div className="mt-6">
-                  <h2 className="text-lg font-semibold mb-3">Carrinho de Compras</h2>
-                  <ShoppingCartComponent
-                    items={fields}
-                    warehouses={warehouses}
-                    onUpdateItem={handleUpdateItem}
-                    onRemoveItem={remove}
-                    formatCurrency={formatCurrency}
-                    calculateItemValues={calculateItemValues}
-                    onEditItem={handleEditItem}
-                  />
-                </div>
+                  </TabsContent>
+                </Tabs>
               </div>
 
+              {/* Resumo sempre visível na lateral */}
               <div className="col-span-12 lg:col-span-4 space-y-6">
                 <SaleSummary
                   totals={totals}
@@ -502,33 +519,84 @@ export default function Create({
                   paymentMethods={paymentMethods}
                   onPaymentMethodChange={handlePaymentMethodChange}
                   onPaymentAmountChange={handlePaymentAmountChange}
-                  paymentMethod={watchPaymentMethod}
-                  paymentAmount={watchPaymentAmount}
+                  paymentMethod={watchPaymentMethod || ''}
+                  paymentAmount={watchPaymentAmount || ''}
+                  onReset={() => {
+                    form.reset(initialDefaultValues);
+                    setSavedFormData(initialDefaultValues);
+                    toast({ title: 'Formulário limpo', description: 'Todos os campos foram resetados.', variant: 'success' });
+                  }}
                 />
               </div>
+            </div>
+
+            {/* Botões na parte inferior */}
+            <div className="bg-background sticky bottom-0 flex items-center justify-between border-t p-4 shadow-lg">
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.get('/admin/sales')}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    form.reset(initialDefaultValues);
+                    setSavedFormData(initialDefaultValues);
+                    toast({ title: 'Formulário limpo', description: 'Todos os campos foram resetados.', variant: 'success' });
+                  }}
+                >
+                  Reset
+                </Button>
+              </div>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    A criar...
+                  </>
+                ) : (
+                  <>
+                    <Check className="mr-2 h-4 w-4" />
+                    Criar Venda
+                  </>
+                )}
+              </Button>
             </div>
           </form>
         </Form>
 
-        {itemBeingEdited && (
-          <ItemEditDialog
-            open={itemEditDialogOpen}
-            onOpenChange={setItemEditDialogOpen}
-            item={itemBeingEdited}
-            onSave={handleSaveItemEdit}
-            warehouses={warehouses}
-            taxRates={taxRates}
-            units={units}
-          />
-        )}
-        <ManualItemDialog
-          open={manualItemDialogOpen}
-          onOpenChange={setManualItemDialogOpen}
-          onSubmit={handleAddManualItem}
+        {/* Modal de Seleção de Produto */}
+        <ProductSelector
+          open={productSelectorOpen}
+          onOpenChange={setProductSelectorOpen}
+          onAddItemManual={() => {
+            setProductSelectorOpen(false)
+            setEditingItemIndex(null);
+            setItemFormOpen(true);
+          }}
+          setOnSearch={setOnSearch}
+          products={products}
+          onSelect={handleProductSelect}
+        />
+
+        {/* Formulário de Item */}
+        <ItemForm
+          open={itemFormOpen}
+          onOpenChange={setItemFormOpen}
+          onSubmit={handleAddItem}
+          products={products}
+          name={onSearch || ''}
+          warehouses={warehouses}
           taxRates={taxRates}
           units={units}
-          warehouses={warehouses}
-          selectedWarehouseId={selectedWarehouseId}
+          setOnSearch={setOnSearch}
+          initialValues={editingItemIndex !== null ? fields[editingItemIndex] : undefined}
+          title={editingItemIndex !== null ? 'Editar Item' : 'Adicionar Item'}
+          isManualItemMode={editingItemIndex === null && !productSelectorOpen}
         />
       </div>
     </AppLayout>

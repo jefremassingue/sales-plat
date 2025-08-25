@@ -24,6 +24,7 @@ interface SummaryProps {
   onPaymentAmountChange: (amount: string) => void;
   paymentMethod: string;
   paymentAmount: string;
+  onReset?: () => void; // Opcional para o botão reset
 }
 
 export default function SaleSummary({
@@ -36,7 +37,8 @@ export default function SaleSummary({
   onPaymentMethodChange,
   onPaymentAmountChange,
   paymentMethod,
-  paymentAmount
+  paymentAmount,
+  onReset
 }: SummaryProps) {
   const [changeAmount, setChangeAmount] = useState<number>(0);
   const [paymentStatus, setPaymentStatus] = useState<'paid' | 'partial' | 'pending'>('pending');
@@ -143,6 +145,16 @@ export default function SaleSummary({
         </div>
 
         <div className="pt-4">
+          {onReset && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mb-2"
+              onClick={onReset}
+            >
+              Reset Formulário
+            </Button>
+          )}
           <Button
             className="w-full"
             size="lg"

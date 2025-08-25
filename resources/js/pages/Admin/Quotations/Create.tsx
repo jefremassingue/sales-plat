@@ -127,7 +127,7 @@ export default function Create({
     // Calcular datas padrão
     const today = new Date();
     const expiryDate = new Date();
-    expiryDate.setDate(today.getDate() + 30); // Validade padrão de 30 dias
+    expiryDate.setDate(today.getDate() + 7); // Validade padrão de 7 dias (uma semana)
 
     // NOVO: Definir os valores padrão iniciais em uma variável separada
     const initialDefaultValues: FormValues = {
@@ -393,6 +393,7 @@ export default function Create({
                     variant: 'success',
                 });
                 removeSavedFormData();
+                form.reset(initialDefaultValues);
             },
             onError: () => {
                 setIsSubmitting(false);
@@ -475,16 +476,29 @@ export default function Create({
                         </Tabs>
 
                         <div className="bg-background sticky bottom-0 flex items-center justify-between border-t p-4 shadow-lg">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => {
-                                    removeSavedFormData(); // NOVO: Limpar o localStorage ao cancelar
-                                    router.get('/admin/quotations');
-                                }}
-                            >
-                                Cancelar
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                        removeSavedFormData(); // NOVO: Limpar o localStorage ao cancelar
+                                        router.get('/admin/quotations');
+                                    }}
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={() => {
+                                        form.reset(initialDefaultValues);
+                                        removeSavedFormData(); // Limpar o localStorage
+                                        toast({ title: 'Formulário limpo', description: 'Todos os campos foram resetados.', variant: 'success' });
+                                    }}
+                                >
+                                    Reset
+                                </Button>
+                            </div>
                             <Button type="submit" disabled={isSubmitting}>
                                 {isSubmitting ? (
                                     <>

@@ -1,7 +1,7 @@
-import React from 'react';
+import { useCart } from '@/contexts/CartContext';
 import { Link } from '@inertiajs/react';
 import { Eye, PackageSearch, ShoppingCart } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
+import React from 'react';
 
 interface Image {
     id: string | number;
@@ -46,7 +46,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             id: String(product.id),
             name: product.name,
             quantity: 1,
-            image: product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
+            image:
+                product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
                 product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
                 product.main_image?.url,
             slug: product.slug,
@@ -55,16 +56,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             color_id: null,
             color_name: null,
             size_id: null,
-            size_name: null
+            size_name: null,
         });
         // Feedback é tratado pelo CartContext
     };
 
     return (
-        <article className="group relative bg-white rounded-lg border border-zinc-100 transition-shadow duration-300">
-            <Link href={`/products/${product.slug}`} className="flex flex-col justify-between h-full">
+        <article className="group relative rounded-lg border border-zinc-100 bg-white transition-shadow duration-300">
+            <Link href={`/products/${product.slug}`} className="flex h-full flex-col justify-between">
                 <div className="relative aspect-square overflow-hidden rounded-t-lg p-2">
-
                     {product.main_image ? (
                         <img
                             src={
@@ -73,38 +73,49 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                                 product.main_image.url
                             }
                             alt={product.name}
-                            className="h-full w-full aspect-square rounded-xl object-contain transition-all hover:scale-105"
+                            className="aspect-square h-full w-full rounded-xl object-contain transition-all hover:scale-105"
                         />
                     ) : (
-                        <div className="flex h-full w-full aspect-square items-center rounded-xl justify-center bg-gray-100 ">
+                        <div className="flex aspect-square h-full w-full items-center justify-center rounded-xl bg-gray-100">
                             <PackageSearch className="h-10 w-10 text-gray-400" />
                         </div>
                     )}
-                    {product.isNew && (
-                        <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs px-2 py-1 rounded">
-                            Novo
-                        </span>
-                    )}
+                    {product.isNew && <span className="absolute top-2 left-2 rounded bg-orange-500 px-2 py-1 text-xs text-white">Novo</span>}
                 </div>
 
-                <div className="flex flex-col justify-between p-4 flex-1 gap-4 h-full">
-                    <div className="flex-1 h-full">
-                        <div className="text-sm text-slate-500 mb-1 line-clamp-1">{product.category?.name}</div>
-                        <h3 className="font-medium text-slate-800 mb-2 line-clamp-2">{product.name}</h3>
-
-
+                <div className="flex h-full flex-1 flex-col justify-between gap-4 p-4">
+                    <div className="h-full flex-1">
+                        <div className="mb-1 line-clamp-1 text-sm text-slate-500">{product.category?.name}</div>
+                        <h3 className="mb-2 line-clamp-2 font-medium text-slate-800">{product.name}</h3>
                     </div>
                     <div className="flex flex-col justify-between gap-2">
-                        <button
-                            onClick={handleAddToCart}
-                            className="text-orange-600 hover:bg-orange-600 hover:text-white cursor-pointer border border-orange-500 bg-white font-medium py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 flex items-center justify-center gap-2"
-                        >
-                            <ShoppingCart size={16} />
-                            Adicionar a Cotação
-                        </button>
+                        {/* <pre>{JSON.stringify(product.colors)}</pre> */}
+                        {product.colors?.length ? (
+                            <div className="flex gap-1 overflow-hidden hover:overflow-x-auto">
+                                {product.colors.map((color) => (
+                                    <img
+                                        src={
+                                            color.image.versions?.find((image) => image.version == 'md')?.url ||
+                                            color.image.versions?.find((image) => image.version == 'lg')?.url ||
+                                            color.image.url
+                                        }
+                                        alt={product.name}
+                                        className="aspect-square h-10 w-10 rounded-xl object-contain transition-all hover:scale-105"
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <button
+                                onClick={handleAddToCart}
+                                className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-orange-500 bg-white px-4 py-2.5 text-sm font-medium text-orange-600 transition-colors duration-300 hover:bg-orange-600 hover:text-white"
+                            >
+                                <ShoppingCart size={16} />
+                                Adicionar a Cotação
+                            </button>
+                        )}
                         <Link
                             href={`/products/${product.slug}`}
-                            className="w-full bg-orange-600 hover:bg-orange-700 text-white cursor-pointer font-medium py-2.5 px-4 rounded-lg text-sm transition-colors duration-300 flex items-center justify-center gap-2"
+                            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-medium text-white transition-colors duration-300 hover:bg-orange-700"
                         >
                             <Eye size={16} />
                             Ver Detalhes

@@ -49,9 +49,9 @@ class Quotation extends Model
     {
         $lastQuotation = self::withTrashed()->orderBy('created_at', 'desc')->first();
         $nextId = $lastQuotation ? (int) substr($lastQuotation->quotation_number, -5) + 1 : 100;
-        $year = date('Y');
+        $year = date('Ym');
 
-        return $suffix . "COT-{$year}-" . str_pad($nextId, 5, '0', STR_PAD_LEFT);
+        return $suffix . "QT-{$year}-" . str_pad($nextId, 5, '0', STR_PAD_LEFT);
     }
 
     /**

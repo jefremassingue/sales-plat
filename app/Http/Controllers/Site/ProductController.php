@@ -20,7 +20,8 @@ class ProductController extends Controller
         $productsQuery = Product::query()
             ->where('active', true)
             ->whereHas('ecommerce_inventory')
-            ->with(['category', 'images', 'mainImage', 'ecommerce_inventory', 'brand']);
+
+            ->with(['category', 'images', 'mainImage', 'ecommerce_inventory', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions' ]);
 
         // Aplicar filtros se existirem
         if ($request->has('categories') && !empty($request->categories)) {
@@ -79,7 +80,7 @@ class ProductController extends Controller
         // Usar Inertia com Deferred Props para carregamento mais eficiente
         return Inertia::render('Site/Products/Index', [
             // Dados de produtos carregados de forma adiada (lazy)
-        'products' => $productsQuery->paginate(12)->through(function ($product) {
+            'products' => $productsQuery->paginate(12)->through(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -91,7 +92,14 @@ class ProductController extends Controller
                         'name' => $product->category->name,
                     ] : null,
                     'main_image' => $product->mainImage,
-            'brand' => optional($product->brand)->name,
+                    'colors' => $product->colors->map(function ($color) {
+                        return [
+                            'id' => $color->id,
+                            'name' => $color->name,
+                            'image' => $color->images->first(),
+                        ];
+                    }),
+                    'brand' => optional($product->brand)->name,
                     'isNew' => $product->created_at->diffInDays(now()) < 30,
                 ];
             }),
@@ -145,19 +153,19 @@ class ProductController extends Controller
         // $product->old_price = $product->ecommerce_inventory->old_cost ?? $product->old_price;
 
         // Buscar produtos relacionados
-    $relatedProducts = Product::where('id', '!=', $product->id)
+        $relatedProducts = Product::where('id', '!=', $product->id)
             ->whereHas('ecommerce_inventory')
             ->where(function ($query) use ($product) {
                 // Produtos da mesma categoria
                 $query->where('category_id', $product->category_id);
 
                 // Ou produtos com a mesma marca, se existir
-        if ($product->brand_id) {
-            $query->orWhere('brand_id', $product->brand_id);
+                if ($product->brand_id) {
+                    $query->orWhere('brand_id', $product->brand_id);
                 }
             })
             ->where('active', true)
-        ->with(['category', 'images', 'brand'])
+            ->with(['category', 'images', 'brand'])
             ->inRandomOrder()
             ->limit(5)
             ->get()
