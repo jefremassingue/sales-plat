@@ -220,7 +220,16 @@ class SaleController extends Controller implements HasMiddleware
             $placeholderNumber = 'AUTO-' . date('Ym');
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
-                ->with('category')
+                ->with([
+                    'category',
+                    'mainImage',
+                    'colors',
+                    'sizes',
+                    'variants',
+                    'variants.color',
+                    'variants.size',
+                ])
+                ->orderByDesc('created_at')
                 ->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
@@ -285,6 +294,8 @@ class SaleController extends Controller implements HasMiddleware
                 'items.*.unit_price' => 'required|numeric|gte:0',
                 'items.*.product_id' => 'nullable|exists:products,id',
                 'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
+                'items.*.product_color_id' => 'nullable|exists:product_colors,id',
+                'items.*.product_size_id' => 'nullable|exists:product_sizes,id',
                 'items.*.warehouse_id' => 'nullable|exists:warehouses,id',
                 'items.*.discount_percentage' => 'nullable|numeric|gte:0|lte:100',
                 'items.*.tax_percentage' => 'nullable|numeric|gte:0',
@@ -498,7 +509,16 @@ class SaleController extends Controller implements HasMiddleware
             // Esta parte é idêntica à do método `create`
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
-                ->with('category')
+                ->with([
+                    'category',
+                    'mainImage',
+                    'colors',
+                    'sizes',
+                    'variants',
+                    'variants.color',
+                    'variants.size',
+                ])
+                ->orderByDesc('created_at')
                 ->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
@@ -552,6 +572,8 @@ class SaleController extends Controller implements HasMiddleware
             'items.*.quantity' => 'required|numeric|gt:0',
             'items.*.unit_price' => 'required|numeric|gte:0',
             'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.product_color_id' => 'nullable|exists:product_colors,id',
+            'items.*.product_size_id' => 'nullable|exists:product_sizes,id',
             'items.*.warehouse_id' => 'nullable|exists:warehouses,id',
         ]);
 

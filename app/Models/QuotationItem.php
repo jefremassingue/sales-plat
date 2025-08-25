@@ -13,6 +13,8 @@ class QuotationItem extends Model
     protected $fillable = [
         'quotation_id',
         'product_id',
+    'product_color_id',
+    'product_size_id',
         'product_variant_id',
         'warehouse_id',
         'name',

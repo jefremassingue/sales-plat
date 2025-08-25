@@ -163,6 +163,27 @@ export default function Edit({ product, categories, units, brands }: Props) {
     const { toast } = useToast();
     const { errors } = usePage().props as { errors: Record<string, string> };
 
+    // Auto-selecionar cor/tamanho quando existir exatamente uma opção
+    useEffect(() => {
+        if (!newVariantColorId && colors.length === 1) {
+            setNewVariantColorId(colors[0]._tempId);
+        }
+        // Se a cor selecionada for removida, limpar seleção
+        if (newVariantColorId && !colors.some(c => c._tempId === newVariantColorId)) {
+            setNewVariantColorId(null);
+        }
+    }, [colors, newVariantColorId]);
+
+    useEffect(() => {
+        if (!newVariantSizeId && sizes.length === 1) {
+            setNewVariantSizeId(sizes[0]._tempId);
+        }
+        // Se o tamanho selecionado for removido, limpar seleção
+        if (newVariantSizeId && !sizes.some(s => s._tempId === newVariantSizeId)) {
+            setNewVariantSizeId(null);
+        }
+    }, [sizes, newVariantSizeId]);
+
     // Formulário principal do produto
     const { data, setData } = useForm({
         name: product.name,

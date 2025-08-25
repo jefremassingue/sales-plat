@@ -146,7 +146,7 @@ class ProductController extends Controller
 
         // Buscar produtos relacionados
     $relatedProducts = Product::where('id', '!=', $product->id)
-            // ->whereHas('ecommerce_inventory')
+            ->whereHas('ecommerce_inventory')
             ->where(function ($query) use ($product) {
                 // Produtos da mesma categoria
                 $query->where('category_id', $product->category_id);

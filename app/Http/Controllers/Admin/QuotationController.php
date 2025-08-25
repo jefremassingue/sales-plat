@@ -18,6 +18,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
@@ -181,7 +183,15 @@ class QuotationController extends Controller implements HasMiddleware
         try {
             $placeholderNumber = 'AUTO-' . date('Ym');
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
-            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')->with('variants', 'mainImage')->get();
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
+                ->with([
+                    'mainImage',
+                    'colors',
+                    'sizes',
+                    'variants',
+                    'variants.color',
+                    'variants.size',
+                ])->orderByDesc('created_at')->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
             $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);
@@ -230,6 +240,8 @@ class QuotationController extends Controller implements HasMiddleware
                 'items.*.unit_price' => 'required|numeric|gte:0',
                 'items.*.product_id' => 'nullable|exists:products,id',
                 'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
+                'items.*.product_color_id' => 'nullable|exists:product_colors,id',
+                'items.*.product_size_id' => 'nullable|exists:product_sizes,id',
                 'items.*.warehouse_id' => 'nullable|exists:warehouses,id',
                 'items.*.discount_percentage' => 'nullable|numeric|gte:0|lte:100',
                 'items.*.tax_percentage' => 'nullable|numeric|gte:0',
@@ -389,7 +401,15 @@ class QuotationController extends Controller implements HasMiddleware
         }]);
 
         $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
-        $products = Product::select('id', 'name', 'price', 'sku', 'cost')->with('variants')->get();
+        $products = Product::select('id', 'name', 'price', 'sku', 'cost')
+            ->with([
+                'mainImage',
+                'colors',
+                'sizes',
+                'variants',
+                'variants.color',
+                'variants.size',
+            ])->orderByDesc('created_at')->get();
         $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
         $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
         $units = UnitEnum::toArray();
@@ -436,6 +456,8 @@ class QuotationController extends Controller implements HasMiddleware
                 'items.*.unit_price' => 'required|numeric|gte:0',
                 'items.*.product_id' => 'nullable|exists:products,id',
                 'items.*.product_variant_id' => 'nullable|exists:product_variants,id',
+                'items.*.product_color_id' => 'nullable|exists:product_colors,id',
+                'items.*.product_size_id' => 'nullable|exists:product_sizes,id',
                 'items.*.warehouse_id' => 'nullable|exists:warehouses,id',
                 'items.*.discount_percentage' => 'nullable|numeric|gte:0|lte:100',
                 'items.*.tax_percentage' => 'nullable|numeric|gte:0',
@@ -613,7 +635,7 @@ class QuotationController extends Controller implements HasMiddleware
         $currency = Currency::where('code', $quotation->currency_code)->first() ?: null;
 
         // Gerar o PDF usando a view
-        $pdf = \PDF::setOptions([
+    $pdf = Pdf::setOptions([
             'isPhpEnabled'        => true,
             'isHtml5ParserEnabled' => true,
             'isRemoteEnabled'        => true,            // <-- permite URLs remotas (http/https)
@@ -665,7 +687,7 @@ class QuotationController extends Controller implements HasMiddleware
             $currency = Currency::where('code', $quotation->currency_code)->first() ?: null;
 
             // Gerar PDF anexo
-            $pdf = \PDF::setOptions([
+            $pdf = Pdf::setOptions([
                 'isPhpEnabled'        => true,
                 'isHtml5ParserEnabled' => true,
                 'isRemoteEnabled'     => true,
@@ -682,7 +704,7 @@ class QuotationController extends Controller implements HasMiddleware
             $pdfFilename = 'cotacao_' . $quotation->quotation_number . '.pdf';
 
             // Enviar email com o PDF anexo
-            \Mail::send('emails.quotation', [
+            Mail::send('emails.quotation', [
                 'quotation' => $quotation,
                 'company' => $company,
             ], function ($message) use ($quotation, $pdfContent, $pdfFilename, $company) {

@@ -47,7 +47,7 @@ class InventoryController extends Controller implements HasMiddleware
                 ->orWhereHas('warehouse', function ($q) use ($search) {
                     $q->where('name', 'like', '%' . $search . '%');
                 })
-                ->orWhere('location', 'like', '%' . $search . '%')
+                // ->orWhere('location', 'like', '%' . $search . '%')
                 ->orWhere('batch_number', 'like', '%' . $search . '%');
         }
 
@@ -67,7 +67,7 @@ class InventoryController extends Controller implements HasMiddleware
         $sortField = $request->input('sort_field', 'created_at');
         $sortOrder = $request->input('sort_order', 'desc');
 
-        $allowedSortFields = ['quantity', 'min_quantity', 'location', 'batch_number', 'expiry_date', 'status', 'created_at'];
+        $allowedSortFields = ['quantity', 'min_quantity', 'batch_number', 'expiry_date', 'status', 'created_at'];
         if (in_array($sortField, $allowedSortFields)) {
             $query->orderBy($sortField, $sortOrder);
         }
@@ -125,7 +125,7 @@ class InventoryController extends Controller implements HasMiddleware
                 'quantity' => 'required|integer|min:0',
                 'min_quantity' => 'nullable|integer|min:0',
                 'max_quantity' => 'nullable|integer|min:0',
-                'location' => 'nullable|string|max:255',
+                // 'location' => 'nullable|string|max:255',
                 'batch_number' => 'nullable|string|max:255',
                 'expiry_date' => 'nullable|date|after_or_equal:today',
                 'unit_cost' => 'nullable|numeric|min:0',
@@ -183,7 +183,7 @@ class InventoryController extends Controller implements HasMiddleware
 
                 // Verificar se já existe um registo com o mesmo produto/variante e armazém
                 $existingInventory = Inventory::where('product_id', $data['product_id'])
-                    ->where('product_variant_id', $data['product_variant_id'] ?? null)
+                    // ->where('product_variant_id', $data['product_variant_id'] ?? null)
                     ->where('warehouse_id', $data['warehouse_id'])
                     ->where('batch_number', $data['batch_number'] ?? null)
                     ->first();
@@ -324,7 +324,7 @@ class InventoryController extends Controller implements HasMiddleware
                 'quantity' => 'required|integer|min:0',
                 'min_quantity' => 'nullable|integer|min:0',
                 'max_quantity' => 'nullable|integer|min:0',
-                'location' => 'nullable|string|max:255',
+                // 'location' => 'nullable|string|max:255',
                 'batch_number' => 'nullable|string|max:255',
                 'expiry_date' => 'nullable|date',
                 'unit_cost' => 'nullable|numeric|min:0',
@@ -367,7 +367,7 @@ class InventoryController extends Controller implements HasMiddleware
                 ) {
 
                     $existingInventory = Inventory::where('product_id', $request->product_id)
-                        ->where('product_variant_id', $request->product_variant_id)
+                        // ->where('product_variant_id', $request->product_variant_id)
                         ->where('warehouse_id', $request->warehouse_id)
                         ->where('batch_number', $request->batch_number)
                         ->where('id', '!=', $inventory->id)

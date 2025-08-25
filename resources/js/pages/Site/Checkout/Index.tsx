@@ -46,6 +46,10 @@ type FormData = {
     paymentMethod?: string | null;
     items?: Array<{
         product_id: string;
+        product_variant_id?: string | null;
+        color_id?: string | null;
+        size_id?: string | null;
+        variant_sku?: string | null;
         quantity: number;
         name: string;
     }>;
@@ -237,13 +241,20 @@ const CheckoutContent: React.FC = () => {
         router.post(postUrl, {
             ...data,
             paymentMethod: selectedPaymentMethodId || null,
-            items: items.map(i => {
+        items: items.map(i => {
                 const parts: string[] = [];
                 if (i.color_name) parts.push(i.color_name);
                 if (i.size_name) parts.push(i.size_name);
-                const nameWithVariant = parts.length ? `${i.name} (${parts.join(' / ')})` : i.name;
+                let nameWithVariant = parts.length ? `${i.name} (${parts.join(' / ')})` : i.name;
+                if (i.variant_sku) {
+                    nameWithVariant += ` [SKU: ${i.variant_sku}]`;
+                }
                 return {
                     product_id: i.id,
+            product_variant_id: i.variant_id,
+            color_id: i.color_id ?? null,
+            size_id: i.size_id ?? null,
+            variant_sku: i.variant_sku ?? null,
                     quantity: i.quantity,
                     name: nameWithVariant,
                 };
@@ -429,6 +440,9 @@ const CheckoutContent: React.FC = () => {
                                                 <h3 className="text-sm font-medium text-gray-800 leading-tight">
                                                     {item.name}
                                                 </h3>
+                                                {item.variant_sku && (
+                                                    <p className="text-xs text-gray-500">SKU: {item.variant_sku}</p>
+                                                )}
                                                 <p className="text-xs text-gray-500">Qtd: {item.quantity}</p>
                                                 {(item.color_name || item.size_name) && (
                                                     <p className="text-xs text-gray-500">

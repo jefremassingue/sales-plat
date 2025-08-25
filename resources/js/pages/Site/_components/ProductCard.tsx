@@ -89,8 +89,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
                 <div className="flex flex-col justify-between p-4 flex-1 gap-4 h-full">
                     <div className="flex-1 h-full">
-                        <div className="text-sm text-slate-500 mb-1">{product.category?.name}</div>
-                        <h3 className="font-medium text-slate-800 mb-2 line-clamp-1">{product.name}</h3>
+                        <div className="text-sm text-slate-500 mb-1 line-clamp-1">{product.category?.name}</div>
+                        <h3 className="font-medium text-slate-800 mb-2 line-clamp-2">{product.name}</h3>
 
 
                     </div>

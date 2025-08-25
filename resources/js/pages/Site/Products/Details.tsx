@@ -56,7 +56,7 @@ interface Attribute {
     updated_at: string;
 }
 
-interface Variant {
+export interface Variant {
     id: number;
     product_id: number;
     product_color_id: number | null;
@@ -178,7 +178,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
     // 1) Sempre mostrar TODAS as imagens do produto na galeria
     // 2) Ao clicar em uma cor, navegar para o índice da imagem que corresponde à cor
     const displayedImages = useMemo<Image[]>(() => product.images, [product.images]);
-
+    const currentVariant = useMemo<any>(() => selectedColor ? product.variants.find(v => v.product_color_id == selectedColor.id) : null, [selectedColor])
     // Helper: encontra o índice da imagem que corresponde à cor
     const findImageIndexForColor = useCallback(
         (color: Color | null): number => {
@@ -303,6 +303,8 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
             color_name: selectedColor?.name || null,
             size_id: selectedSize?.id || null,
             size_name: selectedSize?.name || null,
+            variant_id: currentVariant?.id || null,
+            variant_sku: currentVariant?.sku || null
         });
         // O feedback é tratado pelo CartContext
         setIsOpen(true); // O CartContext já faz isso ao adicionar item
@@ -324,6 +326,9 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
             color_name: selectedColor?.name || null,
             size_id: selectedSize?.id || null,
             size_name: selectedSize?.name || null,
+
+            variant_id: currentVariant?.id || null,
+            variant_sku: currentVariant?.sku || null
         });
         // Aqui você pode redirecionar para a página de quotation
         router.visit('/quotation'); // Usando router do Inertia para navegação
@@ -477,6 +482,9 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     {product.sku && (
                                         <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">SKU: {product.sku}</span>
                                     )}
+                                    {currentVariant && (
+                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">REF: {currentVariant?.sku}</span>
+                                    )}
                                     {product.barcode && (
                                         <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">EAN: {product.barcode}</span>
                                     )}
@@ -524,7 +532,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                 {/* Opções de Tamanho */}
                                 {product.sizes && product.sizes.length > 0 && (
                                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr] sm:items-center">
-                                        <label className="text-sm font-medium text-slate-700">Tamanho:</label>
+                                        <label className="text-sm font-medium text-slate-700">Opções:</label>
                                         <div className="flex flex-wrap gap-2.5">
                                             {product.sizes.map((size) => (
                                                 <button

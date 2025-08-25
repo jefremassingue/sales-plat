@@ -34,14 +34,24 @@ export interface Product {
   sku: string;
   price: number;
   unit: string;
+  main_image?: {
+    url: string;
+    versions?: Array<{ url: string; version: string }>;
+  } | null;
+  // Optional variant-driving attributes
+  colors?: Array<{ id: string | number; name: string; hex_code?: string | null; images?: Array<{ id: number; name: string; original_name: string; url: string; version?: string; versions?: Array<{ url: string; version: string }> }> }>;
+  sizes?: Array<{ id: string | number; name: string; code?: string | null }>;
   variants?: ProductVariant[];
 }
 
 export interface ProductVariant {
   id: string;
   product_id: string;
-  sku: string;
-  name: string;
+  sku?: string | null;
+  name?: string;
+  // Links to color/size when applicable
+  product_color_id?: string | number | null;
+  product_size_id?: string | number | null;
 }
 
 export interface Warehouse {

@@ -4,16 +4,11 @@ import { X, ShoppingBag, Trash, Plus, Minus, ArrowRight, CheckCircle } from 'luc
 import { Link } from '@inertiajs/react';
 
 const ShoppingCart: React.FC = () => {
-    const { items, removeItem, updateQuantity, total, itemCount, isOpen, setIsOpen, feedbackMessage, clearFeedbackMessage } = useCart();
+    const { items, removeItem, updateQuantity, itemCount, isOpen, setIsOpen, feedbackMessage, clearFeedbackMessage } = useCart();
 
     if (!isOpen) return null;
 
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-MZ', {
-            style: 'currency',
-            currency: 'MZN',
-        }).format(value);
-    };
+    // const formatCurrency = (value: number) => new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(value);
 
     return (
         <div className="fixed inset-0 z-50 flex justify-end">
@@ -91,11 +86,16 @@ const ShoppingCart: React.FC = () => {
 
                                             <div className="flex-1">
                                                 <div className="flex justify-between">
-                                                    <h3 className="text-sm font-medium text-gray-900">
-                                                        <Link href={`/products/${item.slug}`} className="hover:text-orange-600">
-                                                            {item.name}
-                                                        </Link>
-                                                    </h3>
+                                                    <div>
+                                                        <h3 className="text-sm font-medium text-gray-900">
+                                                            <Link href={`/products/${item.slug}`} className="hover:text-orange-600">
+                                                                {item.name}
+                                                            </Link>
+                                                        </h3>
+                                                        {item.variant_sku && (
+                                                            <div className="text-xs text-gray-500 mt-1">SKU: {item.variant_sku}</div>
+                                                        )}
+                                                    </div>
                                                     <button
                                                         onClick={() => removeItem(item.id, item.color_id, item.size_id)}
                                                         className="text-gray-400 hover:text-red-500"

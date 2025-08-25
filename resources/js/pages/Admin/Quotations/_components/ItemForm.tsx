@@ -6,16 +6,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PackageSearch, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { PackageSearch, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Product, TaxRate, Warehouse } from './types';
 
-// Esquema de validação para o formulário de item
 const itemFormSchema = z.object({
     product_id: z.string().optional(),
     product_variant_id: z.string().optional(),
+    product_color_id: z.string().optional(),
+    product_size_id: z.string().optional(),
     warehouse_id: z.string().optional(),
     name: z.string().min(1, { message: 'Nome é obrigatório' }),
     description: z.string().optional(),
@@ -30,17 +31,17 @@ const itemFormSchema = z.object({
         .min(1, { message: 'Preço unitário é obrigatório' })
         .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
         .refine((val) => parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-    discount_percentage: z
-        .string()
-        .optional()
-        .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-        .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
-        .refine((val) => val === '' || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
-    tax_percentage: z
-        .string()
-        .optional()
-        .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-        .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
+        discount_percentage: z
+            .string()
+            .optional()
+            .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
+            .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
+            .refine((val) => !val || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
+        tax_percentage: z
+            .string()
+            .optional()
+            .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
+            .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
 });
 
 export type ItemFormValues = z.infer<typeof itemFormSchema>;
@@ -60,28 +61,8 @@ interface ItemFormProps {
     setOnSearch: (search: string) => void;
 }
 
-export default function ItemForm({
-    open,
-    onOpenChange,
-    onSubmit,
-    products,
-    warehouses = [],
-    taxRates = [],
-    initialValues,
-    units = [],
-    title = 'Adicionar Item',
-    name,
-    isManualItemMode = false,
-    setOnSearch,
-}: ItemFormProps) {
+export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRates, initialValues, units, title = 'Adicionar Item', name, isManualItemMode = false, setOnSearch }: ItemFormProps) {
     const { toast } = useToast();
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-    const [warehouseInventories, setWarehouseInventories] = useState<any[]>([]);
-    const [isLoadingInventory, setIsLoadingInventory] = useState(false);
-
-    console.log('name', name);
-
-    // Inicializar o formulário com valores padrão
     const form = useForm<ItemFormValues>({
         resolver: zodResolver(itemFormSchema),
         defaultValues: {
@@ -94,127 +75,202 @@ export default function ItemForm({
             unit: 'unit',
             unit_price: '0',
             discount_percentage: '0',
-            tax_percentage: taxRates.find((tax) => tax.is_default == true)?.value + '' || '16', // Taxa padrão de IVA em Moçambique
+            tax_percentage: taxRates.find((t) => t.is_default == true)?.value + '' || '16',
         },
     });
 
-    // Resetar o formulário quando o modal é aberto/fechado
-    useEffect(() => {
-        if (open) {
-            if (initialValues) {
-                // Se temos valores iniciais, usar estes valores
-                const values = { ...initialValues };
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
+    const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
+    const [isLoadingInventory, setIsLoadingInventory] = useState(false);
+    const isHydratingRef = useRef(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
-                // Definir valores do formulário
-                Object.keys(values).forEach((key) => {
-                    const value = (values as any)[key];
-                    if (value !== undefined) {
-                        form.setValue(key as any, typeof value === 'number' ? value.toString() : value);
-                    }
-                });
-
-                // Se tiver product_id, buscar o produto selecionado
-                if (values.product_id && values.product_id !== 'none') {
-                    const product = products.find((p) => p.id.toString() === values.product_id?.toString());
-                    if (product) {
-                        setSelectedProduct(product);
-                    }
-                } else {
-                    setSelectedProduct(null);
-                }
-            } else if (isManualItemMode) {
-                // Para item manual, limpar todos os campos
-                form.reset({
-                    product_id: '',
-                    product_variant_id: '',
-                    warehouse_id: '',
-                    name: name || '',
-                    description: '',
-                    quantity: '1',
-                    unit: 'unit',
-                    unit_price: '0',
-                    discount_percentage: '0',
-                    tax_percentage: taxRates.find((tax) => tax.is_default == true)?.value + '' || '16', // Taxa padrão de IVA em Moçambique
-                });
-                setOnSearch('');
-                setSelectedProduct(null);
-            }
-        } else {
-            // Quando o modal fecha, limpar o produto selecionado
-            setSelectedProduct(null);
-        }
-    }, [open, initialValues, products, form, isManualItemMode]);
-
-    // Observar mudanças no warehouse_id
     const watchWarehouseId = form.watch('warehouse_id');
     const watchProductId = form.watch('product_id');
+    // watching product_variant_id is not needed when variant is auto-resolved
 
-    // Quando o armazém muda
     useEffect(() => {
-        if (selectedProduct && watchWarehouseId) {
-            fetchProductInventoryPrice(selectedProduct.id.toString(), watchWarehouseId);
-        }
-    }, [watchWarehouseId, selectedProduct]);
-
-    // Atualizar o nome do item quando o produto for selecionado
-    useEffect(() => {
-        if (watchProductId && watchProductId !== 'none') {
-            const selectedProduct = products.find((p) => p.id.toString() === watchProductId);
-            if (selectedProduct) {
-                setSelectedProduct(selectedProduct);
-                form.setValue('name', selectedProduct.name);
-                form.setValue('unit_price', selectedProduct.price.toString());
-
-                // Usar a unidade do produto se disponível, caso contrário usar 'unit'
-                if (selectedProduct.unit && selectedProduct.unit.trim() !== '') {
-                    form.setValue('unit', selectedProduct.unit);
-                } else {
-                    form.setValue('unit', 'unit');
-                }
-
-                // Se também tiver um armazém selecionado, buscar preço específico
-                if (watchWarehouseId) {
-                    fetchProductInventoryPrice(watchProductId, watchWarehouseId);
-                }
-            }
-        } else if (watchProductId === 'none') {
+        if (!open) {
             setSelectedProduct(null);
+            return;
         }
-    }, [watchProductId]);
+        if (initialValues) {
+            // prevent downstream effects from overriding initial selections
+            isHydratingRef.current = true;
+            const values = { ...initialValues } as Record<string, unknown>;
+            Object.keys(values).forEach((key) => {
+                const v = values[key];
+                if (v !== undefined) {
+                    form.setValue(key as keyof ItemFormValues, typeof v === 'number' ? String(v) : (v as string));
+                }
+            });
+            if (values.product_id && values.product_id !== 'none') {
+                const p = products.find((pp) => pp.id.toString() === String(values.product_id));
+                setSelectedProduct(p || null);
+                // Prefer explicit color/size from initial values (if present)
+                const initColor = values.product_color_id ? String(values.product_color_id) : null;
+                const initSize = values.product_size_id ? String(values.product_size_id) : null;
+                if (initColor) {
+                    setSelectedColorId(initColor);
+                    form.setValue('product_color_id', initColor);
+                }
+                if (initSize) {
+                    setSelectedSizeId(initSize);
+                    form.setValue('product_size_id', initSize);
+                }
+                // If variant ID provided and color/size missing, derive from variant
+                const variantId = values.product_variant_id ? String(values.product_variant_id) : null;
+                if (p && p.variants && variantId && (!initColor || !initSize)) {
+                    const v = p.variants.find((vv) => vv.id.toString() === variantId);
+                    if (v) {
+                        const vColor = v.product_color_id ? String(v.product_color_id) : '';
+                        const vSize = v.product_size_id ? String(v.product_size_id) : '';
+                        if (!initColor) {
+                            setSelectedColorId(vColor || null);
+                            form.setValue('product_color_id', vColor);
+                        }
+                        if (!initSize) {
+                            setSelectedSizeId(vSize || null);
+                            form.setValue('product_size_id', vSize);
+                        }
+                    }
+                }
+            } else {
+                setSelectedProduct(null);
+            }
+            // allow effects to resume after hydration
+            // use a microtask to ensure dependent effects see updated state
+            Promise.resolve().then(() => {
+                isHydratingRef.current = false;
+            });
+        } else if (isManualItemMode) {
+            form.reset({
+                product_id: '',
+                product_variant_id: '',
+                warehouse_id: '',
+                name: name || '',
+                description: '',
+                quantity: '1',
+                unit: 'unit',
+                unit_price: '0',
+                discount_percentage: '0',
+                tax_percentage: taxRates.find((t) => t.is_default == true)?.value + '' || '16',
+            });
+            setOnSearch('');
+            setSelectedProduct(null);
+            setSelectedColorId(null);
+            setSelectedSizeId(null);
+        }
+    }, [open, initialValues, isManualItemMode, name, products, taxRates, form, setOnSearch]);
 
-    // Função para buscar o preço do produto em um armazém específico
-    const fetchProductInventoryPrice = async (productId: string, warehouseId: string) => {
+            const fetchProductInventoryPrice = useCallback(async (productId: string, warehouseId: string) => {
         try {
             setIsLoadingInventory(true);
             const response = await fetch(`/admin/api/product-inventory?product_id=${productId}&warehouse_id=${warehouseId}`);
             const data = await response.json();
-
             if (data.success && data.inventory) {
-                // Usar o custo unitário do inventário se disponível, ou o preço padrão do produto
                 const price = data.inventory.unit_cost || selectedProduct?.price || 0;
                 form.setValue('unit_price', price.toString());
             }
         } catch (error) {
             console.error('Erro ao obter preço do inventário:', error);
-            toast({
-                title: 'Erro',
-                description: 'Não foi possível obter o preço do produto no armazém selecionado.',
-                variant: 'destructive',
-            });
+            toast({ title: 'Erro', description: 'Não foi possível obter o preço do produto no armazém selecionado.', variant: 'destructive' });
         } finally {
             setIsLoadingInventory(false);
         }
-    };
+    }, [selectedProduct, form, toast]);
 
-    // Função para submeter o formulário
+            useEffect(() => {
+                if (selectedProduct && watchWarehouseId) {
+                    fetchProductInventoryPrice(selectedProduct.id.toString(), watchWarehouseId);
+                }
+            }, [watchWarehouseId, selectedProduct, fetchProductInventoryPrice]);
+
+            useEffect(() => {
+                if (watchProductId && watchProductId !== 'none') {
+                    const p = products.find((pp) => pp.id.toString() === watchProductId);
+                    if (p) {
+                        setSelectedProduct(p);
+                        form.setValue('name', p.name);
+                        form.setValue('unit_price', p.price.toString());
+                        if (p.unit && p.unit.trim() !== '') {
+                            form.setValue('unit', p.unit);
+                        } else {
+                            form.setValue('unit', 'unit');
+                        }
+                        // Only set defaults if we do not already have a selection (e.g., editing)
+                        if (!isHydratingRef.current && !selectedColorId && !selectedSizeId) {
+                            const defaultColor = p.colors && p.colors.length > 0 ? String(p.colors[0].id) : null;
+                            const defaultSize = p.sizes && p.sizes.length > 0 ? String(p.sizes[0].id) : null;
+                            setSelectedColorId(defaultColor);
+                            setSelectedSizeId(defaultSize);
+                            form.setValue('product_color_id', defaultColor || '');
+                            form.setValue('product_size_id', defaultSize || '');
+                        }
+                        if (watchWarehouseId) {
+                            fetchProductInventoryPrice(watchProductId, watchWarehouseId);
+                        }
+                    }
+                } else if (watchProductId === 'none') {
+                    setSelectedProduct(null);
+                    setSelectedColorId(null);
+                    setSelectedSizeId(null);
+                }
+            }, [watchProductId, products, form, watchWarehouseId, fetchProductInventoryPrice, selectedColorId, selectedSizeId]);
+
+            // Resolve variant automatically based on color/size selection
+            useEffect(() => {
+                if (!selectedProduct) return;
+                const colorId = selectedColorId;
+                const sizeId = selectedSizeId;
+                let variant: NonNullable<Product['variants']>[number] | undefined = undefined;
+                if (selectedProduct.variants && selectedProduct.variants.length > 0) {
+                    // try both color and size
+                    if (colorId && sizeId) {
+                        variant = selectedProduct.variants.find(v => String(v.product_color_id ?? '') === colorId && String(v.product_size_id ?? '') === sizeId);
+                    }
+                    // fallback try color only
+                    if (!variant && colorId) {
+                        variant = selectedProduct.variants.find(v => String(v.product_color_id ?? '') === colorId);
+                    }
+                    // fallback try size only
+                    if (!variant && sizeId) {
+                        variant = selectedProduct.variants.find(v => String(v.product_size_id ?? '') === sizeId);
+                    }
+                }
+                // Update form fields
+                form.setValue('product_color_id', colorId || '');
+                form.setValue('product_size_id', sizeId || '');
+                if (variant) {
+                    form.setValue('product_variant_id', String(variant.id));
+                } else if (!isHydratingRef.current) {
+                    // only clear variant id if not hydrating
+                    form.setValue('product_variant_id', '');
+                }
+                // Update name to include variant hint and SKU only after hydration
+                if (!isHydratingRef.current) {
+                    const baseName = selectedProduct.name;
+                    const colorName = selectedProduct.colors?.find((c) => String(c.id) === colorId)?.name;
+                    const sizeName = selectedProduct.sizes?.find((s) => String(s.id) === sizeId)?.name;
+                    let optSuffix = '';
+                    if (colorName && sizeName) optSuffix = ` (Cor: ${colorName} / Tam: ${sizeName})`;
+                    else if (colorName) optSuffix = ` (Cor: ${colorName})`;
+                    else if (sizeName) optSuffix = ` (Tam: ${sizeName})`;
+                    const skuPart = (variant && variant.sku) ? ` [SKU: ${variant.sku}]` : '';
+                    form.setValue('name', `${baseName}${optSuffix}${skuPart}`);
+                }
+            }, [selectedProduct, selectedColorId, selectedSizeId, form]);
+
     const handleSubmit = (values: ItemFormValues) => {
         onSubmit(values);
         onOpenChange(false);
     };
 
-    // Função para limpar o produto selecionado
     const clearSelectedProduct = () => {
         setSelectedProduct(null);
+        setSelectedColorId(null);
+        setSelectedSizeId(null);
         form.setValue('product_id', '');
         form.setValue('name', '');
         form.setValue('unit_price', '0');
@@ -228,7 +284,6 @@ export default function ItemForm({
                 </DialogHeader>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-                        {/* Mostrar informações do produto selecionado em vez de um select */}
                         {selectedProduct && (
                             <div className="flex gap-2 bg-muted relative rounded-lg p-4">
                                 {selectedProduct.main_image ? (
@@ -248,13 +303,7 @@ export default function ItemForm({
                                 )}
                                 <div className="w-full">
                                     <div className="absolute top-2 right-2">
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={clearSelectedProduct}
-                                            className="h-6 w-6 rounded-full p-0"
-                                        >
+                                        <Button type="button" variant="ghost" size="sm" onClick={clearSelectedProduct} className="h-6 w-6 rounded-full p-0">
                                             <X className="h-6 w-6" />
                                         </Button>
                                     </div>
@@ -268,7 +317,45 @@ export default function ItemForm({
                                         </span>
                                     </div>
 
-                                    {/* Campo oculto para armazenar o product_id */}
+                                    {/* Color selection */}
+                                    {selectedProduct.colors && selectedProduct.colors.length > 0 && (
+                                        <div className="mt-3">
+                                            <FormLabel>Cor</FormLabel>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {selectedProduct.colors.map((color) => (
+                                                    <button
+                                                        type="button"
+                                                        key={String(color.id)}
+                                                        onClick={() => setSelectedColorId(String(color.id))}
+                                                        title={color.name}
+                                                        className={`relative h-8 w-8 rounded-full border transition-all focus:outline-none ${selectedColorId === String(color.id) ? 'border-orange-500 border-2 ring-2 ring-orange-500 ring-offset-1' : 'border-slate-300 hover:border-orange-400'}`}
+                                                        style={{ backgroundColor: (color as { hex_code?: string | null }).hex_code || '#ccc' }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Size selection */}
+                                    {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
+                                        <div className="mt-3">
+                                            <FormLabel>Tamanho</FormLabel>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {selectedProduct.sizes.map((size) => (
+                                                    <button
+                                                        type="button"
+                                                        key={String(size.id)}
+                                                        onClick={() => setSelectedSizeId(String(size.id))}
+                                                        className={`rounded-md border px-3.5 py-1.5 text-sm font-medium ${selectedSizeId === String(size.id) ? 'border-orange-500 bg-orange-500 text-white' : 'border-slate-300 bg-white text-slate-700 hover:border-orange-400 hover:text-orange-600'}`}
+                                                        title={(size as { name: string }).name}
+                                                    >
+                                                        {(size as { name: string }).name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <FormField
                                         control={form.control}
                                         name="product_id"
@@ -280,9 +367,44 @@ export default function ItemForm({
                                             </FormItem>
                                         )}
                                     />
+                                    {/* Hidden fields for color/size and variant - bound to RHF */}
+                                    <FormField
+                                        control={form.control}
+                                        name="product_color_id"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <input type="hidden" {...field} value={selectedColorId || ''} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="product_size_id"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <input type="hidden" {...field} value={selectedSizeId || ''} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="product_variant_id"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <input type="hidden" {...field} value={form.watch('product_variant_id') || ''} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
                                 </div>
                             </div>
                         )}
+
                         <FormField
                             control={form.control}
                             name="name"
@@ -299,37 +421,6 @@ export default function ItemForm({
                             )}
                         />
 
-                        {/* <FormField
-                            control={form.control}
-                            name="warehouse_id"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Armazém</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione um armazém" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="none">Nenhum</SelectItem>
-                                            {warehouses.map((warehouse) => (
-                                                <SelectItem key={warehouse.id} value={warehouse.id.toString()}>
-                                                    {warehouse.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormDescription>
-                                        {isLoadingInventory
-                                            ? 'A carregar informações do inventário...'
-                                            : 'Selecione o armazém para buscar o preço correto'}
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        /> */}
-
                         <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-3">
                             <FormField
                                 control={form.control}
@@ -340,13 +431,7 @@ export default function ItemForm({
                                             Preço Unitário <span className="text-destructive">*</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                {...field}
-                                                className={isLoadingInventory ? 'animate-pulse' : ''}
-                                            />
+                                            <Input type="number" min="0" step="0.01" {...field} className={isLoadingInventory ? 'animate-pulse' : ''} />
                                         </FormControl>
                                         {isLoadingInventory && <FormDescription>A carregar preço atualizado...</FormDescription>}
                                         {selectedProduct && <FormDescription>O preço é definido pelo produto selecionado</FormDescription>}
@@ -376,20 +461,16 @@ export default function ItemForm({
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Unidade</FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value || 'unit'}
-                                            disabled={selectedProduct !== null} // Desativar quando houver um produto selecionado
-                                        >
+                                        <Select onValueChange={field.onChange} value={field.value || 'unit'} disabled={selectedProduct !== null}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Selecione uma unidade" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {units.map((unit) => (
-                                                    <SelectItem key={unit.value} value={unit.value}>
-                                                        {unit.label}
+                                                {units.map((u) => (
+                                                    <SelectItem key={u.value} value={u.value}>
+                                                        {u.label}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
@@ -400,51 +481,80 @@ export default function ItemForm({
                                 )}
                             />
                         </div>
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Descrição</FormLabel>
-                                    <FormControl>
-                                        <Textarea {...field} placeholder="Descrição detalhada do item" />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <div className="grid items-start gap-4 md:grid-cols-2">
-                            <FormField
-                                control={form.control}
-                                name="discount_percentage"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Desconto (%)</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" min="0" max="100" step="0.01" {...field} value={field.value || '0'} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
 
-                            <FormField
-                                control={form.control}
-                                name="tax_percentage"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Imposto (%)</FormLabel>
-                                        <FormControl>
-                                            <Input type="number" min="0" step="0.01" {...field} value={field.value || '0'} />
-                                        </FormControl>
-                                        {taxRates.length > 0 && (
-                                            <FormDescription>Taxas comuns: {taxRates.map((tax) => `${tax.label}`).join(', ')}</FormDescription>
-                                        )}
-                                        <FormMessage />
-                                    </FormItem>
+                        {/* Toggle advanced fields (Descrição, Desconto, Imposto) */}
+                        <hr className="my-4" />
+                        <div className="-mt-2">
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowAdvanced((v) => !v)}
+                                className="px-1 text-sm text-muted-foreground hover:text-foreground"
+                            >
+                                {showAdvanced ? (
+                                    <>
+                                        <ChevronUp className="mr-1 h-4 w-4" /> Esconder opções
+                                    </>
+                                ) : (
+                                    <>
+                                        <ChevronDown className="mr-1 h-4 w-4" /> Mais opções (Descrição, Desconto, Imposto)
+                                    </>
                                 )}
-                            />
+                            </Button>
                         </div>
+
+                        {showAdvanced && (
+                            <div className="mt-2 space-y-3">
+                                <FormField
+                                    control={form.control}
+                                    name="description"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Descrição</FormLabel>
+                                            <FormControl>
+                                                <Textarea {...field} placeholder="Descrição detalhada do item" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {/* Removed helper buttons for descrição as requested */}
+                                <div className="grid items-start gap-4 md:grid-cols-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="discount_percentage"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Desconto (%)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" min="0" max="100" step="0.01" {...field} value={field.value || '0'} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="tax_percentage"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Imposto (%)</FormLabel>
+                                                <FormControl>
+                                                    <Input type="number" min="0" step="0.01" {...field} value={field.value || '0'} />
+                                                </FormControl>
+                                                {taxRates.length > 0 && (
+                                                    <FormDescription>
+                                                        Taxas comuns: {taxRates.map((t) => `${t.label}`).join(', ')}
+                                                    </FormDescription>
+                                                )}
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <DialogFooter className="pt-4">
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

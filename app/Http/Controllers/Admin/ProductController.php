@@ -315,7 +315,7 @@ class ProductController extends Controller implements HasMiddleware
 
                             $path = $imageFile->store('products', 'public');
                             $isMain = $index == $mainImageIndex;
-
+                            
                             $image = new Image([
                                 'version' => 'original',
                                 'storage' => 'public',
@@ -940,7 +940,7 @@ class ProductController extends Controller implements HasMiddleware
             $product->load(['variants', 'variants.color', 'variants.size']);
 
             // Obter todos os armazéns
-            $warehouses = Warehouse::select('id', 'name', 'location')->get();
+            $warehouses = Warehouse::select('id', 'name')->get();
 
             // Obter o inventário atual para este produto e suas variantes
             $productIds = [$product->id];
@@ -1014,7 +1014,7 @@ class ProductController extends Controller implements HasMiddleware
                 'items.*.warehouse_id' => 'required|exists:warehouses,id',
                 'items.*.quantity' => 'required|integer|min:0',
                 'items.*.min_quantity' => 'nullable|integer|min:0',
-                'items.*.location' => 'nullable|string|max:255',
+                // 'items.*.location' => 'nullable|string|max:255',
             ], [
                 'items.required' => 'Nenhum item de inventário foi fornecido.',
                 'items.*.product_id.required' => 'O produto é obrigatório.',
@@ -1046,7 +1046,7 @@ class ProductController extends Controller implements HasMiddleware
 
                     // Verificar se já existe um registo de inventário para este produto/variante e armazém
                     $inventory = Inventory::where('product_id', $item['product_id'])
-                        ->where('product_variant_id', $item['product_variant_id'] ?? null)
+                        // ->where('product_variant_id', $item['product_variant_id'] ?? null)
                         ->where('warehouse_id', $item['warehouse_id'])
                         ->first();
 
@@ -1059,7 +1059,7 @@ class ProductController extends Controller implements HasMiddleware
                         $inventory->quantity = $item['quantity'];
                         $inventory->min_quantity = $item['min_quantity'] ?? 0;
                         $inventory->max_quantity = $item['max_quantity'] ?? null;
-                        $inventory->location = $item['location'] ?? null;
+                        // $inventory->location = $item['location'] ?? null;
                         $inventory->unit_cost = $item['unit_cost'] ?? null;
                         $inventory->batch_number = $item['batch_number'] ?? null;
                         $inventory->expiry_date = $item['expiry_date'] ?? null;
@@ -1101,7 +1101,7 @@ class ProductController extends Controller implements HasMiddleware
                             'quantity' => $item['quantity'],
                             'min_quantity' => $item['min_quantity'] ?? 0,
                             'max_quantity' => $item['max_quantity'] ?? null,
-                            'location' => $item['location'] ?? null,
+                            // 'location' => $item['location'] ?? null,
                             'unit_cost' => $item['unit_cost'] ?? null,
                             'batch_number' => $item['batch_number'] ?? null,
                             'expiry_date' => $item['expiry_date'] ?? null,

@@ -10,14 +10,9 @@ export default function Cart() {
 
     const CartContent = () => {
         // Use o hook useCart dentro deste componente filho que será renderizado dentro do SiteLayout
-        const { items, removeItem, updateQuantity, clearCart, total, itemCount } = useCart();
+    const { items, removeItem, updateQuantity, clearCart, itemCount } = useCart();
 
-        const formatCurrency = (value: number) => {
-            return new Intl.NumberFormat('pt-MZ', {
-                style: 'currency',
-                currency: 'MZN',
-            }).format(value);
-        };
+    // const formatCurrency = (value: number) => new Intl.NumberFormat('pt-MZ', { style: 'currency', currency: 'MZN' }).format(value);
 
         if (itemCount === 0) {
             return (
@@ -81,6 +76,9 @@ export default function Cart() {
                                                                 {item.name}
                                                             </Link>
                                                         </h3>
+                                                        {item.variant_sku && (
+                                                            <div className="text-xs text-gray-500 mt-1">SKU: {item.variant_sku}</div>
+                                                        )}
                                                         {(item.color_name || item.size_name) && (
                                                             <div className="mt-1 text-xs text-gray-500">
                                                                 {item.color_name && <span>Cor: {item.color_name}</span>}
