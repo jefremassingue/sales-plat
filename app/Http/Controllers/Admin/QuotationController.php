@@ -185,7 +185,7 @@ class QuotationController extends Controller implements HasMiddleware
             $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
-                    'mainImage',
+                    'mainImage.versions',
                     'colors.images.versions',
                     'sizes',
                     'variants',
@@ -403,7 +403,7 @@ class QuotationController extends Controller implements HasMiddleware
         $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
         $products = Product::select('id', 'name', 'price', 'sku', 'cost')
             ->with([
-                'mainImage',
+                'mainImage.versions',
                 'colors',
                 'sizes',
                 'variants',

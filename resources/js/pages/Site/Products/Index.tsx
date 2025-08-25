@@ -7,9 +7,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 interface Category {
     id: number;
     name: string;
-    slug: string;
-    parent: Category | null;
-    subcategories?: Category[];
+    count: number;
+    subcategories: {
+        id: number;
+        name: string;
+        count: number;
+    }[];
 }
 
 interface Product {
@@ -406,7 +409,9 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                     <div className="scrollbar-thin scrollbar-thumb-slate-200 max-h-60 space-y-2 overflow-y-auto pr-1">
                                         {categories.map((parentCat) => (
                                             <div key={parentCat.id} className="ml-1">
-                                                <span className="mb-1 block text-sm font-medium text-slate-600">{parentCat.name}</span>
+                                                <span className="mb-1 block text-sm font-medium text-slate-600">
+                                                    {parentCat.name} <span className="text-xs text-slate-400">({parentCat.count})</span>
+                                                </span>
                                                 <div className="ml-2 space-y-1.5">
                                                     {parentCat.subcategories.map((subCat) => (
                                                         <label
@@ -420,7 +425,9 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                                                 onChange={() => handleCheckboxChange('categories', subCat.id)}
                                                                 className="rounded border-slate-300 text-orange-600 text-zinc-800 focus:ring-orange-500"
                                                             />
-                                                            <span>{subCat.name}</span>
+                                                            <span>
+                                                                {subCat.name} <span className="text-xs text-slate-400">({subCat.count})</span>
+                                                            </span>
                                                         </label>
                                                     ))}
                                                 </div>

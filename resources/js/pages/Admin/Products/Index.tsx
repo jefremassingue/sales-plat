@@ -346,12 +346,12 @@ export default function Index({ products, categories, filters }: Props) {
                         )}
                     </div>
                 </CardContent>
-                <CardFooter className="flex justify-end gap-2 border-t pt-2">
+                <CardFooter className="flex flex-wrap justify-between gap-2 border-t pt-2">
                     {can('admin-product.show') && (
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/products/${product.id}`}>
                                 <Eye className="mr-1 h-4 w-4" />
-                                Ver
+                                {/* Ver */}
                             </Link>
                         </Button>
                     )}
@@ -359,7 +359,7 @@ export default function Index({ products, categories, filters }: Props) {
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/products/${product.id}/inventory`}>
                                 <WarehouseIcon className="mr-1 h-4 w-4" />
-                                Inventário
+                                {/* Inventário */}
                             </Link>
                         </Button>
                     )}
@@ -367,7 +367,7 @@ export default function Index({ products, categories, filters }: Props) {
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={`/admin/products/${product.id}/edit`}>
                                 <Edit className="mr-1 h-4 w-4" />
-                                Editar
+                                {/* Editar */}
                             </Link>
                         </Button>
                     )}
@@ -378,7 +378,7 @@ export default function Index({ products, categories, filters }: Props) {
                             onClick={() => handleDuplicate(product.id)}
                         >
                             <Copy className="mr-1 h-4 w-4" />
-                            Duplicar
+                            {/* Duplicar */}
                         </Button>
                     )}
                     {can('admin-product.destroy') && (
@@ -389,7 +389,7 @@ export default function Index({ products, categories, filters }: Props) {
                             className="text-destructive hover:text-destructive"
                         >
                             <Trash className="mr-1 h-4 w-4" />
-                            Eliminar
+                            {/* Eliminar */}
                         </Button>
                     )}
                 </CardFooter>
@@ -686,28 +686,56 @@ export default function Index({ products, categories, filters }: Props) {
                                         A mostrar {products.from} a {products.to} de {products.total} produtos
                                     </div>
                                     <div className="flex gap-1">
-                                        {Array.from({ length: products.last_page }, (_, i) => i + 1).map((page) => (
-                                            <Button
-                                                key={page}
-                                                variant={page === products.current_page ? 'default' : 'outline'}
-                                                size="sm"
-                                                onClick={() => {
-                                                    router.get(
-                                                        '/admin/products',
-                                                        {
-                                                            ...filters,
-                                                            page,
-                                                        },
-                                                        {
-                                                            preserveState: true,
-                                                            replace: true,
-                                                        },
-                                                    );
-                                                }}
-                                            >
-                                                {page}
-                                            </Button>
-                                        ))}
+                                        {/* Paginação otimizada: mostra no máximo 5 páginas, com reticências */}
+                                        {(() => {
+                                            const pages = [];
+                                            const { current_page, last_page } = products;
+                                            if (last_page <= 5) {
+                                                for (let i = 1; i <= last_page; i++) {
+                                                    pages.push(i);
+                                                }
+                                            } else {
+                                                if (current_page > 3) {
+                                                    pages.push(1);
+                                                    if (current_page > 4) pages.push('...');
+                                                }
+                                                const start = Math.max(2, current_page - 1);
+                                                const end = Math.min(last_page - 1, current_page + 1);
+                                                for (let i = start; i <= end; i++) {
+                                                    pages.push(i);
+                                                }
+                                                if (current_page < last_page - 2) {
+                                                    if (current_page < last_page - 3) pages.push('...');
+                                                    pages.push(last_page);
+                                                }
+                                            }
+                                            return pages.map((page, idx) =>
+                                                page === '...'
+                                                    ? <span key={"ellipsis-" + idx} className="px-2">...</span>
+                                                    : (
+                                                        <Button
+                                                            key={page}
+                                                            variant={page === products.current_page ? 'default' : 'outline'}
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                router.get(
+                                                                    '/admin/products',
+                                                                    {
+                                                                        ...filters,
+                                                                        page,
+                                                                    },
+                                                                    {
+                                                                        preserveState: true,
+                                                                        replace: true,
+                                                                    },
+                                                                );
+                                                            }}
+                                                        >
+                                                            {page}
+                                                        </Button>
+                                                    )
+                                            );
+                                        })()}
                                     </div>
                                 </div>
                             )}

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Brand;
 use App\Models\Category;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,8 +21,7 @@ class ProductController extends Controller
         $productsQuery = Product::query()
             ->where('active', true)
             ->whereHas('ecommerce_inventory')
-
-            ->with(['category', 'images', 'mainImage', 'ecommerce_inventory', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions' ]);
+            ->with(['category', 'images', 'mainImage.versions', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions' ]);
 
         // Aplicar filtros se existirem
         if ($request->has('categories') && !empty($request->categories)) {
@@ -29,7 +29,6 @@ class ProductController extends Controller
         }
 
         if ($request->has('c')) {
-
             $productsQuery->whereIn('category_id', Category::where('parent_id', $request->c)->pluck('id'));
         }
 
@@ -77,10 +76,39 @@ class ProductController extends Controller
                 break;
         }
 
+        // cache()->clear();
+        // --- CATEGORIES WITH COUNTS FOR SIDEBAR ---
+        $categories = Cache::remember('categories_with_counts', 3600, function () {
+            return Category::with(['subcategories'])->get()->map(function ($cat) {
+                $ownCount = Product::where('active', true)
+                    ->whereHas('ecommerce_inventory')
+                    ->where('category_id', $cat->id)
+                    ->count();
+                $subcategories = $cat->subcategories->map(function ($subcat) {
+                    $subCount = Product::where('active', true)
+                        ->whereHas('ecommerce_inventory')
+                        ->where('category_id', $subcat->id)
+                        ->count();
+                    return [
+                        'id' => $subcat->id,
+                        'name' => $subcat->name,
+                        'count' => $subCount,
+                    ];
+                });
+                $totalCount = $ownCount + $subcategories->sum('count');
+                return [
+                    'id' => $cat->id,
+                    'name' => $cat->name,
+                    'count' => $totalCount,
+                    'subcategories' => $subcategories,
+                ];
+            });
+        });
+
         // Usar Inertia com Deferred Props para carregamento mais eficiente
         return Inertia::render('Site/Products/Index', [
             // Dados de produtos carregados de forma adiada (lazy)
-            'products' => $productsQuery->paginate(12)->through(function ($product) {
+            'products' => $productsQuery->paginate(20)->through(function ($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
@@ -121,6 +149,9 @@ class ProductController extends Controller
 
             // Filtros aplicados
             'filters' => $request->only(['categories', 'c', 'brands', 'price_min', 'price_max', 'search', 'sort', 'order']),
+
+            // Categorias e subcategorias com contagem de produtos
+            'categories' => $categories,
         ]);
     }
 
@@ -165,7 +196,7 @@ class ProductController extends Controller
                 }
             })
             ->where('active', true)
-            ->with(['category', 'images', 'brand'])
+            ->with(['category', 'images', 'brand', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
             ->inRandomOrder()
             ->limit(5)
             ->get()
@@ -180,7 +211,14 @@ class ProductController extends Controller
                         'id' => $relatedProduct->category->id,
                         'name' => $relatedProduct->category->name,
                     ] : null,
-                    'main_image' => $relatedProduct->images->first(),
+                    'main_image' => $relatedProduct->mainImage,
+                    'colors' => $relatedProduct->colors->map(function ($color) {
+                        return [
+                            'id' => $color->id,
+                            'name' => $color->name,
+                            'image' => $color->images->first(),
+                        ];
+                    }),
                     'brand' => optional($relatedProduct->brand)->name,
                     'isNew' => $relatedProduct->created_at->diffInDays(now()) < 30,
                 ];

@@ -178,7 +178,10 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
     // 1) Sempre mostrar TODAS as imagens do produto na galeria
     // 2) Ao clicar em uma cor, navegar para o índice da imagem que corresponde à cor
     const displayedImages = useMemo<Image[]>(() => product.images, [product.images]);
-    const currentVariant = useMemo<any>(() => selectedColor ? product.variants.find(v => v.product_color_id == selectedColor.id) : null, [selectedColor])
+    const currentVariant = useMemo<any>(
+        () => (selectedColor ? product.variants.find((v) => v.product_color_id == selectedColor.id) : null),
+        [selectedColor],
+    );
     // Helper: encontra o índice da imagem que corresponde à cor
     const findImageIndexForColor = useCallback(
         (color: Color | null): number => {
@@ -192,8 +195,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                     if (byId !== -1) return byId;
 
                     const byName = imgs.findIndex(
-                        (img) =>
-                            (!!cimg.name && img.name === cimg.name) || (!!cimg.original_name && img.original_name === cimg.original_name),
+                        (img) => (!!cimg.name && img.name === cimg.name) || (!!cimg.original_name && img.original_name === cimg.original_name),
                     );
                     if (byName !== -1) return byName;
                 }
@@ -242,7 +244,9 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
             // 3) Fallback: nome da cor contido no nome da imagem
             const iname = (image.name || image.original_name || '').toLowerCase();
             if (iname) {
-                const byContains = product.colors.find((color) => (color.name || '').toLowerCase() && iname.includes((color.name || '').toLowerCase()));
+                const byContains = product.colors.find(
+                    (color) => (color.name || '').toLowerCase() && iname.includes((color.name || '').toLowerCase()),
+                );
                 if (byContains) return byContains;
             }
 
@@ -304,7 +308,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
             size_id: selectedSize?.id || null,
             size_name: selectedSize?.name || null,
             variant_id: currentVariant?.id || null,
-            variant_sku: currentVariant?.sku || null
+            variant_sku: currentVariant?.sku || null,
         });
         // O feedback é tratado pelo CartContext
         setIsOpen(true); // O CartContext já faz isso ao adicionar item
@@ -328,7 +332,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
             size_name: selectedSize?.name || null,
 
             variant_id: currentVariant?.id || null,
-            variant_sku: currentVariant?.sku || null
+            variant_sku: currentVariant?.sku || null,
         });
         // Aqui você pode redirecionar para a página de quotation
         router.visit('/quotation'); // Usando router do Inertia para navegação
@@ -358,6 +362,23 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
 
     return (
         <>
+            <Head>
+                <title>{`${product.name} - Matony Serviços`}</title>
+                <meta name="description" content={product.description} />
+                {/* og tags */}
+                <meta property="og:title" content={`${product.name} - Matony Serviços`} />
+                <meta property="og:description" content={product.description} />
+                <meta
+                    property="og:image"
+                    content={
+                        product.main_image?.versions?.find((image) => image.version == 'sm')?.url ||
+                        product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
+                        product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
+                        product.main_image?.url
+                    }
+                />
+                <meta property="og:url" content={window.location.href} />
+            </Head>
             <div className="bg-white">
                 <div className="container mx-auto px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                     {/* Breadcrumbs */}
@@ -380,7 +401,7 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                     <div className="grid grid-cols-1 gap-8 md:gap-12 lg:grid-cols-2">
                         {/* Galeria de Imagens com react-image-gallery */}
                         <div className="space-y-4">
-                            <div className="relative w-full overflow-hidden ">
+                            <div className="relative w-full overflow-hidden">
                                 <ImageGallery
                                     ref={(instance) => setGalleryRef(instance)}
                                     items={displayedImages.map((img) => ({
@@ -412,7 +433,6 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                                     showPlayButton={false}
                                     showFullscreenButton={false}
                                     showNav={true}
-                                    
                                     showThumbnails={displayedImages.length > 1}
                                     thumbnailPosition="bottom"
                                     additionalClass=""
@@ -443,202 +463,212 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
                             <div className="space-y-6 rounded-xl border border-slate-200 bg-white/60 p-6 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/50">
                                 {/* Cabeçalho */}
                                 <div className="min-w-0">
-                                <div className="flex flex-wrap items-center gap-3">
-                                    {product.brand && (
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        {product.brand && (
+                                            <div className="flex items-center gap-2">
+                                                {product.brand.logo_url && (
+                                                    <img
+                                                        src={product.brand.logo_url}
+                                                        alt={product.brand.name}
+                                                        className="h-5 w-5 rounded object-contain"
+                                                    />
+                                                )}
+                                                <p className="text-sm font-semibold tracking-wide text-orange-600 uppercase">{product.brand.name}</p>
+                                            </div>
+                                        )}
+
+                                        <p className="text-sm font-semibold tracking-wide text-zinc-600 uppercase">
+                                            | {product.category.parent?.name} - {product.category.name}
+                                        </p>
+                                    </div>
+                                    <h1 className="mt-3 mb-2 text-2xl leading-snug font-bold text-slate-900 md:text-3xl">{product.name}</h1>
+
+                                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                                        {isInStock && (
+                                            <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                                                <CheckCircle size={14} /> Em estoque {product.total_stock ? `(${product.total_stock})` : ''}
+                                            </span>
+                                        )}
+                                        {product.certification && (
+                                            <span className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                                                {product.certification}
+                                            </span>
+                                        )}
+                                        {product.featured && (
+                                            <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700">
+                                                Destaque
+                                            </span>
+                                        )}
+                                        {product.sku && (
+                                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+                                                SKU: {product.sku}
+                                            </span>
+                                        )}
+                                        {currentVariant && (
+                                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+                                                REF: {currentVariant?.sku}
+                                            </span>
+                                        )}
+                                        {product.barcode && (
+                                            <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+                                                EAN: {product.barcode}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="text-slate-700" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
+                                </div>
+
+                                {/* Opções */}
+                                <div className="space-y-4">
+                                    <h3 className="text-xs font-semibold tracking-wider text-slate-500 uppercase">Opções</h3>
+                                    {/* Opções de Cor */}
+                                    {product.colors && product.colors.length > 0 && (
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr] sm:items-center">
+                                            <label className="text-sm font-medium text-slate-700">
+                                                Cor:
+                                                <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                                    {selectedColor?.name}
+                                                </span>
+                                            </label>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {product.colors.map((color) => (
+                                                    <button
+                                                        key={color.id}
+                                                        onClick={() => handleColorSelect(color)}
+                                                        title={color.name}
+                                                        className={`relative h-9 w-9 rounded-full border transition-all duration-150 focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none ${
+                                                            selectedColor?.id === color.id
+                                                                ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-1'
+                                                                : 'border-slate-300 hover:border-orange-400'
+                                                        }`}
+                                                        aria-pressed={selectedColor?.id === color.id}
+                                                        style={{ backgroundColor: color.hex_code || '#ccc' }}
+                                                        aria-label={`Selecionar cor ${color.name}`}
+                                                    >
+                                                        {selectedColor?.id === color.id && (
+                                                            <span className="absolute inset-0 m-auto flex h-full w-full items-center justify-center rounded-full">
+                                                                <CheckCircle size={16} className="text-white/90 drop-shadow" />
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Opções de Tamanho */}
+                                    {product.sizes && product.sizes.length > 0 && (
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr] sm:items-center">
+                                            <label className="text-sm font-medium text-slate-700">Opções:</label>
+                                            <div className="flex flex-wrap gap-2.5">
+                                                {product.sizes.map((size) => (
+                                                    <button
+                                                        key={size.id}
+                                                        onClick={() => setSelectedSize(size)}
+                                                        className={`rounded-md border px-3.5 py-2 text-sm font-medium transition-colors duration-150 ${
+                                                            selectedSize?.id === size.id
+                                                                ? 'border-orange-500 bg-orange-500 text-white'
+                                                                : 'border-slate-300 bg-white text-slate-700 hover:border-orange-400 hover:text-orange-600'
+                                                        }`}
+                                                        aria-pressed={selectedSize?.id === size.id}
+                                                        title={size.name}
+                                                    >
+                                                        {size.name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Quantidade e Ações */}
+                                <div className="space-y-4 border-t border-slate-200 pt-4">
+                                    <div className="rounded-lg border border-orange-200 bg-orange-50/60 px-4 py-3 text-sm text-orange-800">
                                         <div className="flex items-center gap-2">
-                                            {product.brand.logo_url && (
-                                                <img
-                                                    src={product.brand.logo_url}
-                                                    alt={product.brand.name}
-                                                    className="h-5 w-5 rounded object-contain"
-                                                />
-                                            )}
-                                            <p className="text-sm font-semibold tracking-wide text-orange-600 uppercase">{product.brand.name}</p>
+                                            <List size={18} className="text-orange-500" />
+                                            <span className="font-medium">Preço sob consulta</span>
                                         </div>
-                                    )}
+                                        <p className="mt-1 text-xs text-orange-700">
+                                            Envie uma solicitação de cotação que retornaremos com o melhor preço.
+                                        </p>
+                                    </div>
 
-                                    <p className="text-sm font-semibold tracking-wide text-zinc-600 uppercase">
-                                        | {product.category.parent?.name} - {product.category.name}
-                                    </p>
-                                </div>
-                                <h1 className="mt-3 mb-2 text-2xl font-bold leading-snug text-slate-900 md:text-3xl">{product.name}</h1>
-
-                                <div className="mb-4 flex flex-wrap items-center gap-2">
-                                    {isInStock && (
-                                        <span className="inline-flex items-center gap-1 rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-                                            <CheckCircle size={14} /> Em estoque {product.total_stock ? `(${product.total_stock})` : ''}
-                                        </span>
-                                    )}
-                                    {product.certification && (
-                                        <span className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-                                            {product.certification}
-                                        </span>
-                                    )}
-                                    {product.featured && (
-                                        <span className="rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-medium text-orange-700">
-                                            Destaque
-                                        </span>
-                                    )}
-                                    {product.sku && (
-                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">SKU: {product.sku}</span>
-                                    )}
-                                    {currentVariant && (
-                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">REF: {currentVariant?.sku}</span>
-                                    )}
-                                    {product.barcode && (
-                                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">EAN: {product.barcode}</span>
-                                    )}
-                                </div>
-
-                                <div className="text-slate-700" dangerouslySetInnerHTML={{ __html: product.description || '' }} />
-                                </div>
-
-                            {/* Opções */}
-                            <div className="space-y-4">
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Opções</h3>
-                                {/* Opções de Cor */}
-                                {product.colors && product.colors.length > 0 && (
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr] sm:items-center">
-                                        <label className="text-sm font-medium text-slate-700">
-                                            Cor:
-                                            <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">{selectedColor?.name}</span>
-                                        </label>
-                                        <div className="flex flex-wrap gap-2.5">
-                                            {product.colors.map((color) => (
-                                                <button
-                                                    key={color.id}
-                                                    onClick={() => handleColorSelect(color)}
-                                                    title={color.name}
-                                                    className={`relative h-9 w-9 rounded-full border transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 ${
-                                                        selectedColor?.id === color.id
-                                                            ? 'border-orange-500 ring-2 ring-orange-500 ring-offset-1'
-                                                            : 'border-slate-300 hover:border-orange-400'
-                                                    }`}
-                                                    aria-pressed={selectedColor?.id === color.id}
-                                                    style={{ backgroundColor: color.hex_code || '#ccc' }}
-                                                    aria-label={`Selecionar cor ${color.name}`}
-                                                >
-                                                    {selectedColor?.id === color.id && (
-                                                        <span className="absolute inset-0 m-auto flex h-full w-full items-center justify-center rounded-full">
-                                                            <CheckCircle size={16} className="text-white/90 drop-shadow" />
-                                                        </span>
-                                                    )}
-                                                </button>
-                                            ))}
+                                    <h3 className="text-xs font-semibold tracking-wider text-slate-500 uppercase">Quantidade</h3>
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <div className="flex items-center overflow-hidden rounded-md border border-slate-300">
+                                            <button
+                                                onClick={() => handleQuantityChange(-1)}
+                                                className="rounded-l-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                                                aria-label="Diminuir quantidade"
+                                            >
+                                                -
+                                            </button>
+                                            <input
+                                                type="number"
+                                                readOnly
+                                                value={quantity}
+                                                min="1"
+                                                className="w-16 border-x border-slate-300 py-2 text-center text-sm font-semibold text-slate-800 focus:outline-none"
+                                                aria-label="Quantidade"
+                                            />
+                                            <button
+                                                onClick={() => handleQuantityChange(1)}
+                                                className="rounded-r-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+                                                aria-label="Aumentar quantidade"
+                                            >
+                                                +
+                                            </button>
                                         </div>
                                     </div>
-                                )}
 
-                                {/* Opções de Tamanho */}
-                                {product.sizes && product.sizes.length > 0 && (
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-[110px_1fr] sm:items-center">
-                                        <label className="text-sm font-medium text-slate-700">Opções:</label>
-                                        <div className="flex flex-wrap gap-2.5">
-                                            {product.sizes.map((size) => (
-                                                <button
-                                                    key={size.id}
-                                                    onClick={() => setSelectedSize(size)}
-                                                    className={`rounded-md border px-3.5 py-2 text-sm font-medium transition-colors duration-150 ${
-                                                        selectedSize?.id === size.id
-                                                            ? 'border-orange-500 bg-orange-500 text-white'
-                                                            : 'border-slate-300 bg-white text-slate-700 hover:border-orange-400 hover:text-orange-600'
-                                                    }`}
-                                                    aria-pressed={selectedSize?.id === size.id}
-                                                    title={size.name}
-                                                >
-                                                    {size.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Quantidade e Ações */}
-                            <div className="space-y-4 border-t border-slate-200 pt-4">
-                                <div className="rounded-lg border border-orange-200 bg-orange-50/60 px-4 py-3 text-sm text-orange-800">
-                                    <div className="flex items-center gap-2">
-                                        <List size={18} className="text-orange-500" />
-                                        <span className="font-medium">Preço sob consulta</span>
-                                    </div>
-                                    <p className="mt-1 text-xs text-orange-700">Envie uma solicitação de cotação que retornaremos com o melhor preço.</p>
-                                </div>
-
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Quantidade</h3>
-                                <div className="flex flex-wrap items-center gap-4">
-                                    <div className="flex items-center overflow-hidden rounded-md border border-slate-300">
+                                    <h3 className="text-xs font-semibold tracking-wider text-slate-500 uppercase">Ações</h3>
+                                    <div className="flex flex-col gap-3 sm:flex-row">
                                         <button
-                                            onClick={() => handleQuantityChange(-1)}
-                                            className="rounded-l-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
-                                            aria-label="Diminuir quantidade"
+                                            onClick={handleAddToCart}
+                                            className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-zinc-700 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-zinc-800 sm:w-auto`}
                                         >
-                                            -
+                                            <ShoppingCart size={16} />
+                                            Adicionar à cotação
                                         </button>
-                                        <input
-                                            type="number"
-                                            readOnly
-                                            value={quantity}
-                                            min="1"
-                                            className="w-16 border-x border-slate-300 py-2 text-center text-sm font-semibold text-slate-800 focus:outline-none"
-                                            aria-label="Quantidade"
-                                        />
+
                                         <button
-                                            onClick={() => handleQuantityChange(1)}
-                                            className="rounded-r-md px-3 py-2 text-slate-600 transition-colors hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
-                                            aria-label="Aumentar quantidade"
+                                            onClick={handleBuyNow}
+                                            className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-orange-600 sm:w-auto"
                                         >
-                                            +
+                                            <List size={20} />
+                                            Solicitar cotação
                                         </button>
                                     </div>
                                 </div>
 
-                                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">Ações</h3>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                                    <button
-                                        onClick={handleAddToCart}
-                    className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-zinc-700 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-zinc-800 sm:w-auto`}
-                                    >
-                                        <ShoppingCart size={16} />
-                                        Adicionar à cotação
-                                    </button>
-
-                                    <button
-                                        onClick={handleBuyNow}
-                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-orange-500 px-6 py-3 text-base font-semibold text-white transition-colors duration-300 hover:bg-orange-600 sm:w-auto"
-                                    >
-                                        <List size={20} />
-                                        Solicitar cotação
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Informações Adicionais */}
-                            <div className="space-y-3 pt-2 text-sm text-slate-600">
-                                {product.warranty && (
+                                {/* Informações Adicionais */}
+                                <div className="space-y-3 pt-2 text-sm text-slate-600">
+                                    {product.warranty && (
+                                        <div className="flex items-center gap-2">
+                                            <ShieldCheck size={18} className="text-green-500" />
+                                            <span>Garantia: {product.warranty}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2">
-                                        <ShieldCheck size={18} className="text-green-500" />
-                                        <span>Garantia: {product.warranty}</span>
+                                        <Truck size={18} className="text-orange-500" />
+                                        <span>Entrega disponível para Maputo cidade e província. Outras regiões sob consulta.</span>
                                     </div>
-                                )}
-                                <div className="flex items-center gap-2">
-                                    <Truck size={18} className="text-orange-500" />
-                                    <span>Entrega disponível para Maputo cidade e província. Outras regiões sob consulta.</span>
+                                    {product.description_pdf_url && (
+                                        <div className="flex items-center gap-2">
+                                            <a
+                                                href={product.description_pdf_url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-base font-semibold text-white shadow transition-colors duration-200 hover:bg-orange-600 focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:outline-none"
+                                                style={{ textDecoration: 'none' }}
+                                            >
+                                                <FileText size={20} className="text-white" />
+                                                Ver ficha técnica (PDF)
+                                            </a>
+                                        </div>
+                                    )}
                                 </div>
-                                {product.description_pdf_url && (
-                                    <div className="flex items-center gap-2">
-                                        <a
-                                            href={product.description_pdf_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 rounded-md bg-orange-500 px-4 py-2 text-base font-semibold text-white shadow transition-colors duration-200 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
-                                            style={{ textDecoration: 'none' }}
-                                        >
-                                            <FileText size={20} className="text-white" />
-                                            Ver ficha técnica (PDF)
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
                             </div>
                         </div>
                     </div>

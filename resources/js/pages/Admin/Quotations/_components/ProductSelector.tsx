@@ -18,6 +18,10 @@ interface ProductSelectorProps {
 export default function ProductSelector({ open, onOpenChange, products, onSelect, onAddItemManual, setOnSearch }: ProductSelectorProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const pageSize = 10;
 
     // Filtrar produtos com base na pesquisa
     const filteredProducts = products.filter(
@@ -25,6 +29,22 @@ export default function ProductSelector({ open, onOpenChange, products, onSelect
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (product.sku && product.sku.toLowerCase().includes(searchQuery.toLowerCase())),
     );
+
+    // Paginated products for infinite scroll
+    const paginatedProducts = filteredProducts.slice(0, page * pageSize);
+
+    // Infinite scroll next function
+    const loadMore = () => {
+        if (loading || !hasMore) return;
+        setLoading(true);
+        setTimeout(() => {
+            setPage((prev) => prev + 1);
+            if ((page + 1) * pageSize >= filteredProducts.length) {
+                setHasMore(false);
+            }
+            setLoading(false);
+        }, 500);
+    };
 
     const handleSelect = (productId: string) => {
         setSelectedProduct(productId);
@@ -66,14 +86,16 @@ export default function ProductSelector({ open, onOpenChange, products, onSelect
                         onChange={(e) => {
                             setSearchQuery(e.target.value);
                             setOnSearch(e.target.value);
+                            setPage(1);
+                            setHasMore(true);
                         }}
                         className="mb-4"
                     />
 
                     <div className="max-h-[60vh] flex-1 overflow-y-auto">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            {filteredProducts.length > 0 ? (
-                                filteredProducts.map((product) => (
+                            {paginatedProducts.length > 0 ? (
+                                paginatedProducts.map((product) => (
                                     <Card
                                         key={product.id}
                                         onClick={() => handleSelect(product.id)}
@@ -84,6 +106,7 @@ export default function ProductSelector({ open, onOpenChange, products, onSelect
                                                 {product.main_image ? (
                                                     <img
                                                         src={
+                                                            product.main_image.versions?.find((image) => image.version == 'sm')?.url ||
                                                             product.main_image.versions?.find((image) => image.version == 'md')?.url ||
                                                             product.main_image.versions?.find((image) => image.version == 'lg')?.url ||
                                                             product.main_image.url
@@ -123,6 +146,18 @@ export default function ProductSelector({ open, onOpenChange, products, onSelect
                                 </div>
                             )}
                         </div>
+                        {/* Infinite scroll trigger */}
+                        {hasMore && (
+                            <>
+                                {paginatedProducts.length > 0 && (
+                                    <div className="flex justify-center py-4">
+                                        <Button variant="ghost" disabled={loading} onClick={loadMore}>
+                                            {loading ? 'Carregando...' : 'Carregar mais'}
+                                        </Button>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </div>
 
                     <div className="mt-4 flex justify-end space-x-2">

@@ -19,7 +19,7 @@ class HomeController extends Controller
         // Cache::clear();
         // Produtos em destaque com cache
         $featuredProducts = Cache::remember('home:featured_products', now()->addMinutes(30), function () {
-            return Product::with(['category', 'mainImage.versions'])
+            return Product::with(['category', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
                 ->where('featured', true)
                 ->where('active', true)
                 ->whereHas('ecommerce_inventory')
@@ -36,6 +36,13 @@ class HomeController extends Controller
                         'name' => $p->category->name,
                     ] : null,
                     'main_image' => $p->mainImage,
+                    'colors' => $p->colors->map(function ($color) {
+                        return [
+                            'id' => $color->id,
+                            'name' => $color->name,
+                            'image' => $color->images->first(),
+                        ];
+                    }),
                     'brand' => $p->brand,
                     'isNew' => $p->created_at->diffInDays(now()) < 30,
                 ]);
@@ -43,7 +50,7 @@ class HomeController extends Controller
 
         // Produtos populares com cache
         $popularProducts = Cache::remember('home:popular_products', now()->addMinutes(30), function () {
-            return Product::with(['category', 'mainImage.versions'])
+            return Product::with(['category', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
                 ->where('active', true)
                 ->orderBy('created_at', 'desc')
                 ->whereHas('ecommerce_inventory')
@@ -61,6 +68,13 @@ class HomeController extends Controller
                         'name' => $p->category->name,
                     ] : null,
                     'main_image' => $p->mainImage,
+                    'colors' => $p->colors->map(function ($color) {
+                        return [
+                            'id' => $color->id,
+                            'name' => $color->name,
+                            'image' => $color->images->first(),
+                        ];
+                    }),
                     'brand' => $p->brand,
                     'isNew' => $p->created_at->diffInDays(now()) < 30,
                 ]);
@@ -68,7 +82,7 @@ class HomeController extends Controller
 
         // Novos produtos com cache
         $newProducts = Cache::remember('home:new_products', now()->addMinutes(30), function () {
-            return Product::with(['category', 'mainImage.versions'])
+            return Product::with(['category', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
                 ->select(['id', 'name', 'slug', 'description', 'technical_details', 'features', 'price', 'category_id', 'old_price', 'created_at'])
                 ->where('active', true)
                 ->orderBy('created_at', 'desc')
@@ -86,6 +100,13 @@ class HomeController extends Controller
                         'name' => $p->category->name,
                     ] : null,
                     'main_image' => $p->mainImage,
+                    'colors' => $p->colors->map(function ($color) {
+                        return [
+                            'id' => $color->id,
+                            'name' => $color->name,
+                            'image' => $color->images->first(),
+                        ];
+                    }),
                     'brand' => $p->brand,
                     'isNew' => $p->created_at->diffInDays(now()) < 30,
                 ]);
@@ -100,7 +121,6 @@ class HomeController extends Controller
                 ->get()
                 ->map(fn($c) => [
                     'name' => $c->name,
-                    'imageUrl' => 'https://picsum.photos/seed/cat_' . $c->id . '/300/200',
                     'link' => '/products?c=' . $c->id,
                     'items' => $c->products()->count() + $c->subcategories->sum(fn($sc) => $sc->products->count()),
                 ]);
@@ -119,7 +139,7 @@ class HomeController extends Controller
                     'title' => $b->title,
                     'date' => optional($b->published_at)->format('d \d\e F, Y'),
                     'excerpt' => $b->excerpt ?? str($b->content)->limit(120),
-                    'link' => '/blog/'.$b->slug,
+                    'link' => '/blog/' . $b->slug,
                     'image' => $b->image,
                     'category' => $b->category?->name,
                     'author' => $b->user?->name,
