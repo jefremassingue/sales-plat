@@ -53,6 +53,8 @@ export const formSchema = z.object({
             z.object({
                 product_id: z.string().optional(),
                 product_variant_id: z.string().optional(),
+                product_color_id: z.string().optional(),
+                product_size_id: z.string().optional(),
                 warehouse_id: z.string().optional(),
                 name: z.string().min(1, { message: 'Nome é obrigatório' }),
                 description: z.string().optional(),
@@ -374,6 +376,8 @@ export default function Create({
                 ...item,
                 product_id: item.product_id,
                 product_variant_id: item.product_variant_id,
+                product_color_id: item.product_color_id,
+                product_size_id: item.product_size_id,
                 warehouse_id: item.warehouse_id,
                 quantity: parseFloat(item.quantity),
                 unit_price: parseFloat(item.unit_price),

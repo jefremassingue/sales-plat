@@ -47,8 +47,11 @@ class Quotation extends Model
      */
     public static function generateQuotationNumber($suffix = ''): string
     {
-        $lastQuotation = self::withTrashed()->orderBy('created_at', 'desc')->first();
-        $nextId = $lastQuotation ? (int) substr($lastQuotation->quotation_number, -5) + 1 : 100;
+        $lastQuotation = self::withTrashed()
+            ->whereRaw("DATE_FORMAT(created_at, '%Y%m') = ?", [date('Ym')])
+            ->orderBy('created_at', 'desc')
+            ->first();
+        $nextId = isset($lastQuotation) ? (int) substr($lastQuotation->quotation_number, -5) + 1 : 100;
         $year = date('Ym');
 
         return $suffix . "QT-{$year}-" . str_pad($nextId, 5, '0', STR_PAD_LEFT);

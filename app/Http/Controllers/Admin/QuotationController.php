@@ -404,7 +404,7 @@ class QuotationController extends Controller implements HasMiddleware
         $products = Product::select('id', 'name', 'price', 'sku', 'cost')
             ->with([
                 'mainImage.versions',
-                'colors',
+                'colors.images.versions',
                 'sizes',
                 'variants',
                 'variants.color',
@@ -635,7 +635,7 @@ class QuotationController extends Controller implements HasMiddleware
         $currency = Currency::where('code', $quotation->currency_code)->first() ?: null;
 
         // Gerar o PDF usando a view
-    $pdf = Pdf::setOptions([
+        $pdf = Pdf::setOptions([
             'isPhpEnabled'        => true,
             'isHtml5ParserEnabled' => true,
             'isRemoteEnabled'        => true,            // <-- permite URLs remotas (http/https)

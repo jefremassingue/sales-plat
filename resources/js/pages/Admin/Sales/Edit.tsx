@@ -49,28 +49,47 @@ const formSchema = z.object({
       id: z.string().optional(),
       product_id: z.string().optional(),
       product_variant_id: z.string().optional(),
+            product_color_id: z.string().optional(),
+            product_size_id: z.string().optional(),
       warehouse_id: z.string().optional(),
       name: z.string().min(1, { message: "Nome é obrigatório" }),
       description: z.string().optional(),
       quantity: z.string().min(1, { message: "Quantidade é obrigatória" })
-        .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-        .refine(val => parseFloat(val) > 0, { message: "Deve ser maior que zero" }),
+                .refine(val => val !== undefined && !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+                .refine(val => val !== undefined && parseFloat(val) > 0, { message: "Deve ser maior que zero" }),
       unit: z.string().optional(),
       unit_price: z.string().min(1, { message: "Preço é obrigatório" })
-        .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-        .refine(val => parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+                .refine(val => val !== undefined && !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+                .refine(val => val !== undefined && parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
       discount_percentage: z.string().optional()
-        .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-        .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" })
-        .refine(val => val === '' || parseFloat(val) <= 100, { message: "Deve ser no máximo 100%" }),
+                .refine(val => val === '' || (val !== undefined && !isNaN(parseFloat(val))), { message: "Deve ser um número válido" })
+                .refine(val => val === '' || (val !== undefined && parseFloat(val) >= 0), { message: "Não pode ser negativo" })
+                .refine(val => val === '' || (val !== undefined && parseFloat(val) <= 100), { message: "Deve ser no máximo 100%" }),
       tax_percentage: z.string().optional()
-        .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-        .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+                .refine(val => val === '' || (val !== undefined && !isNaN(parseFloat(val))), { message: "Deve ser um número válido" })
+                .refine(val => val === '' || (val !== undefined && parseFloat(val) >= 0), { message: "Não pode ser negativo" }),
     })
   ).min(1, { message: "Adicione pelo menos 1 item à venda" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+
+interface SaleItem {
+    id?: string;
+    product_id?: string;
+    product_variant_id?: string;
+    product_color_id?: string;
+    product_size_id?: string;
+    warehouse_id?: string;
+    name: string;
+    description?: string;
+    quantity: string;
+    unit?: string;
+    unit_price: string;
+    discount_percentage?: string;
+    tax_percentage?: string;
+}
 
 interface Customer { id: string; name: string; }
 interface Product { id: string; name: string; price: number; unit?: string; description?: string; category?: { id: string; name: string }; }
@@ -138,20 +157,22 @@ export default function Edit({
             terms: sale.terms || '',
             reference: sale.reference || '',
             include_tax: sale.include_tax ?? true,
-            items:
-                sale.items?.map((item) => ({
-                    ...item,
-                    id: item.id?.toString(), // Manter o ID do item existente
-                    product_id: item.product_id ? item.product_id.toString() : undefined,
-                    product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
-                    warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : undefined,
-                    quantity: item.quantity.toString(),
-                    unit_price: item.unit_price.toString(),
-                    discount_percentage: item.discount_percentage?.toString() || '0',
-                    tax_percentage: item.tax_percentage?.toString() || '0',
-                    description: item.description || '',
-                    unit: item.unit || 'unit',
-                })) || [],
+                items:
+                    sale.items?.map((item) => ({
+                        ...item,
+                        id: item.id?.toString(), // Manter o ID do item existente
+                        product_id: item.product_id ? item.product_id.toString() : undefined,
+                        product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
+                        product_color_id: item.product_color_id ? item.product_color_id.toString() : undefined,
+                        product_size_id: item.product_size_id ? item.product_size_id.toString() : undefined,
+                        warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : undefined,
+                        quantity: item.quantity.toString(),
+                        unit_price: item.unit_price.toString(),
+                        discount_percentage: item.discount_percentage?.toString() || '0',
+                        tax_percentage: item.tax_percentage?.toString() || '0',
+                        description: item.description || '',
+                        unit: item.unit || 'unit',
+                    })) || [],
         },
     });
 
@@ -211,33 +232,33 @@ export default function Edit({
             update(editingItemIndex, {
                 ...currentItem,
                 product_id: productId,
-                name: selectedProduct.name,
+                // name: selectedProduct.name,
                 unit_price: selectedProduct.price.toString(),
                 unit: selectedProduct.unit || 'unit',
             });
         } else {
-            // Criar um novo item com os dados do produto
-            const newItem = {
-                product_id: productId,
-                name: selectedProduct.name,
-                quantity: '1',
-                unit_price: selectedProduct.price.toString(),
-                unit: selectedProduct.unit || 'unit',
-                discount_percentage: '0',
-                tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value?.toString() || '16',
-                warehouse_id: warehouses.length > 0 ? warehouses[0].id.toString() : "",
-                description: '',
-            };
+                // Criar um novo item com os dados do produto
+                const newItem: SaleItem = {
+                    product_id: productId,
+                    product_variant_id: undefined,
+                    product_color_id: undefined,
+                    product_size_id: undefined,
+                    warehouse_id: warehouses.length > 0 ? warehouses[0].id.toString() : "",
+                    name: selectedProduct.name,
+                    description: selectedProduct.description || '',
+                    quantity: '1',
+                    unit: selectedProduct.unit || 'unit',
+                    unit_price: selectedProduct.price.toString(),
+                    discount_percentage: '0',
+                    tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value?.toString() || '16',
+                };
 
-            // Adicionar diretamente no form
-            append(newItem);
+                append(newItem);
 
-            // Definir o item recém adicionado como item em edição
-            setTimeout(() => {
-                setEditingItemIndex(fields.length);
-                // Abrir formulário de item para editar detalhes adicionais
-                setItemFormOpen(true);
-            }, 0);
+                setTimeout(() => {
+                    setEditingItemIndex(fields.length);
+                    setItemFormOpen(true);
+                }, 0);
         }
     };
 
@@ -363,17 +384,19 @@ export default function Edit({
             due_date: values.due_date ? format(values.due_date, 'yyyy-MM-dd') : null,
             shipping_amount: values.shipping_amount ? parseFloat(values.shipping_amount) : 0,
             amount_paid: values.amount_paid ? parseFloat(values.amount_paid) : 0,
-            items: values.items.map((item) => ({
-                ...item,
-                id: item.id || null,
-                product_id: item.product_id || null,
-                product_variant_id: item.product_variant_id || null,
-                warehouse_id: item.warehouse_id || null,
-                quantity: parseFloat(item.quantity),
-                unit_price: parseFloat(item.unit_price),
-                discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
-                tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
-            })),
+                items: values.items.map((item) => ({
+                    ...item,
+                    id: item.id || null,
+                    product_id: item.product_id || null,
+                    product_variant_id: item.product_variant_id || null,
+                    product_color_id: item.product_color_id || null,
+                    product_size_id: item.product_size_id || null,
+                    warehouse_id: item.warehouse_id || null,
+                    quantity: parseFloat(item.quantity),
+                    unit_price: parseFloat(item.unit_price),
+                    discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
+                    tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
+                })),
         };
 
         router.post(`/admin/sales/${sale.id}`, data, {

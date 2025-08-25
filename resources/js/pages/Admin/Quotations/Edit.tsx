@@ -377,6 +377,8 @@ export default function Edit({
                         ...item,
                         product_id: item.product_id ? item.product_id : null,
                         product_variant_id: item.product_variant_id ? item.product_variant_id : null,
+                        product_color_id: item.product_color_id ? item.product_color_id : null,
+                        product_size_id: item.product_size_id ? item.product_size_id : null,
                         warehouse_id: item.warehouse_id ? item.warehouse_id : null,
                         description: item.description ?? '',
                         quantity: parseFloat(item.quantity),

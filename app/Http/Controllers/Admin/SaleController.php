@@ -222,8 +222,8 @@ class SaleController extends Controller implements HasMiddleware
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
                     'category',
-                    'mainImage',
-                    'colors',
+                    'mainImage.versions',
+                    'colors.images.versions',
                     'sizes',
                     'variants',
                     'variants.color',
@@ -511,7 +511,8 @@ class SaleController extends Controller implements HasMiddleware
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
                     'category',
-                    'mainImage',
+                    'mainImage.versions',
+                    'colors.images.versions',
                     'colors',
                     'sizes',
                     'variants',
@@ -661,7 +662,7 @@ class SaleController extends Controller implements HasMiddleware
             // --- 3. RECALCULAR TOTAIS E STATUS ---
             // É crucial que seu método `calculateTotals` no modelo Sale faça todos os cálculos necessários
             $sale->calculateTotals(); // Este método deve recalcular subtotal, impostos, descontos, total e valor devido.
-                                     // E também deve chamar o $this->save() no final.
+            // E também deve chamar o $this->save() no final.
 
             DB::commit();
 

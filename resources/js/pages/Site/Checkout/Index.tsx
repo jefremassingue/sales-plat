@@ -210,8 +210,8 @@ const CheckoutContent: React.FC = () => {
                     return {
                         product_id: i.id,
                         product_variant_id: i.variant_id,
-                        color_id: i.color_id ?? null,
-                        size_id: i.size_id ?? null,
+                        product_color_id: i.color_id ?? null,
+                        product_size_id: i.size_id ?? null,
                         variant_sku: i.variant_sku ?? null,
                         quantity: i.quantity,
                         name: formattedName,

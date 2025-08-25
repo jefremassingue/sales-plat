@@ -50,6 +50,8 @@ const formSchema = z.object({
       id: z.string().optional(),
       product_id: z.string().optional(),
       product_variant_id: z.string().optional(),
+    product_color_id: z.string().optional(),
+    product_size_id: z.string().optional(),
       warehouse_id: z.string().optional(),
       name: z.string().min(1, { message: "Nome é obrigatório" }),
       description: z.string().optional(),
@@ -172,6 +174,8 @@ export default function Create({
     items: quotation?.items?.map((item) => ({
       product_id: item.product_id ? item.product_id.toString() : undefined,
       product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
+      product_color_id: item.product_color_id ? item.product_color_id.toString() : undefined,
+      product_size_id: item.product_size_id ? item.product_size_id.toString() : undefined,
       warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : (defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : "")),
       name: item.name,
       description: item.description || '',
@@ -267,17 +271,20 @@ export default function Create({
         unit: selectedProduct.unit || 'unit',
       });
     } else {
-      // Criar um novo item com os dados do produto
-      const newItem = {
-        product_id: productId,
-        name: selectedProduct.name,
-        quantity: '1',
-        unit_price: selectedProduct.price.toString(),
-        unit: selectedProduct.unit || 'unit',
-        discount_percentage: '0',
-        tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value?.toString() || '16',
-        warehouse_id: defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : ""),
-      };
+          const newItem = {
+            product_id: productId,
+            product_variant_id: undefined,
+            product_color_id: undefined,
+            product_size_id: undefined,
+            warehouse_id: defaultWarehouse?.id?.toString() || (warehouses.length > 0 ? warehouses[0].id.toString() : ""),
+            name: selectedProduct.name,
+            description: selectedProduct.description || '',
+            quantity: '1',
+            unit: selectedProduct.unit || 'unit',
+            unit_price: selectedProduct.price.toString(),
+            discount_percentage: '0',
+            tax_percentage: taxRates.find((tax) => tax.is_default === true)?.value?.toString() || '16',
+          };
 
       // Adicionar diretamente no form
       append(newItem);
@@ -406,17 +413,19 @@ export default function Create({
       shipping_amount: values.shipping_amount ? parseFloat(values.shipping_amount) : 0,
       amount_paid: values.amount_paid ? parseFloat(values.amount_paid) : 0,
       quotation_id: quotation?.id || null,
-      items: values.items.map(item => ({
-        ...item,
-        product_id: item.product_id ? item.product_id : null,
-        product_variant_id: item.product_variant_id ? item.product_variant_id : null,
-        warehouse_id: item.warehouse_id ? item.warehouse_id : null,
-        quantity: parseFloat(item.quantity),
-        unit_price: parseFloat(item.unit_price),
-        discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
-        tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
-        ...calculateItemValues(item)
-      })),
+        items: values.items.map(item => ({
+          ...item,
+          product_id: item.product_id ? item.product_id : null,
+          product_variant_id: item.product_variant_id ? item.product_variant_id : null,
+          product_color_id: item.product_color_id ? item.product_color_id : null,
+          product_size_id: item.product_size_id ? item.product_size_id : null,
+          warehouse_id: item.warehouse_id ? item.warehouse_id : null,
+          quantity: parseFloat(item.quantity),
+          unit_price: parseFloat(item.unit_price),
+          discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
+          tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
+          ...calculateItemValues(item)
+        })),
     };
 
     router.post('/admin/sales', data, {

@@ -86,6 +86,8 @@ class QuotationController extends Controller
                     'quotation_id' => $quotation->id,
                     'product_id' => $product->id,
                     'product_variant_id' => null,
+                    'product_color_id' => $itemData['product_color_id'] ?? null,
+                    'product_size_id' => $itemData['product_size_id'] ?? null,
                     'warehouse_id' => null,
                     'name' => $itemData['name'] ?? $product->name,
                     'description' => $product->description,
