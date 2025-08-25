@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PackageSearch, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, PackageSearch, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -30,17 +30,17 @@ const itemFormSchema = z.object({
         .min(1, { message: 'Preço unitário é obrigatório' })
         .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
         .refine((val) => parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-        discount_percentage: z
-            .string()
-            .optional()
-            .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-            .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
-            .refine((val) => !val || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
-        tax_percentage: z
-            .string()
-            .optional()
-            .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-            .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
+    discount_percentage: z
+        .string()
+        .optional()
+        .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
+        .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
+        .refine((val) => !val || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
+    tax_percentage: z
+        .string()
+        .optional()
+        .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
+        .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
 });
 
 export type ItemFormValues = z.infer<typeof itemFormSchema>;
@@ -60,7 +60,19 @@ interface ItemFormProps {
     setOnSearch: (search: string) => void;
 }
 
-export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRates, initialValues, units, title = 'Adicionar Item', name, isManualItemMode = false, setOnSearch }: ItemFormProps) {
+export default function ItemForm({
+    open,
+    onOpenChange,
+    onSubmit,
+    products,
+    taxRates,
+    initialValues,
+    units,
+    title = 'Adicionar Item',
+    name,
+    isManualItemMode = false,
+    setOnSearch,
+}: ItemFormProps) {
     const form = useForm<ItemFormValues>({
         resolver: zodResolver(itemFormSchema),
         defaultValues: {
@@ -83,19 +95,20 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
     const [currentImage, setCurrentImage] = useState<{ url: string; versions?: Array<{ url: string; version: string }> } | null>(null);
 
     // Function to get the image for the selected color
-    const getImageForColor = (product: Product, colorId: string | null): { url: string; versions?: Array<{ url: string; version: string }> } | null => {
+    const getImageForColor = (
+        product: Product,
+        colorId: string | null,
+    ): { url: string; versions?: Array<{ url: string; version: string }> } | null => {
         if (!colorId || !product || !product.colors) return product?.main_image || null;
-        
+
         // Find the selected color
-        const selectedColor = product.colors.find(color => 
-            color.id === colorId || color.id.toString() === colorId
-        );
-        
+        const selectedColor = product.colors.find((color) => color.id === colorId || color.id.toString() === colorId);
+
         // If color has images, use the first one, otherwise use main product image
         if (selectedColor?.images && selectedColor.images.length > 0) {
             return selectedColor.images[0];
         }
-        
+
         return product.main_image || null;
     };
 
@@ -106,7 +119,7 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
             setCurrentImage(newImage);
         }
     }, [selectedProduct, selectedColorId]);
-    
+
     const isHydratingRef = useRef(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -187,77 +200,79 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
         }
     }, [open, initialValues, isManualItemMode, name, products, taxRates, form, setOnSearch]);
 
-            useEffect(() => {
-                if (watchProductId && watchProductId !== 'none') {
-                    const p = products.find((pp) => pp.id.toString() === watchProductId);
-                    if (p) {
-                        setSelectedProduct(p);
-                        form.setValue('name', p.name);
-                        form.setValue('unit_price', p.price.toString());
-                        if (p.unit && p.unit.trim() !== '') {
-                            form.setValue('unit', p.unit);
-                        } else {
-                            form.setValue('unit', 'unit');
-                        }
-                        // Only set defaults if we do not already have a selection (e.g., editing)
-                        if (!isHydratingRef.current && !selectedColorId && !selectedSizeId) {
-                            const defaultColor = p.colors && p.colors.length > 0 ? String(p.colors[0].id) : null;
-                            const defaultSize = p.sizes && p.sizes.length > 0 ? String(p.sizes[0].id) : null;
-                            setSelectedColorId(defaultColor);
-                            setSelectedSizeId(defaultSize);
-                            form.setValue('product_color_id', defaultColor || '');
-                            form.setValue('product_size_id', defaultSize || '');
-                        }
-                    }
-                } else if (watchProductId === 'none') {
-                    setSelectedProduct(null);
-                    setSelectedColorId(null);
-                    setSelectedSizeId(null);
+    useEffect(() => {
+        if (watchProductId && watchProductId !== 'none') {
+            const p = products.find((pp) => pp.id.toString() === watchProductId);
+            if (p) {
+                setSelectedProduct(p);
+                form.setValue('name', p.name);
+                form.setValue('unit_price', p.price.toString());
+                if (p.unit && p.unit.trim() !== '') {
+                    form.setValue('unit', p.unit);
+                } else {
+                    form.setValue('unit', 'unit');
                 }
-            }, [watchProductId, products, form, selectedColorId, selectedSizeId]);
+                // Only set defaults if we do not already have a selection (e.g., editing)
+                if (!isHydratingRef.current && !selectedColorId && !selectedSizeId) {
+                    const defaultColor = p.colors && p.colors.length > 0 ? String(p.colors[0].id) : null;
+                    const defaultSize = p.sizes && p.sizes.length > 0 ? String(p.sizes[0].id) : null;
+                    setSelectedColorId(defaultColor);
+                    setSelectedSizeId(defaultSize);
+                    form.setValue('product_color_id', defaultColor || '');
+                    form.setValue('product_size_id', defaultSize || '');
+                }
+            }
+        } else if (watchProductId === 'none') {
+            setSelectedProduct(null);
+            setSelectedColorId(null);
+            setSelectedSizeId(null);
+        }
+    }, [watchProductId, products, form, selectedColorId, selectedSizeId]);
 
-            // Resolve variant automatically based on color/size selection
-            useEffect(() => {
-                if (!selectedProduct) return;
-                const colorId = selectedColorId;
-                const sizeId = selectedSizeId;
-                let variant: NonNullable<Product['variants']>[number] | undefined = undefined;
-                if (selectedProduct.variants && selectedProduct.variants.length > 0) {
-                    // try both color and size
-                    if (colorId && sizeId) {
-                        variant = selectedProduct.variants.find(v => String(v.product_color_id ?? '') === colorId && String(v.product_size_id ?? '') === sizeId);
-                    }
-                    // fallback try color only
-                    if (!variant && colorId) {
-                        variant = selectedProduct.variants.find(v => String(v.product_color_id ?? '') === colorId);
-                    }
-                    // fallback try size only
-                    if (!variant && sizeId) {
-                        variant = selectedProduct.variants.find(v => String(v.product_size_id ?? '') === sizeId);
-                    }
-                }
-                // Update form fields
-                form.setValue('product_color_id', colorId || '');
-                form.setValue('product_size_id', sizeId || '');
-                if (variant) {
-                    form.setValue('product_variant_id', String(variant.id));
-                } else if (!isHydratingRef.current) {
-                    // only clear variant id if not hydrating
-                    form.setValue('product_variant_id', '');
-                }
-                // Update name to include variant hint and SKU only after hydration
-                if (!isHydratingRef.current) {
-                    const baseName = selectedProduct.name;
-                    const colorName = selectedProduct.colors?.find((c) => String(c.id) === colorId)?.name;
-                    const sizeName = selectedProduct.sizes?.find((s) => String(s.id) === sizeId)?.name;
-                    let optSuffix = '';
-                    if (colorName && sizeName) optSuffix = ` (Cor: ${colorName} / T: ${sizeName})`;
-                    else if (colorName) optSuffix = ` (Cor: ${colorName})`;
-                    else if (sizeName) optSuffix = ` (T: ${sizeName})`;
-                    const skuPart = (variant && variant.sku) ? ` [SKU: ${variant.sku}]` : '';
-                    form.setValue('name', `${baseName}${optSuffix}${skuPart}`);
-                }
-            }, [selectedProduct, selectedColorId, selectedSizeId, form]);
+    // Resolve variant automatically based on color/size selection
+    useEffect(() => {
+        if (!selectedProduct) return;
+        const colorId = selectedColorId;
+        const sizeId = selectedSizeId;
+        let variant: NonNullable<Product['variants']>[number] | undefined = undefined;
+        if (selectedProduct.variants && selectedProduct.variants.length > 0) {
+            // try both color and size
+            if (colorId && sizeId) {
+                variant = selectedProduct.variants.find(
+                    (v) => String(v.product_color_id ?? '') === colorId && String(v.product_size_id ?? '') === sizeId,
+                );
+            }
+            // fallback try color only
+            if (!variant && colorId) {
+                variant = selectedProduct.variants.find((v) => String(v.product_color_id ?? '') === colorId);
+            }
+            // fallback try size only
+            if (!variant && sizeId) {
+                variant = selectedProduct.variants.find((v) => String(v.product_size_id ?? '') === sizeId);
+            }
+        }
+        // Update form fields
+        form.setValue('product_color_id', colorId || '');
+        form.setValue('product_size_id', sizeId || '');
+        if (variant) {
+            form.setValue('product_variant_id', String(variant.id));
+        } else if (!isHydratingRef.current) {
+            // only clear variant id if not hydrating
+            form.setValue('product_variant_id', '');
+        }
+        // Update name to include variant hint and SKU only after hydration
+        if (!isHydratingRef.current) {
+            const baseName = selectedProduct.name;
+            const colorName = selectedProduct.colors?.find((c) => String(c.id) === colorId)?.name;
+            const sizeName = selectedProduct.sizes?.find((s) => String(s.id) === sizeId)?.name;
+            let optSuffix = '';
+            if (colorName && sizeName) optSuffix = ` (Cor: ${colorName} / T: ${sizeName})`;
+            else if (colorName) optSuffix = ` (Cor: ${colorName})`;
+            else if (sizeName) optSuffix = ` (T: ${sizeName})`;
+            const skuPart = variant && variant.sku ? ` [SKU: ${variant.sku}]` : '';
+            form.setValue('name', `${baseName}${optSuffix}${skuPart}`);
+        }
+    }, [selectedProduct, selectedColorId, selectedSizeId, form]);
 
     const handleSubmit = (values: ItemFormValues) => {
         onSubmit(values);
@@ -283,8 +298,8 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                         {selectedProduct && (
-                            <div className="flex gap-2 bg-muted relative rounded-lg p-4">
-                                {(currentImage || selectedProduct.main_image) ? (
+                            <div className="bg-muted relative flex gap-2 rounded-lg p-4">
+                                {currentImage || selectedProduct.main_image ? (
                                     <img
                                         src={
                                             currentImage?.versions?.find((image) => image.version == 'md')?.url ||
@@ -304,7 +319,13 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                                 )}
                                 <div className="w-full">
                                     <div className="absolute top-2 right-2">
-                                        <Button type="button" variant="ghost" size="sm" onClick={clearSelectedProduct} className="h-6 w-6 rounded-full p-0">
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={clearSelectedProduct}
+                                            className="h-6 w-6 rounded-full p-0"
+                                        >
                                             <X className="h-6 w-6" />
                                         </Button>
                                     </div>
@@ -329,7 +350,7 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                                                         key={String(color.id)}
                                                         onClick={() => setSelectedColorId(String(color.id))}
                                                         title={color.name}
-                                                        className={`relative h-8 w-8 rounded-full border transition-all focus:outline-none ${selectedColorId === String(color.id) ? 'border-orange-500 border-2 ring-2 ring-orange-500 ring-offset-1' : 'border-slate-300 hover:border-orange-400'}`}
+                                                        className={`relative h-8 w-8 rounded-full border transition-all focus:outline-none ${selectedColorId === String(color.id) ? 'border-2 border-orange-500 ring-2 ring-orange-500 ring-offset-1' : 'border-slate-300 hover:border-orange-400'}`}
                                                         style={{ backgroundColor: (color as { hex_code?: string | null }).hex_code || '#ccc' }}
                                                     />
                                                 ))}
@@ -490,7 +511,7 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setShowAdvanced((v) => !v)}
-                                className="px-1 text-sm text-muted-foreground hover:text-foreground"
+                                className="text-muted-foreground hover:text-foreground px-1 text-sm"
                             >
                                 {showAdvanced ? (
                                     <>
@@ -544,9 +565,7 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                                                     <Input type="number" min="0" step="0.01" {...field} value={field.value || '0'} />
                                                 </FormControl>
                                                 {taxRates.length > 0 && (
-                                                    <FormDescription>
-                                                        Taxas comuns: {taxRates.map((t) => `${t.label}`).join(', ')}
-                                                    </FormDescription>
+                                                    <FormDescription>Taxas comuns: {taxRates.map((t) => `${t.label}`).join(', ')}</FormDescription>
                                                 )}
                                                 <FormMessage />
                                             </FormItem>
