@@ -186,7 +186,7 @@ class QuotationController extends Controller implements HasMiddleware
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
                     'mainImage',
-                    'colors',
+                    'colors.images.versions',
                     'sizes',
                     'variants',
                     'variants.color',

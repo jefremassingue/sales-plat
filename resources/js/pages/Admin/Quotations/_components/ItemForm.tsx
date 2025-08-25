@@ -4,10 +4,9 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PackageSearch, X, ChevronDown, ChevronUp } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Product, TaxRate, Warehouse } from './types';
@@ -62,7 +61,6 @@ interface ItemFormProps {
 }
 
 export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRates, initialValues, units, title = 'Adicionar Item', name, isManualItemMode = false, setOnSearch }: ItemFormProps) {
-    const { toast } = useToast();
     const form = useForm<ItemFormValues>({
         resolver: zodResolver(itemFormSchema),
         defaultValues: {
@@ -82,11 +80,36 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
     const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
-    const [isLoadingInventory, setIsLoadingInventory] = useState(false);
+    const [currentImage, setCurrentImage] = useState<{ url: string; versions?: Array<{ url: string; version: string }> } | null>(null);
+
+    // Function to get the image for the selected color
+    const getImageForColor = (product: Product, colorId: string | null): { url: string; versions?: Array<{ url: string; version: string }> } | null => {
+        if (!colorId || !product || !product.colors) return product?.main_image || null;
+        
+        // Find the selected color
+        const selectedColor = product.colors.find(color => 
+            color.id === colorId || color.id.toString() === colorId
+        );
+        
+        // If color has images, use the first one, otherwise use main product image
+        if (selectedColor?.images && selectedColor.images.length > 0) {
+            return selectedColor.images[0];
+        }
+        
+        return product.main_image || null;
+    };
+
+    // Update image when color selection changes
+    useEffect(() => {
+        if (selectedProduct) {
+            const newImage = getImageForColor(selectedProduct, selectedColorId);
+            setCurrentImage(newImage);
+        }
+    }, [selectedProduct, selectedColorId]);
+    
     const isHydratingRef = useRef(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
 
-    const watchWarehouseId = form.watch('warehouse_id');
     const watchProductId = form.watch('product_id');
     // watching product_variant_id is not needed when variant is auto-resolved
 
@@ -164,29 +187,6 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
         }
     }, [open, initialValues, isManualItemMode, name, products, taxRates, form, setOnSearch]);
 
-            const fetchProductInventoryPrice = useCallback(async (productId: string, warehouseId: string) => {
-        try {
-            setIsLoadingInventory(true);
-            const response = await fetch(`/admin/api/product-inventory?product_id=${productId}&warehouse_id=${warehouseId}`);
-            const data = await response.json();
-            if (data.success && data.inventory) {
-                const price = data.inventory.unit_cost || selectedProduct?.price || 0;
-                form.setValue('unit_price', price.toString());
-            }
-        } catch (error) {
-            console.error('Erro ao obter preço do inventário:', error);
-            toast({ title: 'Erro', description: 'Não foi possível obter o preço do produto no armazém selecionado.', variant: 'destructive' });
-        } finally {
-            setIsLoadingInventory(false);
-        }
-    }, [selectedProduct, form, toast]);
-
-            useEffect(() => {
-                if (selectedProduct && watchWarehouseId) {
-                    fetchProductInventoryPrice(selectedProduct.id.toString(), watchWarehouseId);
-                }
-            }, [watchWarehouseId, selectedProduct, fetchProductInventoryPrice]);
-
             useEffect(() => {
                 if (watchProductId && watchProductId !== 'none') {
                     const p = products.find((pp) => pp.id.toString() === watchProductId);
@@ -208,16 +208,13 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                             form.setValue('product_color_id', defaultColor || '');
                             form.setValue('product_size_id', defaultSize || '');
                         }
-                        if (watchWarehouseId) {
-                            fetchProductInventoryPrice(watchProductId, watchWarehouseId);
-                        }
                     }
                 } else if (watchProductId === 'none') {
                     setSelectedProduct(null);
                     setSelectedColorId(null);
                     setSelectedSizeId(null);
                 }
-            }, [watchProductId, products, form, watchWarehouseId, fetchProductInventoryPrice, selectedColorId, selectedSizeId]);
+            }, [watchProductId, products, form, selectedColorId, selectedSizeId]);
 
             // Resolve variant automatically based on color/size selection
             useEffect(() => {
@@ -254,9 +251,9 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                     const colorName = selectedProduct.colors?.find((c) => String(c.id) === colorId)?.name;
                     const sizeName = selectedProduct.sizes?.find((s) => String(s.id) === sizeId)?.name;
                     let optSuffix = '';
-                    if (colorName && sizeName) optSuffix = ` (Cor: ${colorName} / Tam: ${sizeName})`;
+                    if (colorName && sizeName) optSuffix = ` (Cor: ${colorName} / T: ${sizeName})`;
                     else if (colorName) optSuffix = ` (Cor: ${colorName})`;
-                    else if (sizeName) optSuffix = ` (Tam: ${sizeName})`;
+                    else if (sizeName) optSuffix = ` (T: ${sizeName})`;
                     const skuPart = (variant && variant.sku) ? ` [SKU: ${variant.sku}]` : '';
                     form.setValue('name', `${baseName}${optSuffix}${skuPart}`);
                 }
@@ -271,6 +268,7 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
         setSelectedProduct(null);
         setSelectedColorId(null);
         setSelectedSizeId(null);
+        setCurrentImage(null);
         form.setValue('product_id', '');
         form.setValue('name', '');
         form.setValue('unit_price', '0');
@@ -286,12 +284,15 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                     <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                         {selectedProduct && (
                             <div className="flex gap-2 bg-muted relative rounded-lg p-4">
-                                {selectedProduct.main_image ? (
+                                {(currentImage || selectedProduct.main_image) ? (
                                     <img
                                         src={
-                                            selectedProduct.main_image.versions?.find((image) => image.version == 'md')?.url ||
-                                            selectedProduct.main_image.versions?.find((image) => image.version == 'lg')?.url ||
-                                            selectedProduct.main_image.url
+                                            currentImage?.versions?.find((image) => image.version == 'md')?.url ||
+                                            currentImage?.versions?.find((image) => image.version == 'lg')?.url ||
+                                            currentImage?.url ||
+                                            selectedProduct.main_image?.versions?.find((image) => image.version == 'md')?.url ||
+                                            selectedProduct.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
+                                            selectedProduct.main_image?.url
                                         }
                                         alt={selectedProduct.name}
                                         className="h-20 min-h-20 w-20 min-w-20 object-contain transition-all hover:scale-105"
@@ -431,9 +432,8 @@ export default function ItemForm({ open, onOpenChange, onSubmit, products, taxRa
                                             Preço Unitário <span className="text-destructive">*</span>
                                         </FormLabel>
                                         <FormControl>
-                                            <Input type="number" min="0" step="0.01" {...field} className={isLoadingInventory ? 'animate-pulse' : ''} />
+                                            <Input type="number" min="0" step="0.01" {...field} />
                                         </FormControl>
-                                        {isLoadingInventory && <FormDescription>A carregar preço atualizado...</FormDescription>}
                                         {selectedProduct && <FormDescription>O preço é definido pelo produto selecionado</FormDescription>}
                                         <FormMessage />
                                     </FormItem>
