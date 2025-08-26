@@ -1,0 +1,33 @@
+{
+  "name": "Secure Fit",
+  "ref": "3M-O-2890-1",
+  "price": 0,
+  "description": "<p>O design inovador das hastes da 3M apresenta nervuras ranhuradas que proporcionam equalização de pressão confortável, permitindo que as hastes flexionem e se ajustem automaticamente ao tamanho da cabeça do usuário. As hastes curvas aplicam pressão na parte de trás menos sensível da cabeça, proporcionando um ajuste confortável mesmo durante movimentos rápidos da cabeça. Canais contornados inspirados no movimento em cores fortes e modernas.</p>",
+  "technical_details": "<ul><li><strong>Material:</strong> Policarbonato</li><li><strong>Proteção UV:</strong> Absorve 99,9% dos raios UVA, UVB e UVC entre 200 nm e 380 nm</li></ul>",
+  "features": "<ul><li>Revestimento antirriscos</li><li>Antiembaçante/antirriscos</li><li>Revestimento antiembaçante 3M™ Scotchgard™ opcional</li></ul>",
+  "certification": "ANSI-ISEA Z87.1",
+  "description_pdf_url": "https://norco.co.mz/download/secure-fit/",
+  "images": [
+    { "url": "https://i0.wp.com/norco.co.mz/wp-content/uploads/2024/09/3M-SF401-100.jpg?fit=1080%2C1080&ssl=1", "color_temp_id": "temp_ambar" },
+    { "url": "https://i0.wp.com/norco.co.mz/wp-content/uploads/2024/09/3M-SF401-101.jpg?fit=1080%2C1080&ssl=1", "color_temp_id": "temp_cinza" },
+    { "url": "https://i0.wp.com/norco.co.mz/wp-content/uploads/2024/09/3M-SF401-102.jpg?fit=1080%2C1080&ssl=1", "color_temp_id": "temp_claro" },
+    { "url": "https://i0.wp.com/norco.co.mz/wp-content/uploads/2024/09/3M-SF401-103.jpg?fit=1080%2C1080&ssl=1", "color_temp_id": "temp_espelho" }
+  ],
+  "colors": [
+    { "_tempId": "temp_ambar", "name": "Âmbar", "hex_code": "" },
+    { "_tempId": "temp_cinza", "name": "Cinza", "hex_code": "" },
+  { "_tempId": "temp_claro", "name": "Claro", "hex_code": "" },
+    { "_tempId": "temp_espelho", "name": "Espelho", "hex_code": "" }
+  ],
+  "sizes": [],
+  "attributes": [
+    { "name": "Material das lentes", "value": "Policarbonato" },
+    { "name": "Proteção UV", "value": "99,9% UVA, UVB, UVC" }
+  ],
+  "variants": [
+    { "color_temp_id": "temp_ambar", "size_temp_id": null, "ref": "3M-O-2890-1-AMBAR", "price": null, "stock": 0 },
+    { "color_temp_id": "temp_cinza", "size_temp_id": null, "ref": "3M-O-2890-1-CINZA", "price": null, "stock": 0 },
+  { "color_temp_id": "temp_claro", "size_temp_id": null, "ref": "3M-O-2890-1-CLARO", "price": null, "stock": 0 },
+    { "color_temp_id": "temp_espelho", "size_temp_id": null, "ref": "3M-O-2890-1-ESPELHO", "price": null, "stock": 0 }
+  ]
+}

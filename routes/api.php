@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\ProductController;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,3 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Rotas públicas
 Route::post('/cart/validate', [CartController::class, 'validate']);
+
+// Product creation endpoints
+Route::post('/products/file', [ProductController::class, 'storeWithFile']);
+Route::post('/products/url', [ProductController::class, 'storeWithUrl']);

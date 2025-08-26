@@ -1,0 +1,94 @@
+{
+  "name": "Modern Ergonomic Chair",
+  "ref": "CHAIR-ERGO-2025",
+  "price": 0,
+  "description": "<p>A <b>stylish and comfortable</b> ergonomic chair, perfect for long hours at the office or home.</p>",
+  "technical_details": "<ul><li><strong>Material:</strong> Breathable Mesh, Aluminum Base</li><li><strong>Max Weight:</strong> 150kg</li></ul>",
+  "features": "<ul><li>Adjustable lumbar support</li><li>4D Armrests</li><li>Tilt and lock mechanism</li></ul>",
+  "certification": "BIFMA Certified",
+  "description_pdf_url": "https://matonyservicos.com/files/products/pdfs/m4t3DXpTmt4Iss3VnSX7ROqxdPfeHnZP9utbdFTv.pdf",
+  "images": [
+    {
+      "url": "https://matonyservicos.com/files/products/kjHQGuoMtUBeRYWVhzfUYlsX5fMsJXZPJrJenNxA.png",
+      "color_temp_id": "temp_black"
+    },
+    {
+      "url": "https://matonyservicos.com/files/products/kjHQGuoMtUBeRYWVhzfUYlsX5fMsJXZPJrJenNxA.png",
+      "color_temp_id": "temp_white"
+    },
+    {
+      "url": "https://matonyservicos.com/files/products/kjHQGuoMtUBeRYWVhzfUYlsX5fMsJXZPJrJenNxA.png"
+    }
+  ],
+  "colors": [
+    {
+      "_tempId": "temp_black",
+      "name": "Midnight Black",
+      "hex_code": "#000000"
+    },
+    {
+      "_tempId": "temp_white",
+      "name": "Arctic White",
+      "hex_code": "#FFFFFF"
+    }
+  ],
+  "sizes": [
+    {
+      "_tempId": "temp_m",
+      "name": "Medium",
+      "code": "M"
+    },
+    {
+      "_tempId": "temp_l",
+      "name": "Large",
+      "code": "L"
+    }
+  ],
+  "attributes": [
+    {
+      "name": "Base Material",
+      "value": "Polished Aluminum"
+    },
+    {
+      "name": "Headrest",
+      "value": "Included"
+    }
+  ],
+  "variants": [
+    {
+      "color_temp_id": "temp_black",
+      "size_temp_id": "temp_m",
+      "ref": "CHAIR-ERGO-2025-BLK-M",
+      "price": null,
+      "stock": 0
+    },
+    {
+      "color_temp_id": "temp_black",
+      "size_temp_id": "temp_l",
+      "ref": "CHAIR-ERGO-2025-BLK-L",
+      "price": null,
+      "stock": 0
+    },
+    {
+      "color_temp_id": "temp_white",
+      "size_temp_id": "temp_m",
+      "ref": "CHAIR-ERGO-2025-WHT-M",
+      "price": null,
+      "stock": 0
+    },
+    {
+      "color_temp_id": "temp_white",
+      "size_temp_id": "temp_l",
+      "ref": "CHAIR-ERGO-2025-WHT-L",
+      "price": null,
+      "stock": 0
+    },
+    {
+      "color_temp_id": "temp_white",
+      "size_temp_id": null,
+      "ref": "CHAIR-ERGO-2025-WHT",
+      "price": null,
+      "stock": 0
+    }
+  ]
+}

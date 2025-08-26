@@ -1,0 +1,123 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Comprehensive Product Creation API",
+    "description": "API for creating products with colors, sizes, attributes, variants, and image associations.",
+    "version": "2.0.0"
+  },
+  "host": "matony.test",
+  "basePath": "/api",
+  "schemes": ["http", "https"]
+  ,
+  "paths": {
+    "/products/url": {
+      "post": {
+        "summary": "Create a complete product with image URLs",
+        "description": "Creates a new product including variants, attributes, and images fetched from URLs.",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/ProductPayload" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Product created successfully.", "schema": { "$ref": "#/definitions/ProductResponse" } },
+          "422": { "description": "Validation error." },
+          "500": { "description": "Server error." }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ProductPayload": {
+      "type": "object",
+      "required": ["name", "price", "category_id"],
+      "properties": {
+        "name": { "type": "string", "example": "Modern Ergonomic Chair" },
+        "ref": { "type": "string", "description": "SKU for the main product.", "example": "CHAIR-ERGO-2025" },
+        "price": { "type": "number", "format": "float", "example": 350.00 },
+        "cost": { "type": "number", "format": "float", "example": 180.00 },
+        "category_id": { "type": "integer", "example": 1 },
+        "brand_id": { "type": "integer", "example": 1 },
+        "description": { "type": "string", "description": "Can contain HTML.", "example": "<p>A <b>stylish</b> chair.</p>" },
+        "technical_details": { "type": "string", "description": "Can contain HTML.", "example": "<ul><li>Material: Mesh</li></ul>" },
+        "features": { "type": "string", "description": "Can contain HTML.", "example": "<ul><li>4D Armrests</li></ul>" },
+        "certification": { "type": "string", "example": "BIFMA Certified" },
+        "description_pdf_url": { "type": "string", "format": "url", "example": "http://example.com/manual.pdf" },
+        "images": {
+          "type": "array",
+          "description": "Images for the product. The `color_temp_id` links an image to a color.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": { "type": "string", "format": "url" },
+              "color_temp_id": { "type": "string", "description": "Matches the _tempId in the colors array." }
+            }
+          }
+        },
+        "colors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_tempId": { "type": "string", "example": "temp_black" },
+              "name": { "type": "string", "example": "Midnight Black" },
+              "hex_code": { "type": "string", "example": "#000000" }
+            }
+          }
+        },
+        "sizes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "_tempId": { "type": "string", "example": "temp_large" },
+              "name": { "type": "string", "example": "Large" },
+              "code": { "type": "string", "example": "L" }
+            }
+          }
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "example": "Base Material" },
+              "value": { "type": "string", "example": "Aluminum" }
+            }
+          }
+        },
+        "variants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "description": "A specific variant of the product.",
+            "properties": {
+              "color_temp_id": { "type": "string", "description": "Matches a _tempId from the colors array.", "example": "temp_black" },
+              "size_temp_id": { "type": "string", "description": "Matches a _tempId from the sizes array.", "example": "temp_large" },
+              "sku": { "type": "string", "example": "CHAIR-ERGO-BLK-L" },
+              "price": { "type": "number", "description": "Specific price for this variant, overrides main product price.", "example": 355.00 },
+              "stock": { "type": "integer", "example": 50 }
+            }
+          }
+        }
+      }
+    },
+    "ProductResponse": {
+      "description": "The fully created product object.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "variants": { "type": "array", "items": { "type": "object" } },
+        "colors": { "type": "array", "items": { "type": "object" } },
+        "sizes": { "type": "array", "items": { "type": "object" } },
+        "images": { "type": "array", "items": { "type": "object" } }
+      }
+    }
+  }
+}

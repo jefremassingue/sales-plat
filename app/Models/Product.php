@@ -63,7 +63,20 @@ class Product extends Model
 
         static::creating(function ($product) {
             if (empty($product->slug)) {
-                $product->slug = Str::slug($product->name);
+                $slugBase = Str::slug($product->name);
+                if(Product::where('slug', $slugBase)->exists()) {
+                    $latestSlug = Product::where('slug', 'LIKE', $slugBase . '%')
+                        ->orderByDesc('slug')
+                        ->value('slug');
+
+                    $number = 1;
+                    if ($latestSlug && preg_match('/-(\d+)$/', $latestSlug, $matches)) {
+                        $number = (int)$matches[1] + 1;
+                    }
+                    $product->slug = $slugBase . '-' . $number;
+                } else {
+                    $product->slug = $slugBase;
+                }
             }
         });
     }
