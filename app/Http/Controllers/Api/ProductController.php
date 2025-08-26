@@ -88,14 +88,14 @@ class ProductController extends Controller
             'colors.*.name'     => 'required|string|max:100',
             
             'sizes'             => 'nullable|array',
-            'sizes.*.name'      => 'required|string|max:100',
+            'sizes.*.name'      => 'required|string|max:255',
             
             'attributes'        => 'nullable|array',
-            'attributes.*.name' => 'required|string|max:100',
-            'attributes.*.value'=> 'required|string|max:255',
+            'attributes.*.name' => 'required|string|max:255',
+            'attributes.*.value'=> 'required|string',
             
             'variants'          => 'nullable|array',
-            'variants.*.red'    => 'nullable|string|max:100',
+            'variants.*.ref'    => 'nullable|string|max:100',
         ];
 
         if ($imageInputType === 'file') {
