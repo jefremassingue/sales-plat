@@ -473,7 +473,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                             </div>
 
                             {/* Seção de Preço */}
-                            <div className="border-t border-slate-200 py-3">
+                            {/* <div className="border-t border-slate-200 py-3">
                                 <button
                                     onClick={() => toggleFilterSection('price')}
                                     className="mb-2 flex w-full items-center justify-between"
@@ -526,7 +526,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                         </button>
                                     </div>
                                 )}
-                            </div>
+                            </div> */}
 
                             {/* Botão Aplicar Filtros (Visível apenas no Mobile) */}
                             <div className="mt-5 lg:hidden">
@@ -555,9 +555,10 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                     className="block rounded-md border border-slate-300 bg-white p-2 text-sm text-slate-700 focus:border-orange-500 focus:ring-orange-500"
                                 >
                                     <option value="created_at_desc">Mais Recentes</option>
-                                    <option value="price_asc">Menor Preço</option>
-                                    <option value="price_desc">Maior Preço</option>
+                                    {/* <option value="price_asc">Menor Preço</option>
+                                    <option value="price_desc">Maior Preço</option> */}
                                     <option value="name_asc">Nome (A-Z)</option>
+                                    <option value="most_viewed">Mais Visualizados</option>
                                 </select>
                             </div>
                             <div className="text-sm text-slate-500">

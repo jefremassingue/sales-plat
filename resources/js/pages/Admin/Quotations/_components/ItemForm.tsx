@@ -236,17 +236,17 @@ export default function ItemForm({
         const sizeId = selectedSizeId;
         let variant: NonNullable<Product['variants']>[number] | undefined = undefined;
         if (selectedProduct.variants && selectedProduct.variants.length > 0) {
-            // try both color and size
+            // Primeiro: tentar encontrar uma variante que corresponda exatamente à cor E tamanho selecionados
             if (colorId && sizeId) {
                 variant = selectedProduct.variants.find(
                     (v) => String(v.product_color_id ?? '') === colorId && String(v.product_size_id ?? '') === sizeId,
                 );
             }
-            // fallback try color only
+            // Segundo: se não encontrar, tentar encontrar uma variante apenas pela cor selecionada
             if (!variant && colorId) {
                 variant = selectedProduct.variants.find((v) => String(v.product_color_id ?? '') === colorId);
             }
-            // fallback try size only
+            // Terceiro: se ainda não encontrar, tentar encontrar uma variante apenas pelo tamanho selecionado
             if (!variant && sizeId) {
                 variant = selectedProduct.variants.find((v) => String(v.product_size_id ?? '') === sizeId);
             }
@@ -269,7 +269,11 @@ export default function ItemForm({
             if (colorName && sizeName) optSuffix = ` (Cor: ${colorName} / T: ${sizeName})`;
             else if (colorName) optSuffix = ` (Cor: ${colorName})`;
             else if (sizeName) optSuffix = ` (T: ${sizeName})`;
-            const skuPart = variant && variant.sku ? ` [SKU: ${variant.sku}]` : '';
+            
+            // Incluir SKU da variante se disponível, caso contrário usar SKU do produto principal
+            const skuPart = variant && variant.sku ? ` [REF: ${variant.sku}]` : 
+                            selectedProduct.sku ? ` [SKU: ${selectedProduct.sku}]` : '';
+            
             form.setValue('name', `${baseName}${optSuffix}${skuPart}`);
         }
     }, [selectedProduct, selectedColorId, selectedSizeId, form]);
@@ -336,6 +340,18 @@ export default function ItemForm({
                                         <span className="text-muted-foreground">
                                             SKU: {selectedProduct.sku} | Preço:{' '}
                                             {new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'MZN' }).format(selectedProduct.price)}
+                                            {(() => {
+                                                // Mostrar referência da variante se disponível
+                                                const currentVariant = selectedProduct.variants?.find((v) => {
+                                                    const colorMatch = selectedColorId ? String(v.product_color_id ?? '') === selectedColorId : !v.product_color_id;
+                                                    const sizeMatch = selectedSizeId ? String(v.product_size_id ?? '') === selectedSizeId : !v.product_size_id;
+                                                    return colorMatch && sizeMatch;
+                                                }) || 
+                                                selectedProduct.variants?.find((v) => selectedColorId ? String(v.product_color_id ?? '') === selectedColorId : false) ||
+                                                selectedProduct.variants?.find((v) => selectedSizeId ? String(v.product_size_id ?? '') === selectedSizeId : false);
+                                                
+                                                return currentVariant?.sku ? ` | REF: ${currentVariant.sku}` : '';
+                                            })()}
                                         </span>
                                     </div>
 

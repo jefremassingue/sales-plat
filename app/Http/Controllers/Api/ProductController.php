@@ -118,7 +118,7 @@ class ProductController extends Controller
             'cost', 'sku', 'category_id', 'brand_id', 'certification'
         ]);
         $data['category_id'] = Category::first()->id;
-        $data['brand_id'] = $request->has('brand_name') ? (Brand::where('name', 'like', '%' . $request->input('brand_name') . '%')->first()?->id ?? null) : null;
+        $data['brand_id'] = $request->has('brand_name') ? (Brand::where('name', 'like', '%' . $request->input('brand_name') . '%')->first()?->id ?? Brand::create(['name' => $request->input('brand_name')])->id) : null;
         $data['price'] = 0;
         $data['sku'] = $request->input('ref');
         $product = Product::create($data);

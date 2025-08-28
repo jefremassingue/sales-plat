@@ -38,7 +38,11 @@ class Brand extends Model
 
         static::creating(function ($brand) {
             if (empty($brand->slug)) {
-                $brand->slug = Str::slug($brand->name);
+                $slug = Str::slug($brand->name);
+                if (Brand::where('slug', $slug)->exists()) {
+                    $slug .= '-' . uniqid();
+                }
+                $brand->slug = $slug;
             }
         });
     }

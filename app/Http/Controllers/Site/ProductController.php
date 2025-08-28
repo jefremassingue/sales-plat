@@ -17,6 +17,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        // cache()->clear();
         // Preparar a consulta base
         $productsQuery = Product::query()
             ->where('active', true)
@@ -37,13 +38,13 @@ class ProductController extends Controller
             $productsQuery->whereIn('brand_id', $brandIds);
         }
 
-        if ($request->has('price_min') && is_numeric($request->price_min)) {
-            $productsQuery->where('price', '>=', $request->price_min);
-        }
+        // if ($request->has('price_min') && is_numeric($request->price_min)) {
+        //     $productsQuery->where('price', '>=', $request->price_min);
+        // }
 
-        if ($request->has('price_max') && is_numeric($request->price_max)) {
-            $productsQuery->where('price', '<=', $request->price_max);
-        }
+        // if ($request->has('price_max') && is_numeric($request->price_max)) {
+        //     $productsQuery->where('price', '<=', $request->price_max);
+        // }
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
@@ -65,6 +66,9 @@ class ProductController extends Controller
             case 'price_desc':
                 $productsQuery->orderBy('price', 'desc');
                 break;
+            case 'most_viewed':
+                // $productsQuery->orderBy('views', 'desc');
+                break;
             case 'newest':
                 $productsQuery->orderBy('created_at', 'desc');
                 break;
@@ -79,7 +83,7 @@ class ProductController extends Controller
         // cache()->clear();
         // --- CATEGORIES WITH COUNTS FOR SIDEBAR ---
         $categories = Cache::remember('categories_with_counts', 3600, function () {
-            return Category::with(['subcategories'])->get()->map(function ($cat) {
+            return Category::with(['subcategories'])->whereNull('parent_id')->get()->map(function ($cat) {
                 $ownCount = Product::where('active', true)
                     ->whereHas('ecommerce_inventory')
                     ->where('category_id', $cat->id)

@@ -179,8 +179,27 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
     // 2) Ao clicar em uma cor, navegar para o índice da imagem que corresponde à cor
     const displayedImages = useMemo<Image[]>(() => product.images, [product.images]);
     const currentVariant = useMemo<any>(
-        () => (selectedColor ? product.variants.find((v) => v.product_color_id == selectedColor.id) : null),
-        [selectedColor],
+        () => {
+            // Encontrar variante que corresponda à cor e tamanho selecionados
+            const variant = product.variants.find((v) => {
+                const colorMatch = selectedColor ? v.product_color_id == selectedColor.id : v.product_color_id == null;
+                const sizeMatch = selectedSize ? v.product_size_id == selectedSize.id : v.product_size_id == null;
+                return colorMatch && sizeMatch;
+            });
+            
+            // Se não encontrar uma variante exata, tentar apenas por cor ou tamanho
+            if (!variant) {
+                if (selectedColor) {
+                    return product.variants.find((v) => v.product_color_id == selectedColor.id);
+                }
+                if (selectedSize) {
+                    return product.variants.find((v) => v.product_size_id == selectedSize.id);
+                }
+            }
+            
+            return variant || null;
+        },
+        [selectedColor, selectedSize, product.variants],
     );
     // Helper: encontra o índice da imagem que corresponde à cor
     const findImageIndexForColor = useCallback(

@@ -72,14 +72,17 @@ const TopBar = () => {
 
 // --- Sub-Component: SearchBar ---
 const SearchBar = () => {
-    const [searchTerm, setSearchTerm] = useState('');
+    // get search term from URL
+    const { search } = usePage<PageProps>().props;
+
+    const [searchTerm, setSearchTerm] = useState(search || '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchTerm.trim()) {
             router.get(
                 '/products',
-                { q: searchTerm },
+                { search: searchTerm },
                 {
                     preserveState: true,
                     preserveScroll: true,
