@@ -51,7 +51,8 @@ class ProductController extends Controller
             $productsQuery->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhereHas('variants', fn($q) => $q->where('sku', 'like', "%{$search}%"));
             });
         }
 
@@ -67,7 +68,7 @@ class ProductController extends Controller
                 $productsQuery->orderBy('price', 'desc');
                 break;
             case 'most_viewed':
-                // $productsQuery->orderBy('views', 'desc');
+                $productsQuery->orderBy('views', 'desc');
                 break;
             case 'newest':
                 $productsQuery->orderBy('created_at', 'desc');
@@ -162,12 +163,18 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $product = Product::where(fn($query) => $query->where('id', $id)->orWhere('slug', $id))
             // ->whereHas('ecommerce_inventory')
             ->firstOrFail()
             ?->makeHidden(['price', 'created_at', 'updated_at', 'old_price']);
+
+        $sessionKey = 'product_viewed_' . $product->id;
+        if (!$request->session()->has($sessionKey)) {
+            $product->increment('views');
+            $request->session()->put($sessionKey, true);
+        }
 
         $product->load([
             'category.parent',
