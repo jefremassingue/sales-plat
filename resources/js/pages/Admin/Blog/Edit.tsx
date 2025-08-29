@@ -26,7 +26,10 @@ const formSchema = z.object({
     slug: z.string().min(3, "O slug deve ter pelo menos 3 caracteres"),
     content: z.string().min(10, "O conteúdo deve ter pelo menos 10 caracteres"),
     excerpt: z.string().min(10, "O resumo deve ter pelo menos 10 caracteres"),
-    featured_image: z.string().nullable(),
+    featured_image: z.union([
+        z.string().nullable(),
+        z.instanceof(File).nullable()
+    ]),
     published_at: z.string().nullable(),
     blog_category_id: z.string().nullable(),
 });
@@ -83,7 +86,20 @@ export default function Edit({ blog, categories }: Props) {
 
     const onSubmit = (values: BlogFormValues) => {
         setIsSubmitting(true);
-        router.put(`/admin/blog/${blog.id}`, values, {
+        let payload: any = values;
+        // Se houver arquivo, usar FormData
+        if (values.featured_image && typeof values.featured_image !== 'string') {
+            payload = new FormData();
+            Object.entries(values).forEach(([key, value]) => {
+                if (key === 'featured_image' && value instanceof File) {
+                    payload.append(key, value);
+                } else if (value !== undefined && value !== null) {
+                    payload.append(key, value as any);
+                }
+            });
+        }
+        router.post(`/admin/blog/${blog.id}?_method=PUT`, payload, {
+            forceFormData: true,
             onSuccess: () => {
                 setIsSubmitting(false);
                 toast({

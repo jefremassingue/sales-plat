@@ -250,11 +250,11 @@ class BlogController extends Controller implements HasMiddleware
 
             // Preparar os dados para atualização
             $data = $request->all();
-           
-                // Se não vier imagem, não sobrescrever o campo
-                if (!$request->hasFile('featured_image')) {
-                    unset($data['featured_image']);
-                }
+
+            // Se não vier imagem, não sobrescrever o campo
+            if (!$request->hasFile('featured_image')) {
+                unset($data['featured_image']);
+            }
 
             // Se o slug foi fornecido, garantir que esteja no formato correto
             if (isset($data['slug'])) {
@@ -268,17 +268,18 @@ class BlogController extends Controller implements HasMiddleware
 
             // Processar o upload da imagem, se fornecida
             if ($request->hasFile('featured_image')) {
-                // Remover imagem antiga se existir
                 if ($blog->featured_image) {
-                    Storage::delete('public/' . $blog->featured_image);
+                    Storage::disk('public')->delete($blog->featured_image);
                 }
-
                 $image = $request->file('featured_image');
-                $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
-                $image->storeAs('public/blogs', $imageName);
-                $data['featured_image'] = 'blogs/' . $imageName;
-            }
+                // dd($image);
+                // $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
+                // $image->storeAs('public/blogs', $imageName);
+                $path = $image->store('blog', 'public');
 
+
+                $data['featured_image'] = basename($path);
+            }
             $blog->update($data);
 
             DB::commit();
