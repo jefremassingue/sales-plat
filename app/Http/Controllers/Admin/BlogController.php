@@ -147,7 +147,7 @@ class BlogController extends Controller implements HasMiddleware
                 $path = $image->store('blogs', 'public');
 
 
-                $data['featured_image'] = ($path);
+                $data['featured_image'] = basename($path);
             }
 
             $blog = Blog::create($data);
@@ -158,7 +158,7 @@ class BlogController extends Controller implements HasMiddleware
                     'version' => 'original',
                     'storage' => 'public',
                     'path' => $path,
-                    'name' => ($path),
+                    'name' => basename($path),
                     'original_name' => $image->getClientOriginalName(),
                     'size' => $image->getSize(),
                     'extension' => $image->extension(),
@@ -280,15 +280,15 @@ class BlogController extends Controller implements HasMiddleware
                 // $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
                 // $image->storeAs('public/blogs', $imageName);
                 $path = $image->store('blogs', 'public');
-                // dd(($path));
+                // dd(basename($path));
 
-                $data['featured_image'] = ($path);
+                $data['featured_image'] = basename($path);
 
                 $image = new Image([
                     'version' => 'original',
                     'storage' => 'public',
                     'path' => $path,
-                    'name' => ($path),
+                    'name' => basename($path),
                     'original_name' => $image->getClientOriginalName(),
                     'size' => $image->getSize(),
                     'extension' => $image->extension(),
