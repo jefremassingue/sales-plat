@@ -19,13 +19,13 @@ export interface BlogCategory {
     updated_at: string;
 }
 
+// ...existing code...
 export interface BlogFormValues {
     title: string;
     slug: string;
     content: string;
     excerpt: string;
-    featured_image: File | null;
-    published_at: string | null;
-    blog_category_id: number | null;
-    // [key: string]: any;
+    featured_image?: string | File | null;
+    published_at?: string | null;
+    blog_category_id?: string | number | null;
 }

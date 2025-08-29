@@ -250,6 +250,11 @@ class BlogController extends Controller implements HasMiddleware
 
             // Preparar os dados para atualização
             $data = $request->all();
+           
+                // Se não vier imagem, não sobrescrever o campo
+                if (!$request->hasFile('featured_image')) {
+                    unset($data['featured_image']);
+                }
 
             // Se o slug foi fornecido, garantir que esteja no formato correto
             if (isset($data['slug'])) {

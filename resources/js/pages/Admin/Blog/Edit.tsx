@@ -33,9 +33,10 @@ const formSchema = z.object({
 
 interface Props {
     blog: Blog;
+    categories: any[];
 }
 
-export default function Edit({ blog }: Props) {
+export default function Edit({ blog, categories }: Props) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { toast } = useToast();
     const { errors } = usePage().props as any;
@@ -126,7 +127,7 @@ export default function Edit({ blog }: Props) {
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
                             <CardContent>
-                                <BlogForm form={form} isEditMode={true} />
+                                <BlogForm form={form} isEditMode={true} categories={categories} />
                             </CardContent>
                             <CardFooter className="flex justify-between">
                                 <Button
