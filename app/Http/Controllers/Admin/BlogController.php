@@ -147,7 +147,7 @@ class BlogController extends Controller implements HasMiddleware
                 $path = $image->store('blogs', 'public');
 
 
-                $data['featured_image'] = basename($path);
+                $data['featured_image'] = ($path);
             }
 
             $blog = Blog::create($data);
@@ -158,7 +158,7 @@ class BlogController extends Controller implements HasMiddleware
                     'version' => 'original',
                     'storage' => 'public',
                     'path' => $path,
-                    'name' => basename($path),
+                    'name' => ($path),
                     'original_name' => $image->getClientOriginalName(),
                     'size' => $image->getSize(),
                     'extension' => $image->extension(),
@@ -275,27 +275,28 @@ class BlogController extends Controller implements HasMiddleware
                         ->where('typeable_id', $blog->id)
                         ->delete();
                 }
-                $image = $request->file('featured_image');
-                // dd($image);
-                // $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
-                // $image->storeAs('public/blogs', $imageName);
-                $path = $image->store('blogs', 'public');
-                // dd(basename($path));
+                $uploadedFile = $request->file('featured_image');
+                // dd($uploadedFile);
+                // $imageName = time() . '_' . Str::slug($data['title']) . '.' . $uploadedFile->getClientOriginalExtension();
+                // $uploadedFile->storeAs('public/blogs', $imageName);
+                $path = $uploadedFile->store('blogs', 'public');
+                // dd(($path));
 
-                $data['featured_image'] = basename($path);
+                $data['featured_image'] = ($path);
 
-                $image = new Image([
+                $imageRecord = new Image([
                     'version' => 'original',
                     'storage' => 'public',
                     'path' => $path,
                     'name' => basename($path),
-                    'original_name' => $image->getClientOriginalName(),
-                    'size' => $image->getSize(),
-                    'extension' => $image->extension(),
+                    'original_name' => $uploadedFile->getClientOriginalName(),
+                    'size' => $uploadedFile->getSize(),
+                    'extension' => $uploadedFile->extension(),
                     'is_main' => true,
                     'typeable_type' => Blog::class,
                     'typeable_id' => $blog->id,
                 ]);
+                $imageRecord->save();
             }
             $blog->update($data);
 
