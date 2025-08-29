@@ -188,7 +188,7 @@ class ProductController extends Controller
     public function show(Request $request, string $id)
     {
         $product = Product::where(fn($query) => $query->where('id', $id)->orWhere('slug', $id))
-            // ->whereHas('ecommerce_inventory')
+            ->whereHas('ecommerce_inventory')
             ->firstOrFail()
             ?->makeHidden(['price', 'created_at', 'updated_at', 'old_price']);
 
