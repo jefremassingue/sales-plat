@@ -136,24 +136,92 @@ interface Props {
 
 // Componente principal da página de detalhes do produto
 export default function ProductDetails({ product, relatedProducts }: Props) {
+    // Helper to get all og meta values
+    const getOgMetaValues = useCallback(() => {
+        const ogTitle = product?.name ? `${product.name} - Matony Serviços` : 'Matony Serviços';
+        const ogDescription = product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.';
+        const ogImage = (
+            product?.main_image?.versions?.find((img) => img.version === 'sm')?.url ||
+            product?.main_image?.versions?.find((img) => img.version === 'md')?.url ||
+            product?.main_image?.versions?.find((img) => img.version === 'lg')?.url ||
+            product?.main_image?.url ||
+            window.location.origin + '/default-image.png'
+        );
+        const ogUrl = window.location.href;
+        const ogSiteName = 'Matony Serviços';
+        const ogType = 'website';
+        return {
+            'og:type': ogType,
+            'og:site_name': ogSiteName,
+            'og:title': ogTitle,
+            'og:description': ogDescription,
+            'og:image': ogImage,
+            'og:url': ogUrl,
+        };
+    }, [product]);
+
+    // Override all og:* meta tags with JS after render
+    useEffect(() => {
+        const ogMeta = getOgMetaValues();
+        Object.entries(ogMeta).forEach(([property, value]) => {
+            let metaTag = document.querySelector(`meta[property="${property}"]`);
+            if (!metaTag) {
+                metaTag = document.createElement('meta');
+                metaTag.setAttribute('property', property);
+                document.head.appendChild(metaTag);
+            }
+            metaTag.setAttribute('content', value);
+        });
+    }, [product, getOgMetaValues]);
+
     return (
         <SiteLayout>
-            <Head title={product.name}>
-                <meta name="description" content={product.description || ''} />
-                <link rel="canonical" href={`${window.location.origin}/products/${product.slug}`} />
-                {/* og:image */}
+            <Head>
+                {/* SEO Básico */}
+                <title>{product?.name ? `${product.name} - Matony Serviços` : 'Matony Serviços'}</title>
+
                 <meta
-                    property="og:image"
+                    name="description"
+                    content={product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.'}
+                />
+                <meta name="keywords" content={`${product?.name || ''}, serviços, Matony`} />
+
+                {/* Open Graph */}
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="Matony Serviços" />
+                <meta property="og:title" content={product?.name ? `${product.name} - Matony Serviços` : 'Matony Serviços'} />
+                <meta
+                    property="og:description"
+                    content={product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.'}
+                />
+                {/* og:image will be overridden by JS */}
+                <meta property="og:image" content="/default-image.png" />
+                <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+
+                {/* Twitter Cards */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:site" content="@matony" />
+                <meta name="twitter:title" content={product?.name ? `${product.name} - Matony Serviços` : 'Matony Serviços'} />
+                <meta
+                    name="twitter:description"
+                    content={product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.'}
+                />
+                <meta
+                    name="twitter:image"
                     content={
-                        product.main_image?.versions?.find((image) => image.version == 'sm')?.url ||
-                        product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
-                        product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
-                        product.main_image?.url ||
-                        window.location.origin + '/og.png'
+                        product?.main_image?.versions?.find((img) => img.version === 'sm')?.url ||
+                        product?.main_image?.versions?.find((img) => img.version === 'md')?.url ||
+                        product?.main_image?.versions?.find((img) => img.version === 'lg')?.url ||
+                        product?.main_image?.url ||
+                        (typeof window !== 'undefined' ? window.location.origin + '/default-image.png' : '/default-image.png')
                     }
                 />
-                <meta property="og:image:alt" content={product.name} />
+
+                {/* Extra de compatibilidade */}
+                <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
+                <meta name="author" content="Matony Serviços" />
             </Head>
+
             <ProductDetailsContent product={product} relatedProducts={relatedProducts} />
         </SiteLayout>
     );
@@ -178,29 +246,26 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
     // 1) Sempre mostrar TODAS as imagens do produto na galeria
     // 2) Ao clicar em uma cor, navegar para o índice da imagem que corresponde à cor
     const displayedImages = useMemo<Image[]>(() => product.images, [product.images]);
-    const currentVariant = useMemo<any>(
-        () => {
-            // Encontrar variante que corresponda à cor e tamanho selecionados
-            const variant = product.variants.find((v) => {
-                const colorMatch = selectedColor ? v.product_color_id == selectedColor.id : v.product_color_id == null;
-                const sizeMatch = selectedSize ? v.product_size_id == selectedSize.id : v.product_size_id == null;
-                return colorMatch && sizeMatch;
-            });
-            
-            // Se não encontrar uma variante exata, tentar apenas por cor ou tamanho
-            if (!variant) {
-                if (selectedColor) {
-                    return product.variants.find((v) => v.product_color_id == selectedColor.id);
-                }
-                if (selectedSize) {
-                    return product.variants.find((v) => v.product_size_id == selectedSize.id);
-                }
+    const currentVariant = useMemo<Variant | null>(() => {
+        // Encontrar variante que corresponda à cor e tamanho selecionados
+        const variant = product.variants.find((v) => {
+            const colorMatch = selectedColor ? v.product_color_id == selectedColor.id : v.product_color_id == null;
+            const sizeMatch = selectedSize ? v.product_size_id == selectedSize.id : v.product_size_id == null;
+            return colorMatch && sizeMatch;
+        });
+
+        // Se não encontrar uma variante exata, tentar apenas por cor ou tamanho
+        if (!variant) {
+            if (selectedColor) {
+                return product.variants.find((v) => v.product_color_id == selectedColor.id);
             }
-            
-            return variant || null;
-        },
-        [selectedColor, selectedSize, product.variants],
-    );
+            if (selectedSize) {
+                return product.variants.find((v) => v.product_size_id == selectedSize.id);
+            }
+        }
+
+        return variant || null;
+    }, [selectedColor, selectedSize, product.variants]);
     // Helper: encontra o índice da imagem que corresponde à cor
     const findImageIndexForColor = useCallback(
         (color: Color | null): number => {
@@ -381,23 +446,6 @@ function ProductDetailsContent({ product, relatedProducts }: Props) {
 
     return (
         <>
-            <Head>
-                <title>{`${product.name} - Matony Serviços`}</title>
-                <meta name="description" content={product.description} />
-                {/* og tags */}
-                <meta property="og:title" content={`${product.name} - Matony Serviços`} />
-                <meta property="og:description" content={product.description} />
-                <meta
-                    property="og:image"
-                    content={
-                        product.main_image?.versions?.find((image) => image.version == 'sm')?.url ||
-                        product.main_image?.versions?.find((image) => image.version == 'md')?.url ||
-                        product.main_image?.versions?.find((image) => image.version == 'lg')?.url ||
-                        product.main_image?.url
-                    }
-                />
-                <meta property="og:url" content={window.location.href} />
-            </Head>
             <div className="bg-white">
                 <div className="container mx-auto px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                     {/* Breadcrumbs */}
