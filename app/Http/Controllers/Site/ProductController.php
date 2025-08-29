@@ -97,24 +97,36 @@ class ProductController extends Controller
         // cache()->clear();
         // --- CATEGORIES WITH COUNTS FOR SIDEBAR ---
         $categories = Cache::remember('categories_with_counts', 3600, function () {
-            return Category::with(['subcategories'])->whereNull('parent_id')->get()->map(function ($cat) {
-                // Só conta produtos das subcategorias
+            return Category::with([
+                'subcategories' => function($query) {
+                    $query->withCount([
+                        'products as products_count' => function($q) {
+                            $q->where('active', true)->whereHas('ecommerce_inventory');
+                        }
+                    ])
+                    ->whereHas('products', function($q) {
+                        $q->where('active', true)->whereHas('ecommerce_inventory');
+                    });
+                }
+            ])
+            ->whereNull('parent_id')
+            ->whereHas('subcategories.products', function($q) {
+                $q->where('active', true)->whereHas('ecommerce_inventory');
+            })
+            ->get()
+            ->map(function ($cat) {
                 $subcategories = $cat->subcategories->map(function ($subcat) {
-                    $subCount = Product::where('active', true)
-                        ->whereHas('ecommerce_inventory')
-                        ->where('category_id', $subcat->id)
-                        ->count();
                     return [
                         'id' => $subcat->id,
                         'name' => $subcat->name,
-                        'count' => $subCount,
+                        'count' => $subcat->products_count,
                     ];
                 });
-                $totalCount = $subcategories->sum('count');
+                
                 return [
                     'id' => $cat->id,
                     'name' => $cat->name,
-                    'count' => $totalCount,
+                    'count' => $subcategories->sum('count'),
                     'subcategories' => $subcategories,
                 ];
             });
