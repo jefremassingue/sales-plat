@@ -74,7 +74,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return (
         <article className="group relative rounded-lg border border-zinc-100 bg-white transition-shadow duration-300">
             <div className="flex h-full flex-col justify-between">
-                <Link href={`/products/${product.slug}`} className="block">
+                    <Link href={`/products/${product.slug}`} className="block" prefetch>
                     <div className="relative aspect-square overflow-hidden rounded-t-lg p-2">
                         {product.main_image ? (
                             <img
@@ -98,7 +98,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 <div className="flex h-full flex-1 flex-col justify-between gap-2 p-4">
                     <div className="h-full flex-1">
                         <div className="mb-1 line-clamp-1 text-sm text-slate-500">{product.category?.name}</div>
-                        <Link href={`/products/${product.slug}`} className="block">
+                            <Link href={`/products/${product.slug}`} className="block" prefetch>
                             <h3 className="line-clamp-2 font-medium text-slate-800">{product.name}</h3>
                         </Link>
                     </div>
@@ -131,6 +131,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                         <Link
                             href={`/products/${product.slug}`}
                             className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-medium text-white transition-colors duration-300 hover:bg-orange-700"
+                            prefetch
                         >
                             <Eye size={16} />
                             {product.colors?.length ? 'Ver Opções' : 'Ver Detalhes'}

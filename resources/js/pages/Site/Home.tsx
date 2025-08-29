@@ -127,7 +127,7 @@ const FaqItem: React.FC<{ faq: FaqItem; isOpen: boolean; onToggle: () => void }>
     </div>
 );
 
-export default function Home({ featuredProducts, popularProducts, newProducts, _categories, blogPosts, heroSlides }: HomeProps) {
+export default function Home({ featuredProducts, popularProducts, mostViewedProducts, newProducts, _categories, blogPosts, heroSlides }: HomeProps) {
     const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
     const toggleFaq = (index: number) => {
@@ -182,10 +182,27 @@ export default function Home({ featuredProducts, popularProducts, newProducts, _
             {/* Slide categories / Categorias em Destaque */}
             <CategorySection categories={_categories} />
 
+
             {/* Produtos Populares */}
             <ProductSection
                 title="Mais Populares"
                 products={popularProducts?.map((p) => ({
+                    id: p.id,
+                    name: p.name,
+                    slug: p.slug,
+                    category: p.category ? { name: p.category.name } : { name: '' },
+                    price: String(p.price ?? ''),
+                    old_price: p.old_price ? String(p.old_price) : null,
+                    isNew: p.isNew,
+                    main_image: p.main_image as unknown as InlineImage,
+                }))}
+                bgColor="bg-white"
+            />
+
+            {/* Produtos mais visualizados */}
+            <ProductSection
+                title="Mais Visualizados"
+                products={mostViewedProducts?.map((p) => ({
                     id: p.id,
                     name: p.name,
                     slug: p.slug,

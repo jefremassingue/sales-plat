@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 
 class Product extends Model
 {
+
     use HasFactory, HasUlids;
 
     protected $fillable = [
@@ -232,5 +233,22 @@ class Product extends Model
             return asset('files/' . $this->description_pdf);
         }
         return null;
+    }
+
+
+    /**
+     * Relação com itens de cotação
+     */
+    public function quotationItems()
+    {
+        return $this->hasMany(QuotationItem::class);
+    }
+
+    /**
+     * Relação com itens de venda
+     */
+    public function saleItems()
+    {
+        return $this->hasMany(SaleItem::class);
     }
 }

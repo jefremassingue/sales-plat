@@ -14,6 +14,7 @@ type BlogPost = {
     title: string;
     excerpt?: string;
     published_at?: string | null;
+    created_at?: string | null;
     read_time?: number | null;
     blog_category?: { id: string; name: string } | null;
     category?: { id: string; name: string } | null;
@@ -28,6 +29,7 @@ const BlogPostCard = ({ post }: { post: BlogPost }) => (
     <Link
         href={`/blog/${post.slug}`}
         preserveScroll
+        prefetch
         className="group bg-white rounded-xl border border-slate-200/80 overflow-hidden shadow-sm hover:shadow-lg flex flex-col transition-all duration-300 hover:-translate-y-0.5"
     >
         {/* Imagem com Aspect Ratio Consistente */}
@@ -70,7 +72,7 @@ const BlogPostCard = ({ post }: { post: BlogPost }) => (
                     <span className="font-medium text-slate-600">{post.author?.name || 'Equipe EPI Segura'}</span>
                 </div>
                 <span className="inline-flex items-center">
-                    <Clock size={12} className="mr-1.5 opacity-80" /> {format(post.published_at || post.created_at, 'PPp')}
+                    <Clock size={12} className="mr-1.5 opacity-80" /> {format(post.published_at || post.created_at || new Date(), 'PPp')}
                 </span>
             </div>
         </div>
@@ -221,6 +223,7 @@ export default function BlogIndexPage() {
                                                     key={index}
                                                     href={link.url || '#'}
                                                     preserveScroll
+                                                    prefetch
                                                     className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${link.active ? 'bg-orange-600 text-white' : 'bg-white text-slate-700 hover:bg-slate-100'}`}
                                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                                 />

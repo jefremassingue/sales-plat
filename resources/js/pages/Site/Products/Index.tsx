@@ -87,7 +87,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
         price_max: filters.price_max || '',
         search: filters.search || '',
         c: filters.c || '',
-        sort: filters.sort || 'created_at',
+        sort: filters.sort || 'most_viewed',
         order: filters.order || 'desc',
         page: filters.page || 1,
     });
@@ -196,7 +196,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             price_max: '',
             search: '',
             c: '',
-            sort: 'created_at',
+            sort: 'most_viewed',
             order: 'desc',
             page: 1,
         });
@@ -228,7 +228,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
     // Alterar a ordenação
     const handleSortChange = (
-        sortOption: 'price_asc' | 'price_desc' | 'newest' | 'name_asc' | 'created_at_desc',
+        sortOption: 'price_asc' | 'price_desc' | 'newest' | 'name_asc' | 'created_at_desc' | 'most_popular' | 'most_viewed',
     ) => {
         let sortField, sortOrder;
 
@@ -248,6 +248,14 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             case 'name_asc':
                 sortField = 'name';
                 sortOrder = 'asc';
+                break;
+            case 'most_popular':
+                sortField = 'most_popular';
+                sortOrder = 'desc';
+                break;
+            case 'most_viewed':
+                sortField = 'most_viewed';
+                sortOrder = 'desc';
                 break;
             default:
                 sortField = 'created_at';
@@ -406,31 +414,45 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                     )}
                                 </button>
                                 {openFilterSections.categories && (
-                                    <div className="scrollbar-thin scrollbar-thumb-slate-200 max-h-60 space-y-2 overflow-y-auto pr-1">
+                                    <div className="scrollbar-thin scrollbar-thumb-slate-200  space-y-2 overflow-y-auto pr-1">
                                         {categories.map((parentCat) => (
                                             <div key={parentCat.id} className="ml-1">
-                                                <span className="mb-1 block text-sm font-medium text-slate-600">
-                                                    {parentCat.name} <span className="text-xs text-slate-400">({parentCat.count})</span>
-                                                </span>
-                                                <div className="ml-2 space-y-1.5">
-                                                    {parentCat.subcategories.map((subCat) => (
-                                                        <label
-                                                            key={subCat.id}
-                                                            className="flex cursor-pointer items-center space-x-2 text-sm text-slate-600 hover:text-orange-600"
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                value={subCat.id}
-                                                                checked={filterData.categories.includes(subCat.id)}
-                                                                onChange={() => handleCheckboxChange('categories', subCat.id)}
-                                                                className="rounded border-slate-300 text-orange-600 text-zinc-800 focus:ring-orange-500"
-                                                            />
-                                                            <span>
-                                                                {subCat.name} <span className="text-xs text-slate-400">({subCat.count})</span>
-                                                            </span>
-                                                        </label>
-                                                    ))}
-                                                </div>
+                                                {/* Checkbox para categoria pai */}
+                                                <label className="flex cursor-pointer items-center space-x-2 text-sm font-medium text-slate-700 hover:text-orange-600 mb-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={parentCat.id}
+                                                        checked={filterData.categories.includes(parentCat.id)}
+                                                        onChange={() => handleCheckboxChange('categories', parentCat.id)}
+                                                        className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                    />
+                                                    <span>
+                                                        {parentCat.name} <span className="text-xs text-slate-400">({parentCat.count})</span>
+                                                    </span>
+                                                </label>
+                                                
+                                                {/* Subcategorias */}
+                                                {parentCat.subcategories && parentCat.subcategories.length > 0 && (
+                                                    <div className="ml-6 space-y-1.5">
+                                                        {parentCat.subcategories.map((subCat) => (
+                                                            <label
+                                                                key={subCat.id}
+                                                                className="flex cursor-pointer items-center space-x-2 text-sm text-slate-600 hover:text-orange-600"
+                                                            >
+                                                                <input
+                                                                    type="checkbox"
+                                                                    value={subCat.id}
+                                                                    checked={filterData.categories.includes(subCat.id)}
+                                                                    onChange={() => handleCheckboxChange('categories', subCat.id)}
+                                                                    className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                                />
+                                                                <span>
+                                                                    {subCat.name} <span className="text-xs text-slate-400">({subCat.count})</span>
+                                                                </span>
+                                                            </label>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -463,7 +485,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                                                     value={brand.id}
                                                     checked={filterData.brands.includes(brand.id)}
                                                     onChange={() => handleCheckboxChange('brands', brand.id)}
-                                                    className="rounded border-slate-300 text-orange-600 text-zinc-800 focus:ring-orange-500"
+                                                    className="rounded border-slate-300 text-orange-600 focus:ring-orange-500"
                                                 />
                                                 <span>{brand.name}</span>
                                             </label>
@@ -550,15 +572,16 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-slate-500">Ordenar por:</span>
                                 <select
-                                    value={`${filterData.sort}_${filterData.order}`}
-                                    onChange={(e) => handleSortChange(e.target.value)}
+                                    value={filterData.sort}
+                                    onChange={(e) => handleSortChange(e.target.value as any)}
                                     className="block rounded-md border border-slate-300 bg-white p-2 text-sm text-slate-700 focus:border-orange-500 focus:ring-orange-500"
                                 >
+                                    <option value="most_viewed">Mais Visualizados</option>
+                                    <option value="most_popular">Mais Popular</option>
                                     <option value="created_at_desc">Mais Recentes</option>
                                     {/* <option value="price_asc">Menor Preço</option>
                                     <option value="price_desc">Maior Preço</option> */}
                                     <option value="name_asc">Nome (A-Z)</option>
-                                    <option value="most_viewed">Mais Visualizados</option>
                                 </select>
                             </div>
                             <div className="text-sm text-slate-500">

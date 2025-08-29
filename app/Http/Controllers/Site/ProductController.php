@@ -24,9 +24,18 @@ class ProductController extends Controller
             ->whereHas('ecommerce_inventory')
             ->with(['category', 'images', 'mainImage.versions', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions' ]);
 
-        // Aplicar filtros se existirem
+        // Filtro inteligente: categorias principais buscam todas as subcategorias
         if ($request->has('categories') && !empty($request->categories)) {
-            $productsQuery->whereIn('category_id', $request->categories);
+            $categoryIds = collect($request->categories);
+            $parentCategories = Category::whereIn('id', $categoryIds)->whereNull('parent_id')->pluck('id');
+            $subCategories = Category::whereIn('id', $categoryIds)->whereNotNull('parent_id')->pluck('id');
+            $subcategoriesFromParents = $parentCategories->isNotEmpty()
+                ? Category::whereIn('parent_id', $parentCategories)->pluck('id')
+                : collect();
+            $finalCategoryIds = $subCategories->merge($subcategoriesFromParents)->unique();
+            if ($finalCategoryIds->isNotEmpty()) {
+                $productsQuery->whereIn('category_id', $finalCategoryIds);
+            }
         }
 
         if ($request->has('c')) {
@@ -57,7 +66,7 @@ class ProductController extends Controller
         }
 
         // Aplicar ordenação
-        $sortField = $request->input('sort', 'created_at');
+    $sortField = $request->input('sort', 'most_viewed');
         $sortOrder = $request->input('order', 'desc');
 
         switch ($sortField) {
@@ -69,6 +78,10 @@ class ProductController extends Controller
                 break;
             case 'most_viewed':
                 $productsQuery->orderBy('views', 'desc');
+                break;
+            case 'most_popular':
+                $productsQuery->withCount(['quotationItems as quotation_count' => function($q) {}, 'saleItems as sale_count' => function($q) {}])
+                    ->orderByRaw('(quotation_count + sale_count) desc');
                 break;
             case 'newest':
                 $productsQuery->orderBy('created_at', 'desc');
@@ -85,10 +98,7 @@ class ProductController extends Controller
         // --- CATEGORIES WITH COUNTS FOR SIDEBAR ---
         $categories = Cache::remember('categories_with_counts', 3600, function () {
             return Category::with(['subcategories'])->whereNull('parent_id')->get()->map(function ($cat) {
-                $ownCount = Product::where('active', true)
-                    ->whereHas('ecommerce_inventory')
-                    ->where('category_id', $cat->id)
-                    ->count();
+                // Só conta produtos das subcategorias
                 $subcategories = $cat->subcategories->map(function ($subcat) {
                     $subCount = Product::where('active', true)
                         ->whereHas('ecommerce_inventory')
@@ -100,7 +110,7 @@ class ProductController extends Controller
                         'count' => $subCount,
                     ];
                 });
-                $totalCount = $ownCount + $subcategories->sum('count');
+                $totalCount = $subcategories->sum('count');
                 return [
                     'id' => $cat->id,
                     'name' => $cat->name,

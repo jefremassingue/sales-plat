@@ -60,7 +60,7 @@ const TopBar = () => {
                             <span className="sm:hidden">Av. A. S. toure n° 3007</span>
                         </div>
                         <div className="hidden sm:block">|</div>
-                        <Link href="/products" className="text-center font-semibold hover:underline sm:text-left">
+                        <Link href="/products" className="text-center font-semibold hover:underline sm:text-left" prefetch>
                             Garanta a sua segurança e da sua equipa!
                         </Link>
                     </div>
@@ -131,7 +131,7 @@ const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }:
         <div className="border-b border-gray-100 bg-white">
             <div className="container mx-auto px-4 py-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between">
-                    <Link href="/" className="text-2xl font-bold text-orange-600 sm:text-3xl">
+                    <Link href="/" className="text-2xl font-bold text-orange-600 sm:text-3xl" prefetch>
                         <img src="/logo.svg" className="h-12" alt="Matony Serviços" />
                     </Link>
 
@@ -157,13 +157,13 @@ const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }:
                                                 <p className="font-medium">{auth.user.name}</p>
                                                 <p className="text-gray-500 text-xs">{auth.user.email}</p>
                                             </div>
-                                            <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                            <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600" prefetch>
                                                 Meu Perfil
                                             </Link>
-                                            <Link href="/profile#sales" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                            <Link href="/profile#sales" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600" prefetch>
                                                 Minhas Compras
                                             </Link>
-                                            <Link href="/profile#quotations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                            <Link href="/profile#quotations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600" prefetch>
                                                 Minhas Cotações
                                             </Link>
                                             <div className="border-t border-gray-100 mt-1 pt-1">
@@ -177,10 +177,10 @@ const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }:
                                         </>
                                     ) : (
                                         <>
-                                            <Link href="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                            <Link href="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600" prefetch>
                                                 Entrar
                                             </Link>
-                                            <Link href="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600">
+                                            <Link href="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-orange-600" prefetch>
                                                 Registrar
                                             </Link>
                                         </>
@@ -204,6 +204,7 @@ const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }:
                             href="/cart"
                             className="relative p-2 text-gray-600 transition-colors hover:text-orange-600"
                             aria-label="Carrinho de compras"
+                            prefetch
                         >
                             <ShoppingCart size={24} strokeWidth={1.5} />
                             {cartItemCount > 0 && (
@@ -292,6 +293,7 @@ const NavigationBar = () => {
                                                                             <Link
                                                                                 href={category.href}
                                                                                 className="block pb-2 text-base font-medium text-gray-900 hover:text-orange-600"
+                                                                                prefetch
                                                                             >
                                                                                 {category.name}
                                                                             </Link>
@@ -302,6 +304,7 @@ const NavigationBar = () => {
                                                                                     <Link
                                                                                         href={subItem.href}
                                                                                         className="block text-sm text-gray-600 hover:text-orange-600"
+                                                                                        prefetch
                                                                                     >
                                                                                         {subItem.name}
                                                                                     </Link>
@@ -320,6 +323,7 @@ const NavigationBar = () => {
                                             <Link
                                                 href="/products"
                                                 className="inline-flex items-center text-sm font-medium text-orange-600 hover:text-orange-700"
+                                                prefetch
                                             >
                                                 Ver todas as categorias
                                                 <ChevronDown size={16} className="ml-1 rotate-90" strokeWidth={2} />
@@ -333,6 +337,7 @@ const NavigationBar = () => {
                                 <Link
                                     href={link.href}
                                     className="py-3 text-sm font-medium text-gray-700 transition-colors duration-200 hover:text-orange-600"
+                                    prefetch
                                 >
                                     {link.name}
                                 </Link>
@@ -374,7 +379,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between border-b border-gray-100 p-5">
-                    <Link href="/" className="text-2xl font-bold text-orange-600" onClick={onClose}>
+                    <Link href="/" className="text-2xl font-bold text-orange-600" onClick={onClose} prefetch>
                         <img src="/logo.svg" className="h-12" alt="Matony Serviços" />
                     </Link>
                     <button onClick={onClose} className="p-1 text-gray-600 hover:text-orange-600" aria-label="Fechar menu">
@@ -405,6 +410,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                                                         href={category.href}
                                                         className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-orange-600"
                                                         onClick={onClose}
+                                                        prefetch
                                                     >
                                                         {category.name}
                                                     </Link>
@@ -419,6 +425,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                                         href={link.href}
                                         className="block px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600"
                                         onClick={onClose}
+                                        prefetch
                                     >
                                         {link.name}
                                     </Link>

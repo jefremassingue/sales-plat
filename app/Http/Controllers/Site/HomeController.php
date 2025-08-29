@@ -15,6 +15,38 @@ class HomeController extends Controller
 {
     public function index()
     {
+        // Produtos mais visualizados com cache
+        $mostViewedProducts = Cache::remember('home:most_viewed_products', now()->addMinutes(30), function () {
+            return Product::with(['category', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
+                ->where('active', true)
+                ->whereHas('ecommerce_inventory')
+                ->orderBy('views', 'desc')
+                ->take(12)
+                ->get()
+                ->makeHidden(['cost', 'total_stock', 'inventory_price'])
+                ->map(fn($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'slug' => $p->slug,
+                    'price' => $p->ecommerce_inventory->unit_cost ?? $p->price,
+                    'old_price' => $p->ecommerce_inventory->old_cost ?? $p->old_price,
+                    'category' => $p->category ? [
+                        'id' => $p->category->id,
+                        'name' => $p->category->name,
+                    ] : null,
+                    'main_image' => $p->mainImage,
+                    'colors' => $p->colors->map(function ($color) {
+                        return [
+                            'id' => $color->id,
+                            'name' => $color->name,
+                            'image' => $color->images->first(),
+                        ];
+                    }),
+                    'brand' => $p->brand,
+                    'isNew' => $p->created_at->diffInDays(now()) < 30,
+                    'views' => $p->views,
+                ]);
+        });
 
         // Cache::clear();
         // Produtos em destaque com cache
@@ -48,12 +80,13 @@ class HomeController extends Controller
                 ]);
         });
 
-        // Produtos populares com cache
+        // Produtos populares com cache (baseado em vendas + cotações)
         $popularProducts = Cache::remember('home:popular_products', now()->addMinutes(30), function () {
             return Product::with(['category', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
                 ->where('active', true)
-                ->orderBy('created_at', 'desc')
                 ->whereHas('ecommerce_inventory')
+                ->withCount(['saleItems as sale_count', 'quotationItems as quotation_count'])
+                ->orderByRaw('(sale_count + quotation_count) desc')
                 ->take(12)
                 ->get()
                 ->makeHidden(['cost', 'total_stock', 'inventory_price'])
@@ -77,6 +110,7 @@ class HomeController extends Controller
                     }),
                     'brand' => $p->brand,
                     'isNew' => $p->created_at->diffInDays(now()) < 30,
+                    'popularity' => ($p->sale_count ?? 0) + ($p->quotation_count ?? 0),
                 ]);
         });
 
@@ -122,7 +156,7 @@ class HomeController extends Controller
                 ->map(fn($c) => [
                     'name' => $c->name,
                     'link' => '/products?c=' . $c->id,
-                    'items' => $c->products()->count() + $c->subcategories->sum(fn($sc) => $sc->products->count()),
+                    'items' => $c->products()->whereHas('ecommerce_inventory')->count() + $c->subcategories->sum(fn($sc) => $sc->products->count()),
                 ]);
         });
 
@@ -153,6 +187,7 @@ class HomeController extends Controller
         return Inertia::render('Site/Home', [
             'featuredProducts' => $featuredProducts,
             'popularProducts' => $popularProducts,
+            'mostViewedProducts' => $mostViewedProducts,
             'newProducts' => $newProducts,
             '_categories' => $categories,
             'blogPosts' => $blogPosts,
