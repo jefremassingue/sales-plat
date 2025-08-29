@@ -100,7 +100,7 @@ class BlogController extends Controller implements HasMiddleware
             ],
             'content' => 'required|string',
             'excerpt' => 'nullable|string',
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Alterado para aceitar upload de imagem
+            'featured_image' => 'nullable|file|max:2048', // Alterado para aceitar upload de imagem
             'status' => 'boolean',
             'published_at' => 'nullable|date',
             'category_id' => 'nullable|string|exists:categories,id',
@@ -144,10 +144,10 @@ class BlogController extends Controller implements HasMiddleware
                 // dd($image);
                 // $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
                 // $image->storeAs('public/blogs', $imageName);
-                $path = $image->store('blog', 'public');
+                $path = $image->store('blogs', 'public');
 
 
-                $data['featured_image'] = basename($path);
+                $data['featured_image'] = ($path);
             }
 
             $blog = Blog::create($data);
@@ -158,7 +158,7 @@ class BlogController extends Controller implements HasMiddleware
                     'version' => 'original',
                     'storage' => 'public',
                     'path' => $path,
-                    'name' => basename($path),
+                    'name' => ($path),
                     'original_name' => $image->getClientOriginalName(),
                     'size' => $image->getSize(),
                     'extension' => $image->extension(),
@@ -216,6 +216,7 @@ class BlogController extends Controller implements HasMiddleware
      */
     public function update(Request $request, Blog $blog)
     {
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'slug' => [
@@ -227,8 +228,8 @@ class BlogController extends Controller implements HasMiddleware
             ],
             'content' => 'required|string',
             'excerpt' => 'nullable|string',
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Alterado para aceitar upload de imagem
-            'status' => 'boolean',
+            'featured_image' => 'nullable|file|max:2048', // Alterado para aceitar upload de imagem
+            // 'status' => 'boolean',
             'published_at' => 'nullable|date',
             'category_id' => 'nullable|string|exists:categories,id',
         ], [
@@ -262,7 +263,7 @@ class BlogController extends Controller implements HasMiddleware
             }
 
             // Se o status mudou para publicado e não há data de publicação, definir agora
-            if ($data['status'] && !$blog->status && empty($data['published_at'])) {
+            if (isset($data['status']) && $data['status'] && !$blog->status && empty($data['published_at'])) {
                 $data['published_at'] = now();
             }
 
@@ -270,19 +271,36 @@ class BlogController extends Controller implements HasMiddleware
             if ($request->hasFile('featured_image')) {
                 if ($blog->featured_image) {
                     Storage::disk('public')->delete($blog->featured_image);
+                    Image::where('typeable_type', Blog::class)
+                        ->where('typeable_id', $blog->id)
+                        ->delete();
                 }
                 $image = $request->file('featured_image');
                 // dd($image);
                 // $imageName = time() . '_' . Str::slug($data['title']) . '.' . $image->getClientOriginalExtension();
                 // $image->storeAs('public/blogs', $imageName);
-                $path = $image->store('blog', 'public');
+                $path = $image->store('blogs', 'public');
+                // dd(($path));
 
+                $data['featured_image'] = ($path);
 
-                $data['featured_image'] = basename($path);
+                $image = new Image([
+                    'version' => 'original',
+                    'storage' => 'public',
+                    'path' => $path,
+                    'name' => ($path),
+                    'original_name' => $image->getClientOriginalName(),
+                    'size' => $image->getSize(),
+                    'extension' => $image->extension(),
+                    'is_main' => true,
+                    'typeable_type' => Blog::class,
+                    'typeable_id' => $blog->id,
+                ]);
             }
             $blog->update($data);
 
             DB::commit();
+        // dd($request->all());
 
             return redirect()->route('admin.blog.index')
                 ->with('success', 'Post atualizado com sucesso!');

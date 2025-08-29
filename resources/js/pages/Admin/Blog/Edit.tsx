@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Head, router, usePage } from "@inertiajs/react";
@@ -12,7 +12,6 @@ import {
     CardTitle
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
 import { ArrowLeft, Loader2, Check } from "lucide-react";
 import { BlogForm } from "./_components/BlogForm";
 import { BlogFormValues, Blog } from "./_components/types";
@@ -32,6 +31,7 @@ const formSchema = z.object({
     ]),
     published_at: z.string().nullable(),
     blog_category_id: z.string().nullable(),
+    status: z.boolean().optional(),
 });
 
 interface Props {
@@ -69,6 +69,7 @@ export default function Edit({ blog, categories }: Props) {
             featured_image: blog.featured_image,
             published_at: blog.published_at,
             blog_category_id: blog.blog_category_id ? blog.blog_category_id.toString() : null,
+            status: blog.status,
         }
     });
 
@@ -98,7 +99,9 @@ export default function Edit({ blog, categories }: Props) {
                 }
             });
         }
-        router.post(`/admin/blog/${blog.id}?_method=PUT`, payload, {
+
+        payload.append('_method', 'PUT');
+        router.post(`/admin/blog/${blog.id}`, payload, {
             forceFormData: true,
             onSuccess: () => {
                 setIsSubmitting(false);
@@ -140,7 +143,7 @@ export default function Edit({ blog, categories }: Props) {
                             Edite as informações do artigo do blog
                         </CardDescription>
                     </CardHeader>
-                    <Form {...form}>
+                    <FormProvider {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)}>
                             <CardContent>
                                 <BlogForm form={form} isEditMode={true} categories={categories} />
@@ -168,7 +171,7 @@ export default function Edit({ blog, categories }: Props) {
                                 </Button>
                             </CardFooter>
                         </form>
-                    </Form>
+                    </FormProvider>
                 </Card>
             </div>
         </AppLayout>
