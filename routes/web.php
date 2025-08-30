@@ -25,3 +25,17 @@ require __DIR__ . '/site.php';
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/admin.php';
+// Social media redirects
+$redirects = [
+    '/linkedin' => 'https://www.linkedin.com/company/matony-servicos/',
+    '/instagram' => 'https://www.instagram.com/matony_servicos/',
+    '/youtube' => 'https://www.youtube.com/@matony_servicos',
+    '/facebook' => 'https://www.facebook.com/profile.php?id=61575857846470',
+    '/whatsapp' => 'https://chat.whatsapp.com/COhLCyWbZFI7talh8kSQt0'
+];
+
+foreach ($redirects as $path => $url) {
+    Route::get($path, function () use ($url) {
+        return redirect()->away($url);
+    });
+}
