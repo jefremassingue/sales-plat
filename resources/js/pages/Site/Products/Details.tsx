@@ -194,8 +194,7 @@ export default function ProductDetails({ product, relatedProducts }: Props) {
                     property="og:description"
                     content={product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.'}
                 />
-                {/* og:image will be overridden by JS */}
-                <meta property="og:image" content="/default-image.png" />
+                
                 <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
 
                 {/* Twitter Cards */}
