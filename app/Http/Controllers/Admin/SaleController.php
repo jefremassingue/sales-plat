@@ -1200,6 +1200,14 @@ class SaleController extends Controller implements HasMiddleware
                 default:
                     $documentTitle = 'FATURA';
             }
+            
+            // Determinar qual template usar baseado no tipo
+            $templateView = match ($type) {
+                'invoice' => 'pdf.invoice',
+                'receipt', 'payment_receipt' => 'pdf.sale',
+                default => 'pdf.invoice'
+            };
+            
             // Gerar o PDF
             $pdf = Pdf::setOptions([
                 'isPhpEnabled' => true,
@@ -1207,7 +1215,7 @@ class SaleController extends Controller implements HasMiddleware
                 'isRemoteEnabled' => true,
                 'enable_local_file_access' => true,
                 'chroot' => public_path(),
-            ])->loadView('pdf.sale', [
+            ])->loadView($templateView, [
                 'sale' => $sale,
                 'company' => $company,
                 'bank' => $bank,
