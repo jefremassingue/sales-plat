@@ -23,6 +23,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-         URL::forceRootUrl(env('ASSET_URL'));
+        //  URL::forceRootUrl(env('ASSET_URL'));
     }
 }

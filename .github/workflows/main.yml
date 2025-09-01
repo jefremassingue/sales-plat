@@ -27,7 +27,7 @@ jobs:
 
       - name: Compile assets for production
 
-        run: npm run build:ssr
+        run: npm run build
 
       - name: Deploy To production
         uses: hypertech-lda/laravel-auto-deploy@1.1
