@@ -173,12 +173,15 @@ const Footer: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Seção Inferior: Copyright */}
-                <div className="py-6 md:py-8 border-t border-slate-200 text-center"> {/* Borda ajustada */}
-                    <p className="text-xs text-slate-500"> {/* Cor de texto ajustada */}
+                {/* Seção Inferior: Copyright e Legal Links */}
+                <div className="py-6 md:py-8 border-t border-slate-200 text-center flex flex-col items-center gap-2">
+                    <p className="text-xs text-slate-500">
                         © {new Date().getFullYear()} Matony Serviços, Lda. Todos os direitos reservados.
                     </p>
-
+                    <div className="flex gap-4">
+                        <Link href="/termos" className="text-xs text-slate-500 hover:text-orange-600 hover:underline transition-colors">Termos de Serviço</Link>
+                        <Link href="/privacidade" className="text-xs text-slate-500 hover:text-orange-600 hover:underline transition-colors">Política de Privacidade</Link>
+                    </div>
                 </div>
             </div>
         </footer>

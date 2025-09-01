@@ -26,6 +26,7 @@ require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/admin.php';
 // Social media redirects
+
 $redirects = [
     '/linkedin' => 'https://www.linkedin.com/company/matony-servicos/',
     '/instagram' => 'https://www.instagram.com/matony_servicos/',
@@ -39,3 +40,12 @@ foreach ($redirects as $path => $url) {
         return redirect()->away($url);
     });
 }
+
+// Terms and Privacy Policy pages
+Route::get('/termos', function () {
+    return Inertia::render('Site/terms');
+})->name('terms');
+
+Route::get('/privacidade', function () {
+    return Inertia::render('Site/policies');
+})->name('privacy');
