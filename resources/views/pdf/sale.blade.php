@@ -420,7 +420,7 @@
     <div class="container">
         <main class="main">
             @if ($sale->customer)
-                <div class="customer-info" style="width: 70%;">
+                <div class="customer-info" style="width: 70%; margin-top: -40px;">
                     <div class="section-title">CLIENTE</div>
                     <div class="customer-name">{{ $sale->customer->name }}</div>
                     @if ($sale->customer->address)

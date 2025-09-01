@@ -721,17 +721,33 @@ export default function Index({ sales, customers, warehouses, statuses, currency
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem asChild>
-                                <a href={`/admin/sales/${sale.id}/pdf`} target="_blank">
+                                <a href={`/admin/sales/${sale.id}/pdf?type=invoice`} target="_blank">
                                   <FileText className="mr-2 h-4 w-4" />
-                                  <span>Ver PDF</span>
+                                  <span>Fatura (PDF)</span>
                                 </a>
                               </DropdownMenuItem>
+                              {sale.status === 'paid' && (
+                                <DropdownMenuItem asChild>
+                                  <a href={`/admin/sales/${sale.id}/pdf?type=receipt`} target="_blank">
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    <span>Recibo Final (PDF)</span>
+                                  </a>
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem asChild>
-                                <a href={`/admin/sales/${sale.id}/pdf?download=true`} target="_blank">
+                                <a href={`/admin/sales/${sale.id}/pdf?type=invoice&download=true`} target="_blank">
                                   <Download className="mr-2 h-4 w-4" />
-                                  <span>Descarregar PDF</span>
+                                  <span>Descarregar Fatura</span>
                                 </a>
                               </DropdownMenuItem>
+                              {sale.status === 'paid' && (
+                                <DropdownMenuItem asChild>
+                                  <a href={`/admin/sales/${sale.id}/pdf?type=receipt&download=true`} target="_blank">
+                                    <Download className="mr-2 h-4 w-4" />
+                                    <span>Descarregar Recibo</span>
+                                  </a>
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuSeparator />
                               {can('admin-sale.sendemail') && (
                                 <DropdownMenuItem
@@ -791,9 +807,9 @@ export default function Index({ sales, customers, warehouses, statuses, currency
                                   disabled={status.value === sale.status || statusUpdating}
                                   onClick={() => handleStatusChange(sale.id, status.value)}
                                 >
-                                  <Badge variant={status.color} className="mr-2">
+                                  <span className="mr-2">
                                     {status.label}
-                                  </Badge>
+                                  </span>
                                 </DropdownMenuItem>
                               ))}
                             </DropdownMenuContent>
