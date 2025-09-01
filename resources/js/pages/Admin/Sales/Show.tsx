@@ -240,7 +240,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
             <StatusChangeDialog
                 open={statusDialogOpen}
                 onOpenChange={setStatusDialogOpen}
-                saleId={parseInt(sale.id)}
+                saleId={sale.id}
                 selectedStatus={selectedStatus}
                 statuses={statuses}
             />
@@ -249,7 +249,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                 open={paymentDialogOpen} 
                 onOpenChange={setPaymentDialogOpen} 
                 sale={{
-                    id: parseInt(sale.id),
+                    id: sale.id,
                     amount_due: sale.amount_due,
                     currency: sale.currency
                 }} 

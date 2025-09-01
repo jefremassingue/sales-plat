@@ -1,9 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Edit, Printer, Trash } from 'lucide-react';
+import { ArrowLeft, Edit, Trash } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { Sale } from '@/types';
+import { DocumentDropdown } from './DocumentDropdown';
 
 interface SaleHeaderProps {
     sale: Sale;
@@ -66,12 +67,7 @@ export function SaleHeader({
                     </SelectContent>
                 </Select>
 
-                <Button variant="outline" asChild>
-                    <a href={`/admin/sales/${sale.id}/pdf`} target="_blank">
-                        <Printer className="mr-2 h-4 w-4" />
-                        PDF
-                    </a>
-                </Button>
+                <DocumentDropdown sale={sale} />
 
                 {isEditable() && (
                     <Button variant="outline" asChild>

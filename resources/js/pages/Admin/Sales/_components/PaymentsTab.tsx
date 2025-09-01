@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sale } from '@/types';
-import { Banknote } from 'lucide-react';
+import { Banknote, FileText } from 'lucide-react';
 
 
 interface PaymentMethod {
@@ -49,6 +49,7 @@ export function PaymentsTab({ sale, paymentMethods, formatDate, formatCurrency, 
                                     <TableHead>Referência</TableHead>
                                     <TableHead>Notas</TableHead>
                                     <TableHead className="text-right">Valor</TableHead>
+                                    <TableHead className="text-center">Ações</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -69,6 +70,16 @@ export function PaymentsTab({ sale, paymentMethods, formatDate, formatCurrency, 
                                         </TableCell>
                                         <TableCell className="text-right font-medium">
                                             {formatCurrency(payment.amount)}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => window.open(`/admin/sales/${sale.id}/pdf?type=payment_receipt&payment_id=${payment.id}`, '_blank')}
+                                                title="Gerar recibo deste pagamento"
+                                            >
+                                                <FileText className="h-4 w-4" />
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}

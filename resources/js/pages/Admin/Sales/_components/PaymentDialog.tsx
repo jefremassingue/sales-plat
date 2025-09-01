@@ -18,7 +18,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 interface Sale {
-    id: number;
+    id: string;
     amount_due: number;
     currency?: {
         code: string;
@@ -111,7 +111,7 @@ export function PaymentDialog({ open, onOpenChange, sale, paymentMethods }: Paym
                     <DialogTitle>Registrar Pagamento</DialogTitle>
                     <DialogDescription>Informe os dados do pagamento para esta venda.</DialogDescription>
                 </DialogHeader>
-
+{/* <pre>{JSON.stringify(sale)}</pre> */}
                 <Form {...paymentForm}>
                     <form onSubmit={paymentForm.handleSubmit(onSubmitPayment)} className="space-y-4 py-4">
                         <FormField
@@ -121,7 +121,7 @@ export function PaymentDialog({ open, onOpenChange, sale, paymentMethods }: Paym
                                 <FormItem>
                                     <FormLabel>Valor</FormLabel>
                                     <FormControl>
-                                        <Input {...field} type="number" step="0.01" min="0.01" max={sale.amount_due} />
+                                        <Input {...field} type="number" step="0.01" min="0.01" max={sale.amount_due + 1} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

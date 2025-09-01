@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { Sale } from '@/types';
 import { router } from '@inertiajs/react';
 import { AlertCircle, Banknote, Calendar, CreditCard, User } from 'lucide-react';
+import { DocumentDropdown } from './DocumentDropdown';
 
 
 interface FinancialSummaryProps {
@@ -147,12 +148,7 @@ export function FinancialSummary({
                     <CardTitle>Ações</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <Button className="w-full justify-start" asChild>
-                        <a href={`/admin/sales/${sale.id}/pdf?download=true`} target="_blank">
-                            <Banknote className="mr-2 h-4 w-4" />
-                            Descarregar PDF
-                        </a>
-                    </Button>
+                    <DocumentDropdown sale={sale} />
 
                     <Button
                         variant="outline"

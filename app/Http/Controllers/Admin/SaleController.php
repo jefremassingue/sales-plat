@@ -687,6 +687,7 @@ class SaleController extends Controller implements HasMiddleware
      */
     public function registerPayment(Sale $sale, Request $request)
     {
+        // dd('ddf');
         try {
             $validator = Validator::make($request->all(), [
                 'amount' => 'required|numeric|min:0.01|max:' . $sale->amount_due,
@@ -1137,6 +1138,7 @@ class SaleController extends Controller implements HasMiddleware
 
             // Determinar tipo de documento e pagamento
             $type = $request->input('type', 'invoice');
+            $paymentId = $request->input('payment_id');
 
             $sale->load(['payments' => function ($query) {
                 $query->orderBy('payment_date', 'asc');
@@ -1146,23 +1148,57 @@ class SaleController extends Controller implements HasMiddleware
             $company = DB::table('settings')->where('group', 'company')->get()->keyBy('key');
             $bank = DB::table('settings')->where('group', 'bank')->get()->keyBy('key');
 
-            $documentTitle = match (true) {
-                ($sale->status === 'paid' && count($sale->payments) === 1) || ($sale->status === 'paid' && $sale->amount_paid >= $sale->amount_due) => 'RECIBO',
-                $sale->status === 'partial' && count($sale->payments) => 'FATURA',
-                default => 'FATURA'
-            };
-
-            // Gerar número do documento
-            $sufix = '';
+            // Determinar título e número do documento baseado no tipo
+            $documentTitle = '';
             $documentNumber = $sale->sale_number;
-            if ($sale->status === 'partial' && count($sale->payments)) {
-                // Se for pagamento parcial, adicionar sufixo P + número do pagamento
-                $documentNumber .= '/P' . count($sale->payments);
-                $sufix = 'P';
-            } elseif ($sale->status === 'paid') {
-                // Se estiver pago, adicionar sufixo R de recibo
-                $documentNumber .= '/R';
-                $sufix = 'R';
+            $sufix = '';
+            $payment = null;
+            $paymentIndex = null;
+
+            switch ($type) {
+                case 'invoice':
+                    $documentTitle = 'FATURA';
+                    break;
+
+                case 'receipt':
+                    // Recibo final - apenas para vendas pagas
+                    if ($sale->status === 'paid') {
+                        $documentTitle = 'RECIBO';
+                        $documentNumber .= '/R';
+                        $sufix = 'R';
+                    } else {
+                        throw new \Exception('Recibo final só pode ser gerado para vendas totalmente pagas.');
+                    }
+                    break;
+
+                case 'payment_receipt':
+                    // Recibo de pagamento específico
+                    if (!$paymentId) {
+                        throw new \Exception('ID do pagamento é obrigatório para gerar recibo de pagamento.');
+                    }
+                    
+                    $payment = $sale->payments()->find($paymentId);
+                    if (!$payment) {
+                        throw new \Exception('Pagamento não encontrado.');
+                    }
+                    
+                    $documentTitle = 'RECIBO';
+                    
+                    // Calcular índice do pagamento baseado na ordem cronológica
+                    $allPayments = $sale->payments()->orderBy('created_at', 'asc')->get();
+                    $paymentIndex = $allPayments->search(function($p) use ($payment) {
+                        return $p->id === $payment->id;
+                    }) + 1; // +1 porque o index começa em 0
+                    
+                    // Calcular valor acumulado até este pagamento (incluindo este)
+                    $accumulatedAmount = $allPayments->take($paymentIndex)->sum('amount');
+                    
+                    $documentNumber .= '/P' . $paymentIndex;
+                    $sufix = 'P';
+                    break;
+
+                default:
+                    $documentTitle = 'FATURA';
             }
             // Gerar o PDF
             $pdf = Pdf::setOptions([
@@ -1178,13 +1214,17 @@ class SaleController extends Controller implements HasMiddleware
                 'documentTitle' => $documentTitle,
                 'documentNumber' => $documentNumber,
                 'documentSufix' => $sufix,
+                'payment' => $payment, // Novo parâmetro para pagamento específico
+                'paymentIndex' => $paymentIndex, // Adicionar paymentIndex
+                'accumulatedAmount' => $accumulatedAmount ?? null, // Valor acumulado até o pagamento
             ]);
 
-            // Definir nome do arquivo
-            $filename = match (true) {
-                $type === 'receipt' && $sale->status === 'paid' => 'recibo_' . $sale->sale_number . '_R',
-                $type === 'payment_proof' && isset($paymentId) => 'pagamento_' . $sale->sale_number . '_P' . $paymentId,
-                default => 'fatura_' . $sale->sale_number
+            // Definir nome do arquivo baseado no tipo
+            $filename = match ($type) {
+                'invoice' => 'fatura_' . $sale->sale_number,
+                'receipt' => 'recibo_' . $sale->sale_number . '_final',
+                'payment_receipt' => 'recibo_' . $sale->sale_number . '_pagamento_' . ($paymentIndex ?? '1'),
+                default => 'documento_' . $sale->sale_number
             };
             $filename .= '.pdf';
 

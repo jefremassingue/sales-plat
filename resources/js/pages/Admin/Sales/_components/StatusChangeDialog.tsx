@@ -7,7 +7,7 @@ import { useState } from 'react';
 interface StatusChangeDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    saleId: number;
+    saleId: string;
     selectedStatus: string;
     statuses: { value: string; label: string; color: string }[];
 }
