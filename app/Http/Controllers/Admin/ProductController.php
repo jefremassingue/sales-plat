@@ -489,7 +489,7 @@ class ProductController extends Controller implements HasMiddleware
                 'attributes.*.name' => 'required|string|max:100',
                 'attributes.*.value' => 'required|string|max:255',
                 'variants' => 'nullable|array',
-                'variants.*.id' => 'nullable|exists:product_variants,id',
+                'variants.*.id' => 'nullable',
                 'variants.*.color_id' => 'nullable|string',
                 'variants.*.size_id' => 'nullable|string',
                 'variants.*.sku' => 'nullable|string|max:100',

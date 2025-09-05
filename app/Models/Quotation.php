@@ -128,13 +128,13 @@ class Quotation extends Model
     {
         $items = $this->items;
 
-        $subtotal = $items->sum('subtotal');
-        $taxAmount = $items->sum('tax_amount');
-        $discountAmount = $items->sum('discount_amount');
+        $subtotal = round($items->sum('subtotal'), 2);
+        $taxAmount = round($items->sum('tax_amount'), 2);
+        $discountAmount = round($items->sum('discount_amount'), 2);
 
-        $total = $subtotal - $discountAmount;
+        $total = round($subtotal - $discountAmount, 2);
         if ($this->include_tax) {
-            $total += $taxAmount;
+            $total = round($total + $taxAmount, 2);
         }
 
         $this->update([
@@ -144,6 +144,7 @@ class Quotation extends Model
             'total' => $total,
         ]);
     }
+
 
     /**
      * Atualizar o status da cotação para "expired" se estiver vencida

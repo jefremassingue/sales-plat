@@ -568,7 +568,7 @@ class SaleController extends Controller implements HasMiddleware
             'amount_paid' => 'nullable|numeric|min:0',
             'payment_method' => 'nullable|string',
             'items' => 'required|array|min:1',
-            'items.*.id' => 'nullable|exists:sale_items,id', // ID do item existente
+            'items.*.id' => 'nullable', // ID do item existente
             'items.*.name' => 'required|string',
             'items.*.quantity' => 'required|numeric|gt:0',
             'items.*.unit_price' => 'required|numeric|gte:0',
@@ -612,7 +612,7 @@ class SaleController extends Controller implements HasMiddleware
 
             // Atualizar itens existentes e criar novos
             foreach ($incomingItems as $itemData) {
-                if (isset($itemData['id']) && $itemData['id']) {
+                if (isset($itemData['id']) && $itemData['id'] && SaleItem::find($itemData['id']) ){
                     // Atualizar item existente
                     $item = SaleItem::find($itemData['id']);
                     $originalQuantity = $item->quantity;
@@ -638,6 +638,7 @@ class SaleController extends Controller implements HasMiddleware
                     }
                 } else {
                     // Criar novo item (lógica similar ao store)
+                    unset($itemData['id']); // Garantir que o ID não está definido
                     $newItem = new SaleItem($itemData);
                     $newItem->sale_id = $sale->id;
                     $newItem->calculateValues();

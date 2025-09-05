@@ -152,49 +152,50 @@ class Sale extends Model
     /**
      * Calcular os totais da venda
      */
-    public function calculateTotals(): void
-    {
-        $items = $this->items;
+ public function calculateTotals(): void
+{
+    $items = $this->items;
 
-        // 1. Calcular os totais básicos a partir dos itens.
-        $subtotal = $items->sum('subtotal');
-        $taxAmount = $items->sum('tax_amount');
-        $discountAmount = $items->sum('discount_amount');
-        $totalCost = $items->sum(function ($item) {
-            return $item->quantity * $item->cost;
-        });
+    // 1. Calcular os totais básicos a partir dos itens.
+    $subtotal = round($items->sum('subtotal'), 2);
+    $taxAmount = round($items->sum('tax_amount'), 2);
+    $discountAmount = round($items->sum('discount_amount'), 2);
+    $totalCost = round($items->sum(function ($item) {
+        return $item->quantity * $item->cost;
+    }), 2);
 
-        // 2. Definir a base de cálculo para comissões.
-        // Este é o valor real da receita da empresa, sobre o qual a comissão incide.
-        // (Subtotal - Descontos). Não inclui IVA nem frete.
-        $commissionableValue = $subtotal - $discountAmount;
+    // 2. Definir a base de cálculo para comissões.
+    $commissionableValue = round($subtotal - $discountAmount, 2);
 
-        // 3. Calcular a comissão e o backup sobre a base de cálculo correta.
-        $commissionAmount = $commissionableValue * ($this->commission_rate / 100);
-        $backupAmount = $commissionableValue * ($this->backup_rate / 100);
+    // 3. Calcular a comissão e o backup sobre a base de cálculo correta.
+    $commissionAmount = round($commissionableValue * ($this->commission_rate / 100), 2);
+    $backupAmount = round($commissionableValue * ($this->backup_rate / 100), 2);
 
-        // 4. Calcular o valor total final da fatura (o que o cliente paga).
-        $total = $commissionableValue; // Começa com a base
-        if ($this->include_tax) {
-            $total += $taxAmount; // Adiciona o IVA
-        }
-        $total += $this->shipping_amount ?? 0; // Adiciona o frete
-
-        // 5. Calcular o valor pendente com base no total da fatura.
-        $amountDue = $total - $this->amount_paid;
-
-        // 6. Atualizar o registo da venda com todos os valores corretos.
-        $this->update([
-            'subtotal' => $subtotal,
-            'tax_amount' => $taxAmount,
-            'discount_amount' => $discountAmount,
-            'total' => $total,                      // Valor final da fatura
-            'amount_due' => $amountDue,
-            'total_cost' => $totalCost,
-            'commission_amount' => $commissionAmount, // Valor de comissão corrigido
-            'backup_amount' => $backupAmount        // Valor de backup corrigido
-        ]);
+    // 4. Calcular o valor total final da fatura.
+    $total = $commissionableValue; // Começa com a base
+    if ($this->include_tax) {
+        $total += $taxAmount;
     }
+    $total += $this->shipping_amount ?? 0;
+
+    $total = round($total, 2);
+
+    // 5. Calcular o valor pendente.
+    $amountDue = round($total - $this->amount_paid, 2);
+
+    // 6. Atualizar o registo da venda.
+    $this->update([
+        'subtotal' => $subtotal,
+        'tax_amount' => $taxAmount,
+        'discount_amount' => $discountAmount,
+        'total' => $total,                      // Valor final da fatura
+        'amount_due' => $amountDue,
+        'total_cost' => $totalCost,
+        'commission_amount' => $commissionAmount, // Valor de comissão corrigido
+        'backup_amount' => $backupAmount        // Valor de backup corrigido
+    ]);
+}
+
 
     /**
      * Atualizar o status baseado no valor pago
