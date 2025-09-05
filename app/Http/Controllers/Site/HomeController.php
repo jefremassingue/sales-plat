@@ -15,6 +15,7 @@ class HomeController extends Controller
 {
     public function index()
     {
+        cache()->clear();
         // Produtos mais visualizados com cache
         $mostViewedProducts = Cache::remember('home:most_viewed_products', now()->addMinutes(30), function () {
             return Product::with(['category', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
@@ -47,6 +48,8 @@ class HomeController extends Controller
                     'views' => $p->views,
                 ]);
         });
+
+        // return ($mostViewedProducts);
 
         // Cache::clear();
         // Produtos em destaque com cache
@@ -117,7 +120,7 @@ class HomeController extends Controller
         // Novos produtos com cache
         $newProducts = Cache::remember('home:new_products', now()->addMinutes(30), function () {
             return Product::with(['category', 'mainImage.versions', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions'])
-                ->select(['id', 'name', 'slug', 'description', 'technical_details', 'features', 'price', 'category_id', 'old_price', 'created_at'])
+                // ->select(['id', 'name', 'slug', 'description', 'technical_details', 'features', 'price', 'category_id', 'old_price', 'created_at'])
                 ->where('active', true)
                 ->orderBy('created_at', 'desc')
                 ->whereHas('ecommerce_inventory')

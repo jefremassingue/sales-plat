@@ -166,16 +166,7 @@ export default function Home({ featuredProducts, popularProducts, mostViewedProd
             {/* Produtos em Destaque */}
             <ProductSection
                 title="Produtos em Destaque"
-                products={featuredProducts?.map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    slug: p.slug,
-                    category: p.category ? { name: p.category.name } : { name: '' },
-                    price: String(p.price ?? ''),
-                    old_price: p.old_price ? String(p.old_price) : null,
-                    isNew: p.isNew,
-                    main_image: p.main_image as unknown as InlineImage,
-                }))}
+                products={featuredProducts}
                 bgColor="bg-white"
             />
 
@@ -186,48 +177,21 @@ export default function Home({ featuredProducts, popularProducts, mostViewedProd
             {/* Produtos Populares */}
             <ProductSection
                 title="Mais Populares"
-                products={popularProducts?.map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    slug: p.slug,
-                    category: p.category ? { name: p.category.name } : { name: '' },
-                    price: String(p.price ?? ''),
-                    old_price: p.old_price ? String(p.old_price) : null,
-                    isNew: p.isNew,
-                    main_image: p.main_image as unknown as InlineImage,
-                }))}
+                products={popularProducts}
                 bgColor="bg-white"
             />
 
             {/* Produtos mais visualizados */}
             <ProductSection
                 title="Mais Visualizados"
-                products={mostViewedProducts?.map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    slug: p.slug,
-                    category: p.category ? { name: p.category.name } : { name: '' },
-                    price: String(p.price ?? ''),
-                    old_price: p.old_price ? String(p.old_price) : null,
-                    isNew: p.isNew,
-                    main_image: p.main_image as unknown as InlineImage,
-                }))}
+                products={mostViewedProducts}
                 bgColor="bg-white"
             />
 
             {/* Novos Produtos */}
             <ProductSection
                 title="Novidades na Loja"
-                products={newProducts?.map((p) => ({
-                    id: p.id,
-                    name: p.name,
-                    slug: p.slug,
-                    category: p.category ? { name: p.category.name } : { name: '' },
-                    price: String(p.price ?? ''),
-                    old_price: p.old_price ? String(p.old_price) : null,
-                    isNew: p.isNew,
-                    main_image: p.main_image as unknown as InlineImage,
-                }))}
+                products={newProducts}
                 bgColor="bg-slate-50"
             />
 

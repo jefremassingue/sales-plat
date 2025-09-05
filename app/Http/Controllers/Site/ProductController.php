@@ -305,7 +305,7 @@ class ProductController extends Controller
             'relatedProducts' => $relatedProducts,
         ])
             ->title($product->name)
-            ->description($description ?? 'Produto ' . $product->name)->limit(150)
+            ->description($description ?? 'Produto ' . $product->name)
             ->image($imageUrl ?? asset('og.png'))
             ->ogMeta()
             ->twitterLargeCard();
