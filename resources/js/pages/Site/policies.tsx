@@ -6,7 +6,7 @@ import React from 'react'
 export default function Policies() {
   return (
     <SiteLayout>
-      <Head title="Política Privacidade" />
+      <Head title="Política de Privacidade - Matony" />
       <div className="max-w-3xl mx-auto px-4 py-8 text-gray-700">
         <h2 className="text-2xl font-bold mb-4">Política Privacidade</h2>
         <p className="mb-4">

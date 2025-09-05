@@ -17,9 +17,18 @@ class ContactController extends Controller
         // Log para debug - início da requisição
         Log::info('ContactController: Iniciando carregamento da página de contato');
 
-        return Inertia::render('Site/Contact', [
+        $response = Inertia::render('Site/Contact', [
             // Você pode passar dados adicionais aqui se necessário
         ]);
+
+        $title = 'Contacto - Fale com a Matony';
+        $description = 'Entre em contato com a Matony. Estamos prontos para atender suas dúvidas, solicitações de orçamento ou fornecer suporte. Envie sua mensagem ou ligue para nós.';
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->image(asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     public function store(Request $request)

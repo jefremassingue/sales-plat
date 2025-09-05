@@ -133,7 +133,7 @@ class ProductController extends Controller
         });
 
         // Usar Inertia com Deferred Props para carregamento mais eficiente
-        return Inertia::render('Site/Products/Index', [
+        $response = Inertia::render('Site/Products/Index', [
             // Dados de produtos carregados de forma adiada (lazy)
             'products' => $productsQuery->paginate(20)->through(function ($product) {
                 return [
@@ -180,6 +180,28 @@ class ProductController extends Controller
             // Categorias e subcategorias com contagem de produtos
             'categories' => $categories,
         ]);
+
+        $title = 'Nossos Produtos - Matony';
+        $description = 'Explore nossa ampla gama de produtos de alta qualidade. Encontre tudo o que precisa, desde equipamentos industriais a materiais de construção na Matony.';
+
+        if ($request->filled('search')) {
+            $searchTerm = e($request->search);
+            $title = "Busca por \"{$searchTerm}\" - Matony";
+            $description = "Resultados da busca por \"{$searchTerm}\". Encontre os melhores produtos e ofertas na Matony.";
+        } elseif ($request->filled('categories')) {
+            $categoryIds = is_array($request->categories) ? $request->categories : [$request->categories];
+            $categoryNames = Category::whereIn('id', $categoryIds)->pluck('name')->join(', ');
+            if ($categoryNames) {
+                $title = "Produtos em {$categoryNames} - Matony";
+                $description = "Confira nossos produtos na(s) categoria(s) {$categoryNames}. Qualidade e variedade é na Matony.";
+            }
+        }
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->image(asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     /**
@@ -276,13 +298,14 @@ class ProductController extends Controller
             }
         }
 
-        
+        // dd($imageUrl);  
+        $description = str(strip_tags($product->description ?? ''))->limit(150);
         return Inertia::render('Site/Products/Details', [
             'product' => $product,
             'relatedProducts' => $relatedProducts,
         ])
             ->title($product->name)
-            ->description(str($product->description ?? '')->limit(150))
+            ->description($description ?? 'Produto ' . $product->name)->limit(150)
             ->image($imageUrl ?? asset('og.png'))
             ->ogMeta()
             ->twitterLargeCard();

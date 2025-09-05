@@ -146,7 +146,7 @@ export default function BlogIndexPage() {
     return (
         <SiteLayout>
 
-            <Head title='Blog' />
+            <Head title="Blog da Matony - Novidades e Dicas" />
             {/* Cabeçalho da Página do Blog */}
             <section className="bg-gradient-to-b from-orange-50 to-white pt-20 pb-16 border-b border-slate-200/70">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">

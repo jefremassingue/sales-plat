@@ -440,7 +440,7 @@ const CheckoutContent: React.FC = () => {
 export default function Checkout() {
     return (
         <SiteLayout>
-            <Head title="Solicitar Cotação" />
+            <Head title="Solicitar Cotação - Matony" />
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }

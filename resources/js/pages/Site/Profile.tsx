@@ -123,7 +123,7 @@ export default function Profile({ customer, stats, recentSales, recentQuotations
 
     return (
         <SiteLayout>
-            <Head title="Meu Perfil" />
+            <Head title={`Minha Conta - ${customer.name}`} />
             
             <div className="container mx-auto px-4 py-8">
                 {/* Header */}

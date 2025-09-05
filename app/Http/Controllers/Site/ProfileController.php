@@ -110,7 +110,7 @@ class ProfileController extends Controller
                 return $quotation;
             });
 
-        return Inertia::render('Site/Profile', [
+        $response = Inertia::render('Site/Profile', [
             'customer' => $customer,
             'stats' => [
                 'salesCount' => $salesCount,
@@ -120,6 +120,14 @@ class ProfileController extends Controller
             'recentSales' => $recentSales,
             'recentQuotations' => $recentQuotations,
         ]);
+
+        $title = 'Minha Conta - ' . $customer->name;
+        $description = 'Acesse sua área de cliente na Matony para visualizar seu histórico de compras, cotações, atualizar seus dados e muito mais.';
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     /**
@@ -240,7 +248,7 @@ class ProfileController extends Controller
         $paidAmount = $query->where('status', 'paid')->sum('total');
         $pendingAmount = $query->whereIn('status', ['pending', 'partial'])->sum('amount_due');
 
-        return Inertia::render('Site/Profile/SalesStatement', [
+        $response = Inertia::render('Site/Profile/SalesStatement', [
             'customer' => $customer,
             'sales' => $sales,
             'filters' => $request->only(['status', 'date_from', 'date_to', 'order_by', 'order_direction']),
@@ -251,6 +259,14 @@ class ProfileController extends Controller
                 'pendingAmount' => $pendingAmount,
             ],
         ]);
+
+        $title = 'Meu Histórico de Compras - Matony';
+        $description = 'Consulte seu histórico completo de compras e o status de cada pedido na sua área de cliente Matony.';
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     /**
@@ -295,7 +311,7 @@ class ProfileController extends Controller
         $approvedAmount = $query->where('status', 'approved')->sum('total');
         $convertedAmount = $query->where('status', 'converted')->sum('total');
 
-        return Inertia::render('Site/Profile/QuotationsStatement', [
+        $response = Inertia::render('Site/Profile/QuotationsStatement', [
             'customer' => $customer,
             'quotations' => $quotations,
             'filters' => $request->only(['status', 'date_from', 'date_to', 'order_by', 'order_direction']),
@@ -306,6 +322,14 @@ class ProfileController extends Controller
                 'convertedAmount' => $convertedAmount,
             ],
         ]);
+
+        $title = 'Minhas Cotações - Matony';
+        $description = 'Acompanhe todas as suas cotações, visualize propostas e o status de cada uma em sua área de cliente Matony.';
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     /**

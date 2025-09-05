@@ -14,8 +14,17 @@ class CatalogController extends Controller
             ->orderBy('publish_year', 'desc')
             ->paginate(12);
 
-        return Inertia::render('Site/Catalogs/Index', [
+        $response = Inertia::render('Site/Catalogs/Index', [
             'catalogs' => $catalogs,
         ]);
+
+        $title = 'Catálogos de Produtos - Matony';
+        $description = 'Baixe nossos catálogos e confira a linha completa de produtos e soluções que a Matony oferece. Informações técnicas e detalhadas ao seu alcance.';
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->image(asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 }

@@ -176,50 +176,7 @@ export default function ProductDetails({ product, relatedProducts }: Props) {
 
     return (
         <SiteLayout>
-            <Head>
-                {/* SEO Básico */}
-                <title>{product?.name ? `${product.name} - Matony Serviços` : 'Matony Serviços'}</title>
-
-                <meta
-                    name="description"
-                    content={product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.'}
-                />
-                <meta name="keywords" content={`${product?.name || ''}, serviços, Matony`} />
-
-                {/* Open Graph */}
-                <meta property="og:type" content="website" />
-                <meta property="og:site_name" content="Matony Serviços" />
-                <meta property="og:title" content={product?.name ? `${product.name} - Matony Serviços` : 'Matony Serviços'} />
-                <meta
-                    property="og:description"
-                    content={product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.'}
-                />
-                
-                <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-
-                {/* Twitter Cards */}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:site" content="@matony" />
-                <meta name="twitter:title" content={product?.name ? `${product.name} - Matony Serviços` : 'Matony Serviços'} />
-                <meta
-                    name="twitter:description"
-                    content={product?.description?.replace(/<[^>]*>/g, '')?.slice(0, 160) || 'Serviços profissionais da Matony.'}
-                />
-                <meta
-                    name="twitter:image"
-                    content={
-                        product?.main_image?.versions?.find((img) => img.version === 'sm')?.url ||
-                        product?.main_image?.versions?.find((img) => img.version === 'md')?.url ||
-                        product?.main_image?.versions?.find((img) => img.version === 'lg')?.url ||
-                        product?.main_image?.url ||
-                        (typeof window !== 'undefined' ? window.location.origin + '/default-image.png' : '/default-image.png')
-                    }
-                />
-
-                {/* Extra de compatibilidade */}
-                <link rel="canonical" href={typeof window !== 'undefined' ? window.location.href : ''} />
-                <meta name="author" content="Matony Serviços" />
-            </Head>
+            <Head title={product.name} />
 
             <ProductDetailsContent product={product} relatedProducts={relatedProducts} />
         </SiteLayout>

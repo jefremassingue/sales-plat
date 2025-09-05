@@ -352,7 +352,7 @@ export default function Contact() {
 
     return (
         <SiteLayout>
-            <Head title="Contato" />
+            <Head title="Contato - Fale com a Matony" />
 
             {/* Hero Section */}
             <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-white py-20 md:py-28">

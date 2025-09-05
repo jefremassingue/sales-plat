@@ -22,7 +22,7 @@
     </script>
 
     <!-- Mobile Specific Metas -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {{-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="author" content="Matony Serviços, Lda">
     <meta property="title" content="Matony Serviços - Protegendo quem constrói o futuro">
     <meta property="description" content="A Matony Serviços é uma empresa moçambicana especializada na comercialização de Equipamentos de Protecção Individual (EPIs), consultoria e formação em segurança no trabalho.">
@@ -30,7 +30,7 @@
     <meta name="author" content="Matony Serviços, Lda">
     <meta property="og:title" content="Matony Serviços - Protegendo quem constrói o futuro">
     <meta property="og:description" content="A Matony Serviços é uma empresa moçambicana especializada na comercialização de Equipamentos de Protecção Individual (EPIs), consultoria e formação em segurança no trabalho.">
-    <meta property="og:image" content="{{ asset('og.png') }}">
+    <meta property="og:image" content="{{ asset('og.png') }}"> --}}
 
     {{-- Inline style to set the HTML background color based on our theme in app.css --}}
     <style>

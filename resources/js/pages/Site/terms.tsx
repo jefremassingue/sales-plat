@@ -6,7 +6,7 @@ import React from 'react'
 export default function Terms() {
   return (
     <SiteLayout>
-        <Head title="Termos de Serviço" />
+        <Head title="Termos de Serviço - Matony" />
       <div className="max-w-3xl mx-auto px-4 py-8 text-gray-700">
         <h2 className="text-2xl font-bold mb-4">1. Termos</h2>
         <p className="mb-6">

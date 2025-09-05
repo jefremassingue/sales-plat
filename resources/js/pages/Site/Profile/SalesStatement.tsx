@@ -125,7 +125,7 @@ export default function SalesStatement({ customer, sales, filters, stats }: Prop
 
     return (
         <SiteLayout>
-            <Head title="Extrato de Vendas" />
+            <Head title="Meu Histórico de Compras - Matony" />
             
             <div className="container mx-auto px-4 py-8">
                 {/* Header */}

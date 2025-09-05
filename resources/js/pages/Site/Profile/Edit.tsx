@@ -65,7 +65,7 @@ export default function EditProfile({ customer }: Props) {
 
     return (
         <SiteLayout>
-            <Head title="Editar Perfil" />
+            <Head title={`Editar Perfil - ${customer.name}`} />
             
             <div className="container mx-auto px-4 py-8">
                 {/* Header */}

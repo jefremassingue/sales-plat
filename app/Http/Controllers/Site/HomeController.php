@@ -184,7 +184,7 @@ class HomeController extends Controller
             return HeroSlider::where('active', true)->orderBy('order')->get();
         });
 
-        return Inertia::render('Site/Home', [
+        $response = Inertia::render('Site/Home', [
             'featuredProducts' => $featuredProducts,
             'popularProducts' => $popularProducts,
             'mostViewedProducts' => $mostViewedProducts,
@@ -193,10 +193,28 @@ class HomeController extends Controller
             'blogPosts' => $blogPosts,
             'heroSlides' => $heroSlides,
         ]);
+
+        $title = 'Matony - Soluções em Equipamentos e Materiais de Construção';
+        $description = 'Encontre na Matony uma vasta gama de equipamentos, materiais de construção e soluções para sua obra ou indústria. Qualidade, variedade e os melhores preços.';
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->image(asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     public function about()
     {
-        return Inertia::render('Site/About');
+        $response = Inertia::render('Site/About');
+
+        $title = 'Sobre Nós - Conheça a Matony';
+        $description = 'Saiba mais sobre a história, missão e valores da Matony. Somos comprometidos em oferecer as melhores soluções e atendimento para nossos clientes em todo o país.';
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->image(asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 }

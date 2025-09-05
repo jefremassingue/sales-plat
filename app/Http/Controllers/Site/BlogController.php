@@ -45,11 +45,32 @@ class BlogController extends Controller
 
         // dd(json_encode($blogs));
         // Retornar a view com os dados
-        return Inertia::render('Site/Blog/Index', [
+        $response = Inertia::render('Site/Blog/Index', [
             'blogs' => $blogs,
             '_categories' => $categories,
             'filters' => $request->only(['search', 'category_id']),
         ]);
+
+        $title = 'Blog da Matony - Novidades e Dicas';
+        $description = 'Acompanhe nosso blog para ficar por dentro das últimas novidades, dicas e tendências do setor de construção e equipamentos industriais.';
+
+        if ($request->filled('search')) {
+            $searchTerm = e($request->search);
+            $title = "Busca por \"{$searchTerm}\" no Blog - Matony";
+            $description = "Resultados da busca por \"{$searchTerm}\" em nosso blog. Encontre artigos e dicas sobre o que você procura.";
+        } elseif ($request->filled('category_id') && $request->category_id !== 'all') {
+            $category = $categories->firstWhere('id', $request->category_id);
+            if ($category) {
+                $title = "Artigos sobre {$category->name} - Blog da Matony";
+                $description = "Explore nossos artigos na categoria {$category->name} e aprofunde seus conhecimentos.";
+            }
+        }
+
+        return $response->title($title)
+            ->description($description, 160)
+            ->image(asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     /**

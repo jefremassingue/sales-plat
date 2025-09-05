@@ -16,7 +16,7 @@ interface Props {
 export default function Index({ catalogs }: Props) {
     return (
         <SiteLayout>
-            <Head title="Catálogos" />
+            <Head title="Catálogos de Produtos - Matony" />
 
             <div className="container px-4 py-12 md:py-20">
                 <div className="text-center">

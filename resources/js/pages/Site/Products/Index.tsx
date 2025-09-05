@@ -326,7 +326,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
     return (
         <SiteLayout>
-            <Head title="Catálogo" />
+            <Head title="Nossos Produtos - Matony" />
 
             {/* Cabeçalho da Loja */}
             <header className="border-b border-slate-200 bg-gradient-to-r from-orange-50 via-white to-amber-50 py-8">

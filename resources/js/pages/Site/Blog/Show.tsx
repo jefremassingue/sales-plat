@@ -53,14 +53,7 @@ export default function BlogShowPage() {
 
     return (
         <SiteLayout>
-            <Head>
-                <title>{`${blog.title} - Matony Serviços`}</title>
-                <meta name="description" content={blog.excerpt} />
-                <meta property="og:title" content={`${blog.title} - Matony Serviços`} />
-                <meta property="og:description" content={blog.excerpt} />
-                <meta property="og:image" content={blog.image?.url} />
-                <meta property="og:url" content={window.location.href} />
-            </Head>
+            <Head title={blog.title} />
 
             {/* Cabeçalho do Artigo */}
             <div className="border-b border-slate-200/70 bg-gradient-to-b from-orange-50 to-white pt-20 pb-10">

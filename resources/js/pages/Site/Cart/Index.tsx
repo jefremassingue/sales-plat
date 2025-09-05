@@ -174,7 +174,7 @@ export default function Cart() {
 
     return (
         <SiteLayout>
-            <Head title="Carrinho" />
+            <Head title="Meu Carrinho de Compras - Matony" />
             <CartContent />
         </SiteLayout>
     );

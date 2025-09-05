@@ -136,7 +136,7 @@ export default function Home({ featuredProducts, popularProducts, mostViewedProd
 
     return (
         <SiteLayout>
-            <Head title="Venda e Consultoria de EPI's" />
+            <Head title="Matony - Soluções em Equipamentos e Materiais de Construção" />
 
             {/* Hero Section with improved spacing */}
             <div className="bg-gradient-to-b py-6 md:py-8">

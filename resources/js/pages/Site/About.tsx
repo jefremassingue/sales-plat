@@ -169,7 +169,7 @@ export default function About() {
 
     return (
         <SiteLayout>
-            <Head title="Sobre Nós" />
+            <Head title="Sobre Nós - Conheça a Matony" />
 
             {/* Hero Section */}
             <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-orange-900 text-white py-20 md:py-32">

@@ -142,7 +142,7 @@ export default function QuotationsStatement({ customer, quotations, filters, sta
 
     return (
         <SiteLayout>
-            <Head title="Extrato de Cotações" />
+            <Head title="Minhas Cotações - Matony" />
             
             <div className="container mx-auto px-4 py-8">
                 {/* Header */}
