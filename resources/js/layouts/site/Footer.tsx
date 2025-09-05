@@ -85,8 +85,9 @@ const Footer: React.FC = () => {
                     <div className="sm:col-span-2 lg:col-span-1">
                         <Link href="/" className="inline-block mb-5">
                             <div className="flex items-center space-x-2">
-                                <Building size={30} className="text-orange-600" />
-                                <span className="text-2xl font-bold text-slate-800 hover:text-orange-600 transition-colors">Matony</span>
+                                {/* <Building size={30} className="text-orange-600" /> */}
+                                <img src="/gg.png" alt="" className='w-64' />
+                                {/* <span className="text-2xl font-bold text-slate-800 hover:text-orange-600 transition-colors">Matony</span> */}
                             </div>
                         </Link>
                         <p className="text-sm text-slate-600 mb-6 pr-4"> {/* Cor de texto ajustada */}

@@ -1,7 +1,33 @@
 import { useCart } from '@/contexts/CartContext';
 import { Link, router, usePage } from '@inertiajs/react';
-import { ArrowUp, ChevronDown, ChevronUp, Mail, Map, Menu, MessageCircle, Phone, Search, ShoppingCart, User, X } from 'lucide-react';
+import {
+    ArrowUp,
+    ChevronDown,
+    ChevronUp,
+    ChevronRight,
+    Mail,
+    Map,
+    Menu,
+    MessageCircle,
+    Phone,
+    Search,
+    ShoppingCart,
+    User,
+    X,
+    Home,
+    PackageSearch,
+    LayoutGrid,
+    BookOpen,
+    Newspaper,
+    Info,
+    LogIn,
+    UserPlus,
+    LogOut,
+    ShoppingBag,
+    FileText,
+} from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
+import type { PageProps as InertiaPageProps } from '@inertiajs/core';
 
 interface Category {
     id: number;
@@ -10,7 +36,7 @@ interface Category {
     subcategories?: Category[];
 }
 
-interface PageProps {
+type AppPageProps = InertiaPageProps & {
     categories: Category[] | null;
     auth: {
         user: {
@@ -20,17 +46,23 @@ interface PageProps {
         } | null;
     };
     [key: string]: unknown;
-}
+};
 
 // --- Shared Data (Navigation Links) ---
-const navLinks = [
-    { name: 'Início', href: '/' },
-    { name: 'Produtos', href: '/products' },
-    { name: 'Catálogos', href: '/catalogs' },
-    { name: 'Categorias', href: '/products' }, // Note: href points to /products, not a categories page
-    { name: 'Blog', href: '/blog' },
-    { name: 'Contato', href: '/contact' },
-    { name: 'Sobre', href: '/about' },
+type NavLink = {
+    name: string;
+    href: string;
+    icon: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
+};
+
+const navLinks: NavLink[] = [
+    { name: 'Início', href: '/', icon: Home },
+    { name: 'Produtos', href: '/products', icon: PackageSearch },
+    { name: 'Catálogos', href: '/catalogs', icon: BookOpen },
+    { name: 'Categorias', href: '/products', icon: LayoutGrid }, // Note: href points to /products, not a categories page
+    { name: 'Blog', href: '/blog', icon: Newspaper },
+    { name: 'Contato', href: '/contact', icon: Phone },
+    { name: 'Sobre', href: '/about', icon: Info },
 ];
 
 // --- Sub-Component: TopBar ---
@@ -73,7 +105,7 @@ const TopBar = () => {
 // --- Sub-Component: SearchBar ---
 const SearchBar = () => {
     // get search term from URL
-    const { search } = usePage<PageProps>().props;
+    const { search } = usePage<AppPageProps>().props as { search?: string };
 
     const [searchTerm, setSearchTerm] = useState(search || '');
 
@@ -121,7 +153,7 @@ interface MainHeaderProps {
 const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }: MainHeaderProps) => {
     const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
     const [showSearchBar, setShowSearchBar] = useState(false);
-    const { auth } = usePage<PageProps>().props;
+    const { auth } = usePage<AppPageProps>().props;
 
     const handleLogout = () => {
         router.post(route('logout'));
@@ -236,7 +268,7 @@ const MainHeader = ({ onMobileMenuToggle, isMobileMenuOpen, cartItemCount = 0 }:
 
 // --- Sub-Component: NavigationBar (Desktop) ---
 const NavigationBar = () => {
-    const { categories } = usePage<PageProps>().props;
+    const { categories } = usePage<AppPageProps>().props;
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
     const navRef = useRef<HTMLDivElement>(null);
 
@@ -262,8 +294,9 @@ const NavigationBar = () => {
                                 onMouseEnter={() => handleMouseEnter(0)}
                                 onMouseLeave={handleMouseLeave}
                             >
-                                <button className="flex items-center py-3 text-sm font-medium text-gray-700 transition-colors duration-200 hover:text-orange-600">
-                                    Categorias
+                                <button className="flex items-center gap-2 py-3 text-sm font-medium text-gray-700 transition-colors duration-200 hover:text-orange-600">
+                                    <LayoutGrid size={16} className="text-gray-500 group-hover:text-orange-600" strokeWidth={2} />
+                                    <span>Categorias</span>
                                     <ChevronDown
                                         size={16}
                                         className="ml-1 text-gray-500 transition-transform duration-200 group-hover:rotate-180 group-hover:text-orange-600"
@@ -299,7 +332,7 @@ const NavigationBar = () => {
                                                                             </Link>
                                                                         </div>
                                                                         <ul className="space-y-2">
-                                                                            {category.subcategories?.map((subItem) => (
+                                                                            {category.subcategories?.map((subItem: Category) => (
                                                                                 <li key={`${category.id}-${subItem.id}`}>
                                                                                     <Link
                                                                                         href={subItem.href}
@@ -333,13 +366,14 @@ const NavigationBar = () => {
                                 )}
                             </li>
                         ) : (
-                            <li key={`nav-link-${index}`}>
+                <li key={`nav-link-${index}`}>
                                 <Link
-                                    href={link.href}
-                                    className="py-3 text-sm font-medium text-gray-700 transition-colors duration-200 hover:text-orange-600"
+                    href={link.href}
+                    className="flex items-center gap-2 py-3 text-sm font-medium text-gray-700 transition-colors duration-200 hover:text-orange-600"
                                     prefetch
                                 >
-                                    {link.name}
+                    <link.icon size={16} className="text-gray-500" strokeWidth={2} />
+                    <span>{link.name}</span>
                                 </Link>
                             </li>
                         ),
@@ -357,11 +391,17 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
-    const { categories } = usePage<PageProps>().props;
+    const { categories, auth } = usePage<AppPageProps>().props;
     const [openDropdownIndex, setOpenDropdownIndex] = useState<number | null>(null);
 
     const toggleDropdown = (index: number) => {
         setOpenDropdownIndex(openDropdownIndex === index ? null : index);
+    };
+
+    const handleLogout = () => {
+        // Logout e fecha o menu
+        router.post(route('logout'));
+        onClose();
     };
 
     useEffect(() => {
@@ -373,7 +413,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     if (!isOpen) return null;
 
     return (
-        <div className="bg-opacity-50 fixed inset-0 z-40 bg-black transition-opacity duration-300 lg:hidden" onClick={onClose}>
+        <div className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden" onClick={onClose}>
             <div
                 className={`fixed top-0 left-0 z-50 h-full w-4/5 max-w-sm transform bg-white shadow-xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
                 onClick={(e) => e.stopPropagation()}
@@ -395,7 +435,10 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                                         onClick={() => toggleDropdown(0)}
                                         className="flex w-full items-center justify-between px-5 py-3 text-left text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600"
                                     >
-                                        <span>Categorias</span>
+                                        <span className="flex items-center gap-2">
+                                            <LayoutGrid size={18} />
+                                            Categorias
+                                        </span>
                                         {openDropdownIndex === 0 ? (
                                             <ChevronUp size={20} strokeWidth={2} />
                                         ) : (
@@ -404,15 +447,19 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                                     </button>
                                     {openDropdownIndex === 0 && (
                                         <ul className="bg-gray-50 pl-8">
-                                            {categories.map((category) => (
+                                            {categories.map((category: Category) => (
                                                 <li key={`mobile-cat-${category.id}`} className="border-t border-gray-100 first:border-t-0">
                                                     <Link
                                                         href={category.href}
-                                                        className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-orange-600"
+                                                        className="flex items-center justify-between px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-100 hover:text-orange-600"
                                                         onClick={onClose}
                                                         prefetch
                                                     >
-                                                        {category.name}
+                                                        <span className="flex items-center gap-2">
+                                                            <LayoutGrid size={16} />
+                                                            {category.name}
+                                                        </span>
+                                                        <ChevronRight size={16} className="text-gray-400" />
                                                     </Link>
                                                 </li>
                                             ))}
@@ -423,16 +470,72 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                                 <li key={`mobile-link-${index}`} className="border-b border-gray-100">
                                     <Link
                                         href={link.href}
-                                        className="block px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600"
+                                        className="flex items-center gap-3 px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600"
                                         onClick={onClose}
                                         prefetch
                                     >
-                                        {link.name}
+                                        <link.icon size={18} />
+                                        <span>{link.name}</span>
                                     </Link>
                                 </li>
                             ),
                         )}
                     </ul>
+
+                    {/* Conta / Autenticação */}
+                    <div className="mt-2 border-t border-gray-100 pt-2">
+                        {auth?.user ? (
+                            <>
+                                <div className="flex items-center gap-2 px-5 py-2 text-xs text-gray-500">
+                                    <User size={14} />
+                                    <span>
+                                        Conectado como <span className="font-medium">{auth.user.name}</span>
+                                    </span>
+                                </div>
+                                <ul>
+                                    <li className="border-b border-gray-100">
+                                        <Link href="/profile" className="flex items-center gap-3 px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600" onClick={onClose} prefetch>
+                                            <User size={18} />
+                                            <span>Meu Perfil</span>
+                                        </Link>
+                                    </li>
+                                    <li className="border-b border-gray-100">
+                                        <Link href="/profile#sales" className="flex items-center gap-3 px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600" onClick={onClose} prefetch>
+                                            <ShoppingBag size={18} />
+                                            <span>Minhas Compras</span>
+                                        </Link>
+                                    </li>
+                                    <li className="border-b border-gray-100">
+                                        <Link href="/profile#quotations" className="flex items-center gap-3 px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600" onClick={onClose} prefetch>
+                                            <FileText size={18} />
+                                            <span>Minhas Cotações</span>
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <button onClick={handleLogout} className="flex w-full items-center gap-3 px-5 py-3 text-left text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600">
+                                            <LogOut size={18} />
+                                            <span>Sair</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </>
+                        ) : (
+                            <ul>
+                                <li className="border-b border-gray-100">
+                                    <Link href="/login" className="flex items-center gap-3 px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600" onClick={onClose} prefetch>
+                                        <LogIn size={18} />
+                                        <span>Entrar</span>
+                                    </Link>
+                                </li>
+                                <li>
+                                    <Link href="/register" className="flex items-center gap-3 px-5 py-3 text-gray-700 transition-colors hover:bg-gray-50 hover:text-orange-600" onClick={onClose} prefetch>
+                                        <UserPlus size={18} />
+                                        <span>Registrar</span>
+                                    </Link>
+                                </li>
+                            </ul>
+                        )}
+                    </div>
                 </nav>
             </div>
         </div>
@@ -546,7 +649,7 @@ const Header = () => {
             </header>
 
             <a
-                href="https://wa.me/258841234567"
+                href="https://wa.me/258871154336"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`fixed ${showScrollTop ? 'bottom-20' : 'bottom-4'} right-4 z-50 flex items-center justify-center rounded-full bg-green-500 p-3 text-white shadow-lg transition-all duration-300 hover:bg-green-600`}

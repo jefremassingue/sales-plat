@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4f0d6dbcc7eda0bf39965e4e580c3949",
+    "content-hash": "99e7d42f11eef8aa7cbb8327227d6b50",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -6658,6 +6658,72 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.11.0"
             },
             "time": "2022-06-03T18:03:27+00:00"
+        },
+        {
+            "name": "ycs77/inertia-laravel-ssr-head",
+            "version": "v2.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ycs77/inertia-laravel-ssr-head.git",
+                "reference": "4befb1a8e471a8dfb8d8573e6e32b677def989c8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ycs77/inertia-laravel-ssr-head/zipball/4befb1a8e471a8dfb8d8573e6e32b677def989c8",
+                "reference": "4befb1a8e471a8dfb8d8573e6e32b677def989c8",
+                "shasum": ""
+            },
+            "require": {
+                "inertiajs/inertia-laravel": ">=1.0.0",
+                "laravel/framework": ">=11.0",
+                "php": ">=8.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": ">=9.0",
+                "pestphp/pest": "^2.34",
+                "pestphp/pest-plugin-laravel": "^2.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Inertia\\SSRHead\\InertiaSSRHeadServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Inertia\\SSRHead\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Lucas Yang",
+                    "email": "yangchenshin77@gmail.com"
+                }
+            ],
+            "description": "Simple SSR Head for Inertia Laravel",
+            "homepage": "https://github.com/ycs77/inertia-laravel-ssr-head",
+            "keywords": [
+                "SSR",
+                "head",
+                "inertia",
+                "laravel",
+                "meta",
+                "metatags",
+                "open graph",
+                "opengraph",
+                "seo"
+            ],
+            "support": {
+                "issues": "https://github.com/ycs77/inertia-laravel-ssr-head/issues",
+                "source": "https://github.com/ycs77/inertia-laravel-ssr-head/tree/v2.0.0"
+            },
+            "time": "2024-08-15T13:54:23+00:00"
         }
     ],
     "packages-dev": [

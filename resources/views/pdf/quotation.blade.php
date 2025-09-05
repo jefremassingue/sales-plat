@@ -31,27 +31,38 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 75px;
+            height: 170px;
             /* Aumentado para acomodar dados bancários */
             font-size: 10px;
-            color: #fff !important;
+            color: #000 !important;
             z-index: 1000;
-            padding: 0;
-            border-top: 1px solid #f47d15;
+            padding: 4px 40px 4px 60px;
+            /* border-top: 1px solid #f47d15; */
         }
 
         .bank-details {
-            margin: 5px 0;
-            border-top: 1px dotted #e5e7eb;
-            padding-top: 5px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 9px;
+            margin: 3px 0;
+            font-size: 8px;
+            color: #fff;
         }
 
         .bank-details-title {
             font-weight: bold;
             color: #f47d15;
+            margin-bottom: 3px;
+            font-size: 9px;
+        }
+
+        .footer-info {
+            position: relative;
+            z-index: 1;
+            color: #fff;
+            font-size: 8px;
+        }
+
+        .footer-info p {
+            margin: 2px 0;
+            font-size: 8px;
         }
 
         .pagination {
@@ -83,6 +94,8 @@
             padding: 0;
             box-sizing: border-box;
             position: relative;
+            padding-bottom: 75px;
+
             /* padding: 340px 40px 80px 60px; */
         }
 
@@ -329,7 +342,7 @@
     </style>
 </head>
 
-<body style="padding: 340px 40px 60px 60px;">
+<body style="padding: 340px 40px 120px 60px;">
     <!-- Cabeçalho fixo para todas as páginas -->
     <div id="header">
 
@@ -352,6 +365,8 @@
             <div class="company-details">Tel: {{ $company['company_phone']->value ?? 'Telefone' }}</div>
             <div class="company-details">{{ $company['company_email']->value ?? 'Email' }}</div>
             <div class="company-details">NUIT: {{ $company['company_tax_number']->value ?? 'NUIT' }}</div>
+            <div class="company-details">Emitido por: {{ $quotation->user->name }}</div>
+
         </div>
 
         <div class="quotation-info">
@@ -368,20 +383,44 @@
         </div>
     </div>
 
+    
     <!-- Rodapé fixo para todas as páginas -->
     <div id="footer">
-        <div class="footer-text">
-            @php
-                $footerImagePath = !empty($company['footer_image']->value)
-                    ? public_path('storage/images/company/' . $company['footer_image']->value)
-                    : public_path('images/footer.png');
+        @php
+            $footerImagePath = !empty($company['footer_image']->value)
+                ? public_path('storage/images/company/' . $company['footer_image']->value)
+                : public_path('images/footer.png');
 
-                $footerImagePath = file_exists($footerImagePath)
-                    ? $footerImagePath
-                    : public_path('images/default-footer.png');
-            @endphp
+            $footerImagePath = file_exists($footerImagePath)
+                ? $footerImagePath
+                : public_path('images/default-footer.png');
+        @endphp
 
-            <img class="footer-bg-image" src="{{ $footerImagePath }}" alt="Footer">
+        <img class="footer-bg-image" src="{{ $footerImagePath }}" alt="Footer">
+
+        <div class="" style="width: 100%;">
+            <table style="width: 100%;">
+                <tr>
+                    <td>
+                        <br>
+                    </td>
+                    <td style="text-align: right; vertical-align: top;">
+                        <br>
+                        <!-- Informações do Footer -->
+                        <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">Documento gerado em
+                            {{ now()->format('d/m/Y H:i') }}</p>
+                        {{-- <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">
+                            {{ $company['company_name']->value ?? 'Matony Serviços' }} &copy; {{ date('Y') }}</p> --}}
+                        @if (!empty($company['footer_text']->value))
+                            <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">
+                                {!! $company['footer_text']->value !!}</p>
+                        @else
+                            <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">Obrigado pela
+                                preferência!</p>
+                        @endif
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 
@@ -470,58 +509,7 @@
                 <table style="width: 100%;">
                     <tr>
                         <td style="width: 50%; vertical-align: top;">
-                            <br>
-                            <br>
-                            <div class="bank-info">
-                                <div class="" style="font-weight: bold; font-size: 13px; margin-bottom: 8px">
-                                    Informação Bancária
-                                </div>
-                                <table style="width: auto; border-collapse: collapse;">
-                                    <tr>
-                                        <td style=" width: 30%;"><span
-                                                style="font-weight: bold; color: #313131;">Banco:</span></td>
-                                        <td style="padding-left: 16px">{{ $bank['bank_name']->value ?? 'BIM' }}</td>
-                                    </tr>
-                                    <tr>
 
-                                        <td style=" width: 30%;"><span style="font-weight: bold; color: #313131;">Número
-                                                De Conta:</span></td>
-                                        <td style="padding-left: 16px">
-                                            {{ $bank['account_number']->value ?? '1231881377' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style=""><span style="font-weight: bold; color: #313131;">NIB:</span>
-                                        </td>
-                                        <td style="padding-left: 16px" colspan="3">
-                                            {{ $bank['nib']->value ?? '0001 0000 01231881377 57' }}</td>
-                                    </tr>
-
-
-                                </table>
-                                <hr style="opacity: 0.3" />
-                                  <table style="width: auto; border-collapse: collapse;">
-                                    <tr>
-                                        <td style=" width: 30%;"><span
-                                                style="font-weight: bold; color: #313131;">Banco:</span></td>
-                                        <td style="padding-left: 16px">BCI</td>
-                                    </tr>
-                                    <tr>
-
-                                        <td style=" width: 30%;"><span style="font-weight: bold; color: #313131;">Número
-                                                De Conta:</span></td>
-                                        <td style="padding-left: 16px">
-                                            31610592910001</td>
-                                    </tr>
-                                    <tr>
-                                        <td style=""><span style="font-weight: bold; color: #313131;">NIB:</span>
-                                        </td>
-                                        <td style="padding-left: 16px" colspan="3">
-                                            0008 0000 16105929101 28</td>
-                                    </tr>
-
-
-                                </table>
-                            </div>
                         </td>
                         <td style="width: 50%; vertical-align: top;">
                             <div class="" style="text-align: right; float: right;">
@@ -546,7 +534,8 @@
                                         @if ($quotation->discount_amount > 0)
                                             <tr>
                                                 <td style="width: 50%; text-align: right;"><span
-                                                        style="font-weight: bold; color: #313131;">Desconto:</span></td>
+                                                        style="font-weight: bold; color: #313131;">Desconto:</span>
+                                                </td>
                                                 <td style="padding-left: 16px; text-align: right;">
                                                     @if ($currency)
                                                         {{ $currency->symbol }}
@@ -574,7 +563,8 @@
                                         <tr>
                                             <td
                                                 style="width: 50%; border-top: 1px solid #f47d15; padding-top: 5px; text-align: right;">
-                                                <span style="font-weight: bold; color: #f47d15;">Total:</span></td>
+                                                <span style="font-weight: bold; color: #f47d15;">Total:</span>
+                                            </td>
                                             <td
                                                 style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 5px; font-weight: bold; color: #f47d15; text-align: right;">
                                                 @if ($currency)
@@ -607,18 +597,6 @@
                     <div class="notes-content">{{ $quotation->terms }}</div>
                 </div>
             @endif
-
-            <div class="footer-text" style="position: relative; z-index: 1;">
-                <p style="margin: 5px 0;">Documento gerado em {{ now()->format('d/m/Y H:i') }}</p>
-                <p style="margin: 5px 0;">{{ $company['company_name']->value ?? 'Matony Serviços' }} &copy;
-                    {{ date('Y') }}</p>
-                @if (!empty($company['footer_text']->value))
-                    <p style="margin: 5px 0;">{!! $company['footer_text']->value !!}</p>
-                @else
-                    <p style="margin: 5px 0;">Obrigado pela preferência! Para mais informações, entre em contacto
-                        connosco.</p>
-                @endif
-            </div>
         </main>
 
     </div>

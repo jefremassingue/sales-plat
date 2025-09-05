@@ -22,7 +22,7 @@ class ProductController extends Controller
         $productsQuery = Product::query()
             ->where('active', true)
             ->whereHas('ecommerce_inventory')
-            ->with(['category', 'images', 'mainImage.versions', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions' ]);
+            ->with(['category', 'images', 'mainImage.versions', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions']);
 
         // Filtro inteligente: categorias principais buscam todas as subcategorias
         if ($request->has('categories') && !empty($request->categories)) {
@@ -66,7 +66,7 @@ class ProductController extends Controller
         }
 
         // Aplicar ordenação
-    $sortField = $request->input('sort', 'most_viewed');
+        $sortField = $request->input('sort', 'most_viewed');
         $sortOrder = $request->input('order', 'desc');
 
         switch ($sortField) {
@@ -80,7 +80,7 @@ class ProductController extends Controller
                 $productsQuery->orderBy('views', 'desc');
                 break;
             case 'most_popular':
-                $productsQuery->withCount(['quotationItems as quotation_count' => function($q) {}, 'saleItems as sale_count' => function($q) {}])
+                $productsQuery->withCount(['quotationItems as quotation_count' => function ($q) {}, 'saleItems as sale_count' => function ($q) {}])
                     ->orderByRaw('(quotation_count + sale_count) desc');
                 break;
             case 'newest':
@@ -98,38 +98,38 @@ class ProductController extends Controller
         // --- CATEGORIES WITH COUNTS FOR SIDEBAR ---
         $categories = Cache::remember('categories_with_counts', 3600, function () {
             return Category::with([
-                'subcategories' => function($query) {
+                'subcategories' => function ($query) {
                     $query->withCount([
-                        'products as products_count' => function($q) {
+                        'products as products_count' => function ($q) {
                             $q->where('active', true)->whereHas('ecommerce_inventory');
                         }
                     ])
-                    ->whereHas('products', function($q) {
-                        $q->where('active', true)->whereHas('ecommerce_inventory');
-                    });
+                        ->whereHas('products', function ($q) {
+                            $q->where('active', true)->whereHas('ecommerce_inventory');
+                        });
                 }
             ])
-            ->whereNull('parent_id')
-            ->whereHas('subcategories.products', function($q) {
-                $q->where('active', true)->whereHas('ecommerce_inventory');
-            })
-            ->get()
-            ->map(function ($cat) {
-                $subcategories = $cat->subcategories->map(function ($subcat) {
+                ->whereNull('parent_id')
+                ->whereHas('subcategories.products', function ($q) {
+                    $q->where('active', true)->whereHas('ecommerce_inventory');
+                })
+                ->get()
+                ->map(function ($cat) {
+                    $subcategories = $cat->subcategories->map(function ($subcat) {
+                        return [
+                            'id' => $subcat->id,
+                            'name' => $subcat->name,
+                            'count' => $subcat->products_count,
+                        ];
+                    });
+
                     return [
-                        'id' => $subcat->id,
-                        'name' => $subcat->name,
-                        'count' => $subcat->products_count,
+                        'id' => $cat->id,
+                        'name' => $cat->name,
+                        'count' => $subcategories->sum('count'),
+                        'subcategories' => $subcategories,
                     ];
                 });
-                
-                return [
-                    'id' => $cat->id,
-                    'name' => $cat->name,
-                    'count' => $subcategories->sum('count'),
-                    'subcategories' => $subcategories,
-                ];
-            });
         });
 
         // Usar Inertia com Deferred Props para carregamento mais eficiente
@@ -257,11 +257,35 @@ class ProductController extends Controller
                 ];
             });
 
-        // return $product;
+        $imageUrl = null;
+
+        if (!empty($product->mainImage)) {
+            $versions = $product->mainImage->versions ?? [];
+
+            foreach (['sm', 'md', 'lg'] as $size) {
+                foreach ($versions as $img) {
+                    if (($img->version ?? null) === $size) {
+                        $imageUrl = $img->url ?? null;
+                        break 2; // sai dos dois loops
+                    }
+                }
+            }
+
+            if (!$imageUrl && !empty($product->mainImage->url)) {
+                $imageUrl = $product->mainImage->url;
+            }
+        }
+
+        
         return Inertia::render('Site/Products/Details', [
             'product' => $product,
             'relatedProducts' => $relatedProducts,
-        ]);
+        ])
+            ->title($product->name)
+            ->description(str($product->description ?? '')->limit(150))
+            ->image($imageUrl ?? asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 
     /**

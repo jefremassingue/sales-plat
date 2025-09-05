@@ -24,11 +24,10 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 75px;
+            height: 170px;
             font-size: 10px;
-            color: #fff !important;
+            /* color: #fff !important; */
             z-index: 1000;
-            padding: 0;
             border-top: 1px solid #f47d15;
         }
 
@@ -45,7 +44,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            padding-bottom: 150px;
+            padding-bottom: 195px;
         }
 
         .container {
@@ -53,7 +52,8 @@
             padding: 0;
             box-sizing: border-box;
             position: relative;
-            padding-bottom: 50px;
+            padding-bottom: 85px;
+            /* padding-bottom: 50px; */
         }
 
         .header {
@@ -205,7 +205,7 @@
 
         .grid-table td {
             vertical-align: top;
-            padding: 0 10px;
+            padding: 10px 10px;
         }
 
         .left-column {
@@ -217,7 +217,9 @@
         }
 
         /* Evitar quebras de página indesejadas */
-        .bank-info, .payment-info, .summary-section {
+        .bank-info,
+        .payment-info,
+        .summary-section {
             page-break-inside: avoid;
             margin-bottom: 20px;
         }
@@ -261,6 +263,7 @@
             <div class="company-details">Tel: {{ $company['company_phone']->value ?? 'Telefone' }}</div>
             <div class="company-details">{{ $company['company_email']->value ?? 'Email' }}</div>
             <div class="company-details">NUIT: {{ $company['company_tax_number']->value ?? 'NUIT' }}</div>
+            <div class="company-details">Emitido por: {{ $sale->user->name }}</div>
         </div>
 
         <div class="sale-info">
@@ -292,13 +295,39 @@
             @endphp
 
             <img class="footer-bg-image" src="{{ $footerImagePath }}" alt="Footer">
+            <div class="" style="width: 97%;">
+                <table style="width: 97%;">
+                    <tr>
+                        <td>
+                            <br>
+                        </td>
+                        <td style="text-align: right; vertical-align: top;">
+                            <br>
+                            <!-- Informações do Footer -->
+                            <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">Documento
+                                gerado em
+                                {{ now()->format('d/m/Y H:i') }}</p>
+                            {{-- <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">
+                            {{ $company['company_name']->value ?? 'Matony Serviços' }} &copy; {{ date('Y') }}</p> --}}
+                            @if (!empty($company['footer_text']->value))
+                                <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">
+                                    {!! $company['footer_text']->value !!}</p>
+                            @else
+                                <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">Obrigado
+                                    pela
+                                    preferência!</p>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 
     <div class="container">
         <main class="main">
             @if ($sale->customer)
-                <div class="customer-info" style="width: 70%;">
+                <div class="customer-info" style="width: 70%; margin-top: -40px;">
                     <div class="section-title">CLIENTE</div>
                     <div class="customer-name">{{ $sale->customer->name }}</div>
                     @if ($sale->customer->address)
@@ -337,9 +366,10 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>
-                                <strong style="font-size: 10px;">{{ $item->name }}</strong>
+                                <strong style="font-size: 12px;">{{ $item->name }}</strong>
                             </td>
-                            <td>{{ number_format($item->quantity, 2) }} {{ $item->unit == 'unit' ? '' : $item->unit }}</td>
+                            <td>{{ number_format($item->quantity, 2) }} {{ $item->unit == 'unit' ? '' : $item->unit }}
+                            </td>
                             <td>
                                 @if ($item->currency)
                                     {{ $item->currency->symbol }}
@@ -381,52 +411,18 @@
                 <tr>
                     <td class="left-column">
                         <!-- Informações bancárias -->
-                        <div class="bank-info">
-                            <div style="font-weight: bold; font-size: 13px; margin-bottom: 8px">
-                                Informação Bancária
-                            </div>
-                            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
-                                <tr>
-                                    <td style="width: 30%;"><span style="font-weight: bold; color: #313131;">Banco:</span></td>
-                                    <td style="padding-left: 16px">{{ $bank['bank_name']->value ?? 'BIM' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><span style="font-weight: bold; color: #313131;">Número De Conta:</span></td>
-                                    <td style="padding-left: 16px">{{ $bank['account_number']->value ?? '1231881377' }}</td>
-                                </tr>
-                                <tr>
-                                    <td><span style="font-weight: bold; color: #313131;">NIB:</span></td>
-                                    <td style="padding-left: 16px">{{ $bank['nib']->value ?? '0001 0000 01231881377 57' }}</td>
-                                </tr>
-                            </table>
-                            
-                            <hr style="opacity: 0.3; margin: 10px 0;" />
-                            
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <tr>
-                                    <td style="width: 30%;"><span style="font-weight: bold; color: #313131;">Banco:</span></td>
-                                    <td style="padding-left: 16px">BCI</td>
-                                </tr>
-                                <tr>
-                                    <td><span style="font-weight: bold; color: #313131;">Número De Conta:</span></td>
-                                    <td style="padding-left: 16px">31610592910001</td>
-                                </tr>
-                                <tr>
-                                    <td><span style="font-weight: bold; color: #313131;">NIB:</span></td>
-                                    <td style="padding-left: 16px">0008 0000 16105929101 28</td>
-                                </tr>
-                            </table>
-                        </div>
                     </td>
 
                     <td class="right-column">
                         <!-- Resumo financeiro -->
                         <div class="summary-section">
                             <div class="section-title" style="text-align: right;">RESUMO</div>
-                            <div class="notes-content" style="background-color: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; padding: 15px; text-align: right;">
+                            <div class="notes-content"
+                                style="background-color: #f9fafb; border-radius: 4px; border: 1px solid #e5e7eb; padding: 15px; text-align: right;">
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <tr>
-                                        <td style="text-align: right; padding: 5px 0;"><span style="font-weight: bold; color: #313131;">Subtotal:</span></td>
+                                        <td style="text-align: right; padding: 5px 0;"><span
+                                                style="font-weight: bold; color: #313131;">Subtotal:</span></td>
                                         <td style="padding-left: 16px; text-align: right; padding: 5px 0;">
                                             @if ($sale->currency)
                                                 {{ $sale->currency->symbol }}
@@ -436,10 +432,11 @@
                                             @endif
                                         </td>
                                     </tr>
-                                    
+
                                     @if ($sale->discount_amount > 0)
                                         <tr>
-                                            <td style="text-align: right; padding: 5px 0;"><span style="font-weight: bold; color: #313131;">Desconto:</span></td>
+                                            <td style="text-align: right; padding: 5px 0;"><span
+                                                    style="font-weight: bold; color: #313131;">Desconto:</span></td>
                                             <td style="padding-left: 16px; text-align: right; padding: 5px 0;">
                                                 @if ($sale->currency)
                                                     {{ $sale->currency->symbol }}
@@ -450,9 +447,11 @@
                                             </td>
                                         </tr>
                                     @endif
-                                    
+
                                     <tr>
-                                        <td style="text-align: right; padding: 5px 0;"><span style="font-weight: bold; color: #313131;">IVA {{ $sale->include_tax ? '(incluído)' : '' }}:</span></td>
+                                        <td style="text-align: right; padding: 5px 0;"><span
+                                                style="font-weight: bold; color: #313131;">IVA
+                                                {{ $sale->include_tax ? '(incluído)' : '' }}:</span></td>
                                         <td style="padding-left: 16px; text-align: right; padding: 5px 0;">
                                             @if ($sale->currency)
                                                 {{ $sale->currency->symbol }}
@@ -462,10 +461,11 @@
                                             @endif
                                         </td>
                                     </tr>
-                                    
+
                                     @if ($sale->shipping_amount > 0)
                                         <tr>
-                                            <td style="text-align: right; padding: 5px 0;"><span style="font-weight: bold; color: #313131;">Transporte:</span></td>
+                                            <td style="text-align: right; padding: 5px 0;"><span
+                                                    style="font-weight: bold; color: #313131;">Transporte:</span></td>
                                             <td style="padding-left: 16px; text-align: right; padding: 5px 0;">
                                                 @if ($sale->currency)
                                                     {{ $sale->currency->symbol }}
@@ -476,12 +476,14 @@
                                             </td>
                                         </tr>
                                     @endif
-                                    
+
                                     <tr>
-                                        <td style="border-top: 1px solid #f47d15; padding-top: 10px; text-align: right;">
+                                        <td
+                                            style="border-top: 1px solid #f47d15; padding-top: 10px; text-align: right;">
                                             <span style="font-weight: bold; color: #f47d15;">Total:</span>
                                         </td>
-                                        <td style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 10px; font-weight: bold; color: #f47d15; text-align: right;">
+                                        <td
+                                            style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 10px; font-weight: bold; color: #f47d15; text-align: right;">
                                             @if ($sale->currency)
                                                 {{ $sale->currency->symbol }}
                                                 {{ number_format($sale->total, $sale->currency->decimal_places, $sale->currency->decimal_separator, $sale->currency->thousand_separator) }}
@@ -490,14 +492,16 @@
                                             @endif
                                         </td>
                                     </tr>
-                                    
+
                                     @if ($sale->amount_paid > 0 || $sale->amount_due > 0)
                                         <tr>
                                             <td colspan="2" style="height: 10px"></td>
                                         </tr>
                                         <tr>
-                                            <td style="text-align: right; padding: 5px 0;"><span style="font-weight: bold; color: #313131;">Valor Pago:</span></td>
-                                            <td style="padding-left: 16px; text-align: right; color: #16a34a; padding: 5px 0;">
+                                            <td style="text-align: right; padding: 5px 0;"><span
+                                                    style="font-weight: bold; color: #313131;">Valor Pago:</span></td>
+                                            <td
+                                                style="padding-left: 16px; text-align: right; color: #16a34a; padding: 5px 0;">
                                                 @if ($sale->currency)
                                                     {{ $sale->currency->symbol }}
                                                     {{ number_format($sale->amount_paid, $sale->currency->decimal_places, $sale->currency->decimal_separator, $sale->currency->thousand_separator) }}
@@ -507,10 +511,12 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td style="border-top: 1px solid #f47d15; padding-top: 10px; text-align: right;">
+                                            <td
+                                                style="border-top: 1px solid #f47d15; padding-top: 10px; text-align: right;">
                                                 <span style="font-weight: bold; color: #f47d15;">Valor em Dívida:</span>
                                             </td>
-                                            <td style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 10px; font-weight: bold; text-align: right; color: {{ $sale->amount_due > 0 ? '#dc2626' : '#16a34a' }};">
+                                            <td
+                                                style="padding-left: 16px; border-top: 1px solid #f47d15; padding-top: 10px; font-weight: bold; text-align: right; color: {{ $sale->amount_due > 0 ? '#dc2626' : '#16a34a' }};">
                                                 @if ($sale->currency)
                                                     {{ $sale->currency->symbol }}
                                                     {{ number_format($sale->amount_due, $sale->currency->decimal_places, $sale->currency->decimal_separator, $sale->currency->thousand_separator) }}
@@ -546,24 +552,30 @@
                                     <tbody>
                                         @foreach ($sale->payments as $paymentItem)
                                             <tr>
-                                                <td>{{ \Carbon\Carbon::parse($paymentItem->payment_date)->format('d/m/Y') }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($paymentItem->payment_date)->format('d/m/Y') }}
+                                                </td>
                                                 <td>
                                                     @switch($paymentItem->payment_method)
                                                         @case('cash')
                                                             Dinheiro
                                                         @break
+
                                                         @case('bank_transfer')
                                                             Transferência Bancária
                                                         @break
+
                                                         @case('mpesa')
                                                             M-Pesa
                                                         @break
+
                                                         @case('credit_card')
                                                             Cartão de Crédito
                                                         @break
+
                                                         @case('cheque')
                                                             Cheque
                                                         @break
+
                                                         @default
                                                             {{ $paymentItem->payment_method }}
                                                     @endswitch
@@ -601,15 +613,6 @@
                 </div>
             @endif
 
-            <div class="footer-text" style="position: relative; z-index: 1;">
-                <p style="margin: 5px 0;">Documento gerado em {{ now()->format('d/m/Y H:i') }}</p>
-                <p style="margin: 5px 0;">{{ $company['company_name']->value ?? 'Matony Serviços' }} &copy; {{ date('Y') }}</p>
-                @if (!empty($company['footer_text']->value))
-                    <p style="margin: 5px 0;">{!! $company['footer_text']->value !!}</p>
-                @else
-                    <p style="margin: 5px 0;">Obrigado pela preferência! Para mais informações, entre em contacto connosco.</p>
-                @endif
-            </div>
         </main>
     </div>
 

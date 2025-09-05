@@ -121,7 +121,7 @@ export function PaymentDialog({ open, onOpenChange, sale, paymentMethods }: Paym
                                 <FormItem>
                                     <FormLabel>Valor</FormLabel>
                                     <FormControl>
-                                        <Input {...field} type="number" step="0.01" min="0.01" max={sale.amount_due + 1} />
+                                        <Input {...field} type="number" step="0.01" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

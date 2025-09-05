@@ -19,7 +19,7 @@ class BlogController extends Controller
         $categories = BlogCategory::orderBy('name')->get();
 
         // Iniciar a query
-        $query = Blog::with(['category', 'image', 'user'])
+        $query = Blog::with(['category', 'image.versions', 'user'])
             ->published();
 
         // Aplicar filtro por categoria se fornecido
@@ -58,7 +58,7 @@ class BlogController extends Controller
     public function show(Request $request, $slug)
     {
         // Buscar o artigo pelo slug
-        $blog = Blog::with(['category', 'image', 'user'])
+        $blog = Blog::with(['category', 'image.versions', 'user'])
             ->where('slug', $slug)
             ->published()
             ->firstOrFail();
@@ -75,10 +75,36 @@ class BlogController extends Controller
         // Incrementar contador de visualizações
         // $blog->increment('views');
 
-        // Retornar a view com os dados
+        $imageUrl = null;
+
+        if (!empty($blog->image)) {
+            $versions = $blog->image->versions ?? [];
+
+            foreach (['sm', 'md', 'lg'] as $size) {
+                foreach ($versions as $img) {
+                    if (($img->version ?? null) === $size) {
+                        $imageUrl = $img->url ?? null;
+                        break 2;
+                    }
+                }
+            }
+
+            if (!$imageUrl && !empty($blog->image->url)) {
+                $imageUrl = $blog->image->url;
+            }
+        }
+
+        // fallback final
+        $imageUrl = $imageUrl ?? '/og-image.png';
+
         return Inertia::render('Site/Blog/Show', [
             'blog' => $blog,
             'relatedPosts' => $relatedPosts,
-        ]);
+        ])
+            ->title($blog->title)
+            ->description($blog->excerpt ?: str($blog->content)->limit(140))
+            ->image($imageUrl ?? asset('og.png'))
+            ->ogMeta()
+            ->twitterLargeCard();
     }
 }

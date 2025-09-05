@@ -31,12 +31,11 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 75px;
+            height: 170px;
             /* Aumentado para acomodar dados bancários */
             font-size: 10px;
-            color: #fff !important;
             z-index: 1000;
-            padding: 0;
+            /* padding: 0; */
             border-top: 1px solid #f47d15;
         }
 
@@ -84,7 +83,7 @@
             box-sizing: border-box;
             position: relative;
             /* padding: 340px 40px 80px 60px; */
-            padding-bottom: 50px;
+            padding-bottom: 70px;
         }
 
         .header {
@@ -375,6 +374,7 @@
             <div class="company-details">Tel: {{ $company['company_phone']->value ?? 'Telefone' }}</div>
             <div class="company-details">{{ $company['company_email']->value ?? 'Email' }}</div>
             <div class="company-details">NUIT: {{ $company['company_tax_number']->value ?? 'NUIT' }}</div>
+            <div class="company-details">Emitido por: {{ $sale->user->name }}</div>
         </div>
 
         <div class="sale-info">
@@ -414,13 +414,39 @@
             @endphp
 
             <img class="footer-bg-image" src="{{ $footerImagePath }}" alt="Footer">
+
+
+        <div class="" style="width: 97%;">
+            <table style="width: 97%;">
+                <tr>
+                    <td>
+                        <br>
+                    </td>
+                    <td style="text-align: right; vertical-align: top;">
+                        <br>
+                        <!-- Informações do Footer -->
+                        <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">Documento gerado em
+                            {{ now()->format('d/m/Y H:i') }}</p>
+                        {{-- <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">
+                            {{ $company['company_name']->value ?? 'Matony Serviços' }} &copy; {{ date('Y') }}</p> --}}
+                        @if (!empty($company['footer_text']->value))
+                            <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">
+                                {!! $company['footer_text']->value !!}</p>
+                        @else
+                            <p style=" margin-bottom: 0px !important; padding-bottom: 0px !important;">Obrigado pela
+                                preferência!</p>
+                        @endif
+                    </td>
+                </tr>
+            </table>
+        </div>
         </div>
     </div>
 
     <div class="container">
         <main class="main">
             @if ($sale->customer)
-                <div class="customer-info" style="width: 70%; margin-top: -40px;">
+                <div class="customer-info" style="width: 70%; margin-top: -20px;">
                     <div class="section-title">CLIENTE</div>
                     <div class="customer-name">{{ $sale->customer->name }}</div>
                     @if ($sale->customer->address)
@@ -461,7 +487,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>
-                                <strong style="font-size: 10px;">{{ $item->name }}</strong>
+                                <strong style="font-size: 11px;">{{ $item->name }}</strong>
 
                             </td>
                             <td>{{ number_format($item->quantity, 2) }} {{ $item->unit == 'unit' ? '' : $item->unit }}
@@ -504,192 +530,9 @@
             <div class="">
                 <table style="width: 100%;">
                     <tr>
+                        <td></td>
                         <td style="width: 50%; vertical-align: top;">
-                            <br>
-                            <br>
-                            <!-- Só mostrar informações bancárias para faturas -->
-                            @if ($documentTitle === 'FATURA')
-                                <div class="bank-info">
-                                    <div class="" style="font-weight: bold; font-size: 13px; margin-bottom: 8px">
-                                        Informação Bancária
-                                    </div>
-                                    <table style="width: auto; border-collapse: collapse;">
-                                        <tr>
-                                            <td style=" width: 30%;"><span
-                                                    style="font-weight: bold; color: #313131;">Banco:</span></td>
-                                            <td style="padding-left: 16px">{{ $bank['bank_name']->value ?? 'BIM' }}
-                                            </td>
-                                        </tr>
-                                        <tr>
-
-                                            <td style=" width: 30%;"><span
-                                                    style="font-weight: bold; color: #313131;">Número
-                                                    De Conta:</span></td>
-                                            <td style="padding-left: 16px">
-                                                {{ $bank['account_number']->value ?? '1231881377' }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style=""><span
-                                                    style="font-weight: bold; color: #313131;">NIB:</span>
-                                            </td>
-                                            <td style="padding-left: 16px" colspan="3">
-                                                {{ $bank['nib']->value ?? '0001 0000 01231881377 57' }}</td>
-                                        </tr>
-                                    </table>
-
-                                    <hr style="opacity: 0.3" />
-                                    <table style="width: auto; border-collapse: collapse;">
-                                        <tr>
-                                            <td style=" width: 30%;"><span
-                                                    style="font-weight: bold; color: #313131;">Banco:</span></td>
-                                            <td style="padding-left: 16px">BCI</td>
-                                        </tr>
-                                        <tr>
-
-                                            <td style=" width: 30%;"><span
-                                                    style="font-weight: bold; color: #313131;">Número
-                                                    De Conta:</span></td>
-                                            <td style="padding-left: 16px">
-                                                31610592910001</td>
-                                        </tr>
-                                        <tr>
-                                            <td style=""><span
-                                                    style="font-weight: bold; color: #313131;">NIB:</span>
-                                            </td>
-                                            <td style="padding-left: 16px" colspan="3">
-                                                0008 0000 16105929101 28</td>
-                                        </tr>
-
-
-                                    </table>
-                                </div>
-                            @endif
-
-                            <!-- Informações de pagamento -->
-                            @if ($documentTitle === 'FATURA' && $sale->payments && count($sale->payments) > 0)
-                                <!-- Para faturas, mostrar histórico de pagamentos -->
-                                <div class="payment-info">
-                                    <div
-                                        style="font-weight: bold; font-size: 13px; margin-bottom: 8px; margin-top: 20px">
-                                        Histórico de Pagamentos
-                                    </div>
-                                    <table class="payment-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Data</th>
-                                                <th>Método</th>
-                                                <th>Referência</th>
-                                                <th style="text-align: right">Valor</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($sale->payments as $paymentItem)
-                                                <tr>
-                                                    <td>{{ \Carbon\Carbon::parse($paymentItem->payment_date)->format('d/m/Y') }}
-                                                    </td>
-                                                    <td>
-                                                        @switch($paymentItem->payment_method)
-                                                            @case('cash')
-                                                                Dinheiro
-                                                            @break
-
-                                                            @case('bank_transfer')
-                                                                Transferência Bancária
-                                                            @break
-
-                                                            @case('mpesa')
-                                                                M-Pesa
-                                                            @break
-
-                                                            @case('credit_card')
-                                                                Cartão de Crédito
-                                                            @break
-
-                                                            @case('cheque')
-                                                                Cheque
-                                                            @break
-
-                                                            @default
-                                                                {{ $paymentItem->payment_method }}
-                                                        @endswitch
-                                                    </td>
-                                                    <td>{{ $paymentItem->reference ?? '-' }}</td>
-                                                    <td style="text-align: right">
-                                                        @if ($sale->currency)
-                                                            {{ $sale->currency->symbol }}
-                                                            {{ number_format($paymentItem->amount, $sale->currency->decimal_places, $sale->currency->decimal_separator, $sale->currency->thousand_separator) }}
-                                                        @else
-                                                            {{ number_format($paymentItem->amount, 2, ',', '.') }} MT
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @elseif ($documentTitle === 'RECIBO' && isset($payment))
-                                <!-- Para recibos de pagamento específico, mostrar apenas esse pagamento -->
-                                <div class="payment-info">
-                                    <div
-                                        style="font-weight: bold; font-size: 13px; margin-bottom: 8px; margin-top: 20px">
-                                        Detalhes do Pagamento
-                                    </div>
-                                    <table class="payment-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Data</th>
-                                                <th>Método</th>
-                                                <th>Referência</th>
-                                                <th style="text-align: right">Valor</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}
-                                                </td>
-                                                <td>
-                                                    @switch($payment->payment_method)
-                                                        @case('cash')
-                                                            Dinheiro
-                                                        @break
-
-                                                        @case('bank_transfer')
-                                                            Transferência Bancária
-                                                        @break
-
-                                                        @case('mpesa')
-                                                            M-Pesa
-                                                        @break
-
-                                                        @case('credit_card')
-                                                            Cartão de Crédito
-                                                        @break
-
-                                                        @case('cheque')
-                                                            Cheque
-                                                        @break
-
-                                                        @default
-                                                            {{ $payment->payment_method }}
-                                                    @endswitch
-                                                </td>
-                                                <td>{{ $payment->reference ?? '-' }}</td>
-                                                <td style="text-align: right">
-                                                    @if ($sale->currency)
-                                                        {{ $sale->currency->symbol }}
-                                                        {{ number_format($payment->amount, $sale->currency->decimal_places, $sale->currency->decimal_separator, $sale->currency->thousand_separator) }}
-                                                    @else
-                                                        {{ number_format($payment->amount, 2, ',', '.') }} MT
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            @endif
-                        </td>
-                        <td style="width: 50%; vertical-align: top;">
-                            <div class="" style="text-align: right; float: right;">
+                            <div class="" style="text-align: right;">
                                 <div class="section-title" style="text-align: right;">
                                     RESUMO
                                 </div>
@@ -837,7 +680,136 @@
                             </div>
                         </td>
                     </tr>
+
+                    <tr>
+                        <div>
+                            <!-- Informações de pagamento -->
+                            @if ($documentTitle === 'FATURA' && $sale->payments && count($sale->payments) > 0)
+                                <!-- Para faturas, mostrar histórico de pagamentos -->
+                                <div class="payment-info">
+                                    <div
+                                        style="font-weight: bold; font-size: 13px; margin-bottom: 8px; margin-top: 20px">
+                                        Histórico de Pagamentos
+                                    </div>
+                                    <table class="payment-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Método</th>
+                                                <th>Referência</th>
+                                                <th style="text-align: right">Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($sale->payments as $paymentItem)
+                                                <tr>
+                                                    <td>{{ \Carbon\Carbon::parse($paymentItem->payment_date)->format('d/m/Y') }}
+                                                    </td>
+                                                    <td>
+                                                        @switch($paymentItem->payment_method)
+                                                            @case('cash')
+                                                                Dinheiro
+                                                            @break
+
+                                                            @case('bank_transfer')
+                                                                Transferência Bancária
+                                                            @break
+
+                                                            @case('mpesa')
+                                                                M-Pesa
+                                                            @break
+
+                                                            @case('credit_card')
+                                                                Cartão de Crédito
+                                                            @break
+
+                                                            @case('cheque')
+                                                                Cheque
+                                                            @break
+
+                                                            @default
+                                                                {{ $paymentItem->payment_method }}
+                                                        @endswitch
+                                                    </td>
+                                                    <td>{{ $paymentItem->reference ?? '-' }}</td>
+                                                    <td style="text-align: right">
+                                                        @if ($sale->currency)
+                                                            {{ $sale->currency->symbol }}
+                                                            {{ number_format($paymentItem->amount, $sale->currency->decimal_places, $sale->currency->decimal_separator, $sale->currency->thousand_separator) }}
+                                                        @else
+                                                            {{ number_format($paymentItem->amount, 2, ',', '.') }} MT
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @elseif ($documentTitle === 'RECIBO' && isset($payment))
+                                <!-- Para recibos de pagamento específico, mostrar apenas esse pagamento -->
+                                <div class="payment-info">
+                                    <div
+                                        style="font-weight: bold; font-size: 13px; margin-bottom: 8px; margin-top: 20px">
+                                        Detalhes do Pagamento
+                                    </div>
+                                    <table class="payment-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Método</th>
+                                                <th>Referência</th>
+                                                <th style="text-align: right">Valor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>{{ \Carbon\Carbon::parse($payment->payment_date)->format('d/m/Y') }}
+                                                </td>
+                                                <td>
+                                                    @switch($payment->payment_method)
+                                                        @case('cash')
+                                                            Dinheiro
+                                                        @break
+
+                                                        @case('bank_transfer')
+                                                            Transferência Bancária
+                                                        @break
+
+                                                        @case('mpesa')
+                                                            M-Pesa
+                                                        @break
+
+                                                        @case('credit_card')
+                                                            Cartão de Crédito
+                                                        @break
+
+                                                        @case('cheque')
+                                                            Cheque
+                                                        @break
+
+                                                        @default
+                                                            {{ $payment->payment_method }}
+                                                    @endswitch
+                                                </td>
+                                                <td>{{ $payment->reference ?? '-' }}</td>
+                                                <td style="text-align: right">
+                                                    @if ($sale->currency)
+                                                        {{ $sale->currency->symbol }}
+                                                        {{ number_format($payment->amount, $sale->currency->decimal_places, $sale->currency->decimal_separator, $sale->currency->thousand_separator) }}
+                                                    @else
+                                                        {{ number_format($payment->amount, 2, ',', '.') }} MT
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+                        </div>
+                    </tr>
                 </table>
+
+                   
             </div>
             <br>
 
@@ -884,18 +856,6 @@
                 </div>
             @endif
 
-
-            <div class="footer-text" style="position: relative; z-index: 1;">
-                <p style="margin: 5px 0;">Documento gerado em {{ now()->format('d/m/Y H:i') }}</p>
-                <p style="margin: 5px 0;">{{ $company['company_name']->value ?? 'Matony Serviços' }} &copy;
-                    {{ date('Y') }}</p>
-                @if (!empty($company['footer_text']->value))
-                    <p style="margin: 5px 0;">{!! $company['footer_text']->value !!}</p>
-                @else
-                    <p style="margin: 5px 0;">Obrigado pela preferência! Para mais informações, entre em contacto
-                        connosco.</p>
-                @endif
-            </div>
         </main>
     </div>
 

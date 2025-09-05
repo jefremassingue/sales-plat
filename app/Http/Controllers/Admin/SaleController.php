@@ -690,7 +690,7 @@ class SaleController extends Controller implements HasMiddleware
         // dd('ddf');
         try {
             $validator = Validator::make($request->all(), [
-                'amount' => 'required|numeric|min:0.01|max:' . $sale->amount_due,
+                'amount' => 'required|numeric|min:0|max:' . $sale->amount_due,
                 'payment_date' => 'required|date',
                 'payment_method' => 'required|string',
                 'reference' => 'nullable|string|max:255',
