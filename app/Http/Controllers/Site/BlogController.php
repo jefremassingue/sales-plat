@@ -51,17 +51,17 @@ class BlogController extends Controller
             'filters' => $request->only(['search', 'category_id']),
         ]);
 
-        $title = 'Blog da Matony - Novidades e Dicas';
+        $title = 'Blog - Novidades e Dicas';
         $description = 'Acompanhe nosso blog para ficar por dentro das últimas novidades, dicas e tendências do setor de construção e equipamentos industriais.';
 
         if ($request->filled('search')) {
             $searchTerm = e($request->search);
-            $title = "Busca por \"{$searchTerm}\" no Blog - Matony";
+            $title = "Busca por \"{$searchTerm}\" no Blog - Matony Serviços";
             $description = "Resultados da busca por \"{$searchTerm}\" em nosso blog. Encontre artigos e dicas sobre o que você procura.";
         } elseif ($request->filled('category_id') && $request->category_id !== 'all') {
             $category = $categories->firstWhere('id', $request->category_id);
             if ($category) {
-                $title = "Artigos sobre {$category->name} - Blog da Matony";
+                $title = "Artigos sobre {$category->name} - Blog da Matony Serviços";
                 $description = "Explore nossos artigos na categoria {$category->name} e aprofunde seus conhecimentos.";
             }
         }

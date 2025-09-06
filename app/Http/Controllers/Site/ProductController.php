@@ -181,21 +181,22 @@ class ProductController extends Controller
             'categories' => $categories,
         ]);
 
-        $title = 'Nossos Produtos - Matony';
+        $title = 'Nossos Produtos';
         $description = 'Explore nossa ampla gama de produtos de alta qualidade. Encontre tudo o que precisa, desde equipamentos industriais a materiais de construção na Matony.';
 
         if ($request->filled('search')) {
             $searchTerm = e($request->search);
-            $title = "Busca por \"{$searchTerm}\" - Matony";
-            $description = "Resultados da busca por \"{$searchTerm}\". Encontre os melhores produtos e ofertas na Matony.";
-        } elseif ($request->filled('categories')) {
-            $categoryIds = is_array($request->categories) ? $request->categories : [$request->categories];
-            $categoryNames = Category::whereIn('id', $categoryIds)->pluck('name')->join(', ');
-            if ($categoryNames) {
-                $title = "Produtos em {$categoryNames} - Matony";
-                $description = "Confira nossos produtos na(s) categoria(s) {$categoryNames}. Qualidade e variedade é na Matony.";
-            }
-        }
+            $title = "Busca por \"{$searchTerm}\"";
+            $description = "Resultados da busca por \"{$searchTerm}\". Encontre os melhores produtos e ofertas.";
+        } 
+        // elseif ($request->filled('categories')) {
+        //     $categoryIds = is_array($request->categories) ? $request->categories : [$request->categories];
+        //     $categoryNames = Category::whereIn('id', $categoryIds)->pluck('name')->join(', ');
+        //     if ($categoryNames) {
+        //         $title = "Produtos em {$categoryNames}";
+        //         $description = "Confira nossos produtos na(s) categoria(s) {$categoryNames}. Qualidade e variedade é na Matony.";
+        //     }
+        // }
 
         return $response->title($title)
             ->description($description, 160)

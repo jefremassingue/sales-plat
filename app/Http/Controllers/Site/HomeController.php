@@ -197,8 +197,8 @@ class HomeController extends Controller
             'heroSlides' => $heroSlides,
         ]);
 
-        $title = 'Matony - Soluções em Equipamentos e Materiais de Construção';
-        $description = 'Encontre na Matony uma vasta gama de equipamentos, materiais de construção e soluções para sua obra ou indústria. Qualidade, variedade e os melhores preços.';
+        $title = 'Protegendo quem constrói o futuro';
+        $description = 'A Matony Serviços é uma empresa moçambicana especializada na comercialização de Equipamentos de Protecção Individual (EPIs), consultoria e formação em segurança no trabalho. Oferecemos uma ampla gama de produtos de alta qualidade para garantir a segurança e o bem-estar dos trabalhadores em diversos setores, incluindo construção civil, indústria, mineração e agricultura.';
 
         return $response->title($title)
             ->description($description, 160)
@@ -211,8 +211,8 @@ class HomeController extends Controller
     {
         $response = Inertia::render('Site/About');
 
-        $title = 'Sobre Nós - Conheça a Matony';
-        $description = 'Saiba mais sobre a história, missão e valores da Matony. Somos comprometidos em oferecer as melhores soluções e atendimento para nossos clientes em todo o país.';
+        $title = 'Sobre Nós - Conheça a Matony Serviços';
+        $description = 'Saiba mais sobre a história, missão e valores da Matony Serviços. Somos comprometidos em oferecer as melhores soluções e atendimento para nossos clientes em todo o país.';
 
         return $response->title($title)
             ->description($description, 160)
