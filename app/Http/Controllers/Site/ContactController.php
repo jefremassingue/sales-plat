@@ -21,7 +21,7 @@ class ContactController extends Controller
             // Você pode passar dados adicionais aqui se necessário
         ]);
 
-        $title = 'Contacto - Fale Conosco';
+        $title = 'Contacto - Matony Serviços';
         $description = 'Entre em contato com a Matony Serviços. Estamos prontos para atender suas dúvidas, solicitações de orçamento ou fornecer suporte. Envie sua mensagem ou ligue para nós.';
 
         return $response->title($title)

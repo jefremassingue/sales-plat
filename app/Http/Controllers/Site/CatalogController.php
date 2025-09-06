@@ -18,7 +18,7 @@ class CatalogController extends Controller
             'catalogs' => $catalogs,
         ]);
 
-        $title = 'Catálogos de Produtos';
+        $title = 'Catálogos de Produtos - Matony Serviços';
         $description = 'Baixe nossos catálogos e confira a linha completa de produtos e soluções que a Matony Serviços oferece.';
 
         return $response->title($title)

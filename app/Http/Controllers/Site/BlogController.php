@@ -51,7 +51,7 @@ class BlogController extends Controller
             'filters' => $request->only(['search', 'category_id']),
         ]);
 
-        $title = 'Blog - Novidades e Dicas';
+        $title = 'Blog - Novidades e Dicas - Matony Serviços';
         $description = 'Acompanhe nosso blog para ficar por dentro das últimas novidades, dicas e tendências do setor de construção e equipamentos industriais.';
 
         if ($request->filled('search')) {

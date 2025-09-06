@@ -197,7 +197,7 @@ class HomeController extends Controller
             'heroSlides' => $heroSlides,
         ]);
 
-        $title = 'Protegendo quem constrói o futuro';
+        $title = 'Protegendo quem constrói o futuro - Matony Serviços';
         $description = 'A Matony Serviços é uma empresa moçambicana especializada na comercialização de Equipamentos de Protecção Individual (EPIs), consultoria e formação em segurança no trabalho. Oferecemos uma ampla gama de produtos de alta qualidade para garantir a segurança e o bem-estar dos trabalhadores em diversos setores, incluindo construção civil, indústria, mineração e agricultura.';
 
         return $response->title($title)
