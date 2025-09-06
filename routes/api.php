@@ -35,3 +35,5 @@ Route::post('/blogs/file', [BlogController::class, 'storeWithFile']);
 Route::post('/blogs/url', [BlogController::class, 'storeWithUrl']);
 Route::post('/blogs/{id}', [BlogController::class, 'update']);
 Route::delete('/blogs/{id}', [BlogController::class, 'destroy']);
+
+require __DIR__.'/api/admin.php';
