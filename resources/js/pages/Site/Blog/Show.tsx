@@ -126,7 +126,7 @@ export default function BlogShowPage() {
                         {blog.image && (
                             <div className="mb-8">
                                 <img
-                                    src={blog.image?.versions?.find((image) => image.version === 'lg')?.url || blog.image?.url}
+                                    src={blog.image?.versions?.find((image) => image.version === 'lg')?.url  || blog.image?.versions?.find((image) => image.version === 'md')?.url || blog.image?.url}
                                     alt={blog.title}
                                     className="h-auto max-h-[500px] w-full rounded-xl object-cover shadow-md"
                                 />

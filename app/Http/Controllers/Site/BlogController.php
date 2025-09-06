@@ -85,7 +85,7 @@ class BlogController extends Controller
             ->firstOrFail();
 
         // Buscar artigos relacionados (da mesma categoria)
-        $relatedPosts = Blog::with(['category', 'image', 'user'])
+        $relatedPosts = Blog::with(['category', 'image.versions', 'user'])
             ->where('blog_category_id', $blog->blog_category_id)
             ->where('id', '!=', $blog->id) // Excluir o artigo atual
             ->published()

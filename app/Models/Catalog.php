@@ -43,7 +43,7 @@ class Catalog extends Model
     public function getCoverUrlAttribute()
     {
         if ($this->cover) {
-            return url('files/' . $this->cover);
+            return asset('files/' . $this->cover);
         }
 
         return null;
@@ -52,7 +52,7 @@ class Catalog extends Model
     public function getFileUrlAttribute()
     {
         if ($this->file) {
-            return url('files/' . $this->file);
+            return asset('files/' . $this->file);
         }
 
         return null;

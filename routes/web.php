@@ -49,3 +49,5 @@ Route::get('/termos', function () {
 Route::get('/privacidade', function () {
     return Inertia::render('Site/policies');
 })->name('privacy');
+
+Route::get('/sitemap.xml', [\App\Http\Controllers\Site\SitemapController::class, 'index']);

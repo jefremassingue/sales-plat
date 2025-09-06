@@ -546,7 +546,7 @@
                 <!-- Logo e Redes Sociais -->
                 <div>
                     <a href="{{ url('/') }}" class="footer-logo">
-                        <img src="/gg.png" alt="" class='w-64' />
+                        <img src="/logo.png" alt="" style="width: 264px" />
 
                     </a>
                     <p class="footer-description">

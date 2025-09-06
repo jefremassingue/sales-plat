@@ -37,7 +37,7 @@ class Image extends Model
     }
     public function getUrlAttribute()
     {
-        return url('files/' . $this->path);
+        return asset('files/' . $this->path);
     }
     public function typeable()
     {
