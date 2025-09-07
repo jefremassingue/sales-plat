@@ -65,7 +65,7 @@ class Product extends Model
         static::creating(function ($product) {
             if (empty($product->slug)) {
                 $slugBase = Str::slug($product->name);
-                if(Product::where('slug', $slugBase)->exists()) {
+                if (Product::where('slug', $slugBase)->exists()) {
                     $latestSlug = Product::where('slug', 'LIKE', $slugBase . '%')
                         ->orderByDesc('slug')
                         ->value('slug');
@@ -250,5 +250,112 @@ class Product extends Model
     public function saleItems()
     {
         return $this->hasMany(SaleItem::class);
+    }
+
+    /**
+     * Busca full-text usando MySQL MATCH AGAINST
+     * 
+     * @param string $search
+     * @param string $mode - IN BOOLEAN MODE, IN NATURAL LANGUAGE MODE, WITH QUERY EXPANSION
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function fullTextSearch($search, $mode = 'IN BOOLEAN MODE')
+    {
+        // Limpar e preparar o termo de busca
+        $search = trim($search);
+
+        if (empty($search)) {
+            return static::query();
+        }
+
+        // Escapar caracteres especiais para MySQL FULLTEXT
+        $escapedSearch = str_replace(['@', '+', '-', '>', '<', '(', ')', '~', '*', '"'], '', $search);
+
+        // Para boolean mode, podemos adicionar wildcards
+        if ($mode === 'IN BOOLEAN MODE') {
+            $searchTerms = explode(' ', $escapedSearch);
+            $booleanSearch = '+' . implode('* +', $searchTerms) . '*';
+        } else {
+            $booleanSearch = $escapedSearch;
+        }
+
+        return static::where(function ($query) use ($booleanSearch, $mode, $search) {
+            // Busca full-text nos campos do produto principal
+            $query->whereRaw(
+                "MATCH(name, description, technical_details, features, sku) AGAINST(? {$mode})",
+                [$booleanSearch]
+            )
+                ->orWhereHas('variants', function ($variantQuery) use ($search) {
+                    $searchTerms = explode(' ', $search);
+                    foreach ($searchTerms as $term) {
+                        $searchTerms2 = explode('-', $term);
+                        $variantQuery->orWhere(function ($q) use ($searchTerms2) {
+                            foreach ($searchTerms2 as $term2) {
+                                $q->where('sku', 'like', "%{$term2}%")
+                                    ->orWhere('barcode', 'like', "%{$term2}%");
+                            }
+                        });
+                    }
+                })
+            ;
+        })->orderByRaw(
+            "MATCH(name, description, technical_details, features, sku) AGAINST(? {$mode}) DESC",
+            [$booleanSearch]
+        );
+    }
+
+    /**
+     * Busca full-text com relevância para produtos ativos
+     * 
+     * @param string $search
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeFullTextSearchActive($query, $search)
+    {
+        return $this->fullTextSearch($search)
+            ->where('active', true);
+    }
+
+    /**
+     * Busca combinada: full-text + LIKE como fallback
+     * 
+     * @param string $search
+     * @param bool $ecommerceOnly - Se deve filtrar apenas produtos para e-commerce
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function smartSearch($search, $ecommerceOnly = false)
+    {
+        $search = trim($search);
+
+        if (empty($search)) {
+            $query = static::query();
+            if ($ecommerceOnly) {
+                $query->where('active', true)->whereHas('ecommerce_inventory');
+            }
+            return $query;
+        }
+
+        // Usar full-text search se o termo for longo o suficiente (≥3 caracteres)
+        if (strlen($search) >= 3) {
+            $query = static::fullTextSearch($search);
+        } else {
+            // Para termos curtos, usar LIKE tradicional incluindo variantes
+            $query = static::where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhereHas('variants', function ($variantQuery) use ($search) {
+                        $variantQuery->where('sku', 'like', "%{$search}%")
+                            ->orWhere('barcode', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Aplicar filtros de e-commerce se solicitado
+        if ($ecommerceOnly) {
+            $query->where('active', true)->whereHas('ecommerce_inventory');
+        }
+
+        return $query;
     }
 }

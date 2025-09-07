@@ -18,10 +18,10 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         // cache()->clear();
-        // Preparar a consulta base
-        $productsQuery = Product::query()
-            ->where('active', true)
-            ->whereHas('ecommerce_inventory')
+
+        // Preparar a consulta base usando busca inteligente
+        $search = $request->input('search');
+        $productsQuery = Product::smartSearch($search, true) // true = apenas produtos para e-commerce
             ->with(['category', 'images', 'mainImage.versions', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions']);
 
         // Filtro inteligente: categorias principais buscam todas as subcategorias
@@ -47,51 +47,46 @@ class ProductController extends Controller
             $productsQuery->whereIn('brand_id', $brandIds);
         }
 
-        // if ($request->has('price_min') && is_numeric($request->price_min)) {
-        //     $productsQuery->where('price', '>=', $request->price_min);
-        // }
-
-        // if ($request->has('price_max') && is_numeric($request->price_max)) {
-        //     $productsQuery->where('price', '<=', $request->price_max);
-        // }
-
-        if ($request->has('search') && !empty($request->search)) {
-            $search = $request->search;
-            $productsQuery->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhereHas('variants', fn($q) => $q->where('sku', 'like', "%{$search}%"));
-            });
-        }
-
         // Aplicar ordenação
         $sortField = $request->input('sort', 'most_viewed');
         $sortOrder = $request->input('order', 'desc');
+        $hasSearch = !empty($search) && strlen(trim($search)) >= 3;
 
-        switch ($sortField) {
-            case 'price_asc':
-                $productsQuery->orderBy('price', 'asc');
-                break;
-            case 'price_desc':
-                $productsQuery->orderBy('price', 'desc');
-                break;
-            case 'most_viewed':
-                $productsQuery->orderBy('views', 'desc');
-                break;
-            case 'most_popular':
-                $productsQuery->withCount(['quotationItems as quotation_count' => function ($q) {}, 'saleItems as sale_count' => function ($q) {}])
-                    ->orderByRaw('(quotation_count + sale_count) desc');
-                break;
-            case 'newest':
-                $productsQuery->orderBy('created_at', 'desc');
-                break;
-            case 'name':
-                $productsQuery->orderBy('name', 'asc');
-                break;
-            default:
-                $productsQuery->orderBy('created_at', 'desc');
-                break;
+        // Se há busca full-text, a relevância já foi aplicada, não aplicar ordenação adicional
+        // a menos que seja especificamente solicitada
+        if (!$hasSearch || $request->has('sort')) {
+            switch ($sortField) {
+                case 'price_asc':
+                    $productsQuery->orderBy('price', 'asc');
+                    break;
+                case 'price_desc':
+                    $productsQuery->orderBy('price', 'desc');
+                    break;
+                case 'most_viewed':
+                    $productsQuery->orderBy('views', 'desc');
+                    break;
+                case 'most_popular':
+                    $productsQuery->withCount(['quotationItems as quotation_count' => function ($q) {}, 'saleItems as sale_count' => function ($q) {}])
+                        ->orderByRaw('(quotation_count + sale_count) desc');
+                    break;
+                case 'newest':
+                    $productsQuery->orderBy('created_at', 'desc');
+                    break;
+                case 'name':
+                    $productsQuery->orderBy('name', 'asc');
+                    break;
+                case 'relevance':
+                    // Apenas para busca full-text
+                    if ($hasSearch) {
+                        // A relevância já foi aplicada na busca
+                    } else {
+                        $productsQuery->orderBy('created_at', 'desc');
+                    }
+                    break;
+                default:
+                    $productsQuery->orderBy('created_at', 'desc');
+                    break;
+            }
         }
 
         // cache()->clear();
@@ -188,7 +183,7 @@ class ProductController extends Controller
             $searchTerm = e($request->search);
             $title = "Busca por \"{$searchTerm}\"";
             $description = "Resultados da busca por \"{$searchTerm}\". Encontre os melhores produtos e ofertas.";
-        } 
+        }
         // elseif ($request->filled('categories')) {
         //     $categoryIds = is_array($request->categories) ? $request->categories : [$request->categories];
         //     $categoryNames = Category::whereIn('id', $categoryIds)->pluck('name')->join(', ');
