@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UnitEnum;
+use App\Helpers\SearchSynonyms;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -253,13 +254,14 @@ class Product extends Model
     }
 
     /**
-     * Busca full-text usando MySQL MATCH AGAINST
+     * Busca full-text usando MySQL MATCH AGAINST com suporte a sinônimos
      * 
      * @param string $search
      * @param string $mode - IN BOOLEAN MODE, IN NATURAL LANGUAGE MODE, WITH QUERY EXPANSION
+     * @param bool $useSynonyms - Se deve usar sinônimos na busca
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function fullTextSearch($search, $mode = 'IN BOOLEAN MODE')
+    public static function fullTextSearch($search, $mode = 'IN BOOLEAN MODE', $useSynonyms = false)
     {
         // Limpar e preparar o termo de busca
         $search = trim($search);
@@ -268,13 +270,25 @@ class Product extends Model
             return static::query();
         }
 
+        // Expandir com sinônimos se solicitado
+        if ($useSynonyms) {
+            $expandedSearch = SearchSynonyms::expandPhrase($search);
+        } else {
+            $expandedSearch = $search;
+        }
+
         // Escapar caracteres especiais para MySQL FULLTEXT
-        $escapedSearch = str_replace(['@', '+', '-', '>', '<', '(', ')', '~', '*', '"'], '', $search);
+        $escapedSearch = str_replace(['@', '+', '-', '>', '<', '(', ')', '~', '*', '"'], '', $expandedSearch);
 
         // Para boolean mode, podemos adicionar wildcards
         if ($mode === 'IN BOOLEAN MODE') {
-            $searchTerms = explode(' ', $escapedSearch);
-            $booleanSearch = '+' . implode('* +', $searchTerms) . '*';
+            if ($useSynonyms) {
+                // Usar o método do helper para criar query boolean com sinônimos
+                $booleanSearch = SearchSynonyms::createBooleanQuery($search);
+            } else {
+                $searchTerms = explode(' ', $escapedSearch);
+                $booleanSearch = '+' . implode('* +', $searchTerms) . '*';
+            }
         } else {
             $booleanSearch = $escapedSearch;
         }
@@ -317,13 +331,14 @@ class Product extends Model
     }
 
     /**
-     * Busca combinada: full-text + LIKE como fallback
+     * Busca combinada: full-text + LIKE como fallback com suporte a sinônimos
      * 
      * @param string $search
      * @param bool $ecommerceOnly - Se deve filtrar apenas produtos para e-commerce
+     * @param bool $useSynonyms - Se deve usar sinônimos na busca
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function smartSearch($search, $ecommerceOnly = false)
+    public static function smartSearch($search, $ecommerceOnly = false, $useSynonyms = false)
     {
         $search = trim($search);
 
@@ -335,19 +350,52 @@ class Product extends Model
             return $query;
         }
 
+        // Expandir com sinônimos se solicitado e termo for longo o suficiente
+        $expandedTerms = [];
+        if ($useSynonyms && strlen($search) >= 2) {
+            $words = explode(' ', $search);
+            foreach ($words as $word) {
+                $expandedTerms = array_merge($expandedTerms, SearchSynonyms::expandTerm($word));
+            }
+            $expandedTerms = array_unique($expandedTerms);
+        }
+
         // Usar full-text search se o termo for longo o suficiente (≥3 caracteres)
         if (strlen($search) >= 3) {
-            $query = static::fullTextSearch($search);
+            $query = static::fullTextSearch($search, 'IN BOOLEAN MODE', $useSynonyms);
         } else {
-            // Para termos curtos, usar LIKE tradicional incluindo variantes
-            $query = static::where(function ($q) use ($search) {
+            // Para termos curtos, usar LIKE tradicional incluindo variantes e sinônimos
+            $query = static::where(function ($q) use ($search, $expandedTerms, $useSynonyms) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%")
-                    ->orWhereHas('variants', function ($variantQuery) use ($search) {
-                        $variantQuery->where('sku', 'like', "%{$search}%")
-                            ->orWhere('barcode', 'like', "%{$search}%");
-                    });
+                    ->orWhere('sku', 'like', "%{$search}%");
+
+                // Adicionar busca por sinônimos com LIKE
+                if ($useSynonyms && !empty($expandedTerms)) {
+                    foreach ($expandedTerms as $term) {
+                        if ($term !== $search) { // Evitar duplicação
+                            $q->orWhere('name', 'like', "%{$term}%")
+                                ->orWhere('description', 'like', "%{$term}%")
+                                ->orWhere('sku', 'like', "%{$term}%");
+                        }
+                    }
+                }
+
+                // Busca em variantes
+                $q->orWhereHas('variants', function ($variantQuery) use ($search, $expandedTerms, $useSynonyms) {
+                    $variantQuery->where('sku', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%");
+
+                    // Buscar sinônimos nas variantes também
+                    if ($useSynonyms && !empty($expandedTerms)) {
+                        foreach ($expandedTerms as $term) {
+                            if ($term !== $search) {
+                                $variantQuery->orWhere('sku', 'like', "%{$term}%")
+                                    ->orWhere('barcode', 'like', "%{$term}%");
+                            }
+                        }
+                    }
+                });
             });
         }
 

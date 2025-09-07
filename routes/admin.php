@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\Admin\SynonymController;
 use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\HeroSliderController;
 use App\Http\Controllers\Admin\ContactMessageController;
@@ -107,6 +108,17 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     Route::resource('catalogs', CatalogController::class);
     Route::resource('hero-sliders', HeroSliderController::class);
     Route::resource('contact-messages', ContactMessageController::class)->only(['index', 'show', 'destroy']);
+
+    // Rotas para gestão de sinônimos de busca
+    Route::prefix('synonyms')->name('synonyms.')->group(function () {
+        Route::get('/', [SynonymController::class, 'index'])->name('index');
+        Route::post('/', [SynonymController::class, 'store'])->name('store');
+        Route::put('{mainTerm}', [SynonymController::class, 'update'])->name('update');
+        Route::delete('{mainTerm}', [SynonymController::class, 'destroy'])->name('destroy');
+        Route::post('test', [SynonymController::class, 'test'])->name('test');
+        Route::get('export', [SynonymController::class, 'export'])->name('export');
+        Route::post('import', [SynonymController::class, 'import'])->name('import');
+    });
 
     // Rotas para gestão de armazéns
     Route::resource('warehouses', WarehouseController::class);
