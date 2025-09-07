@@ -1,5 +1,6 @@
 import SiteLayout from '@/layouts/site-layout';
 import ProductCard from '@/pages/Site/_components/ProductCard';
+import ProductCardSkeleton from '@/pages/Site/_components/ProductCardSkeleton';
 import { Head, router } from '@inertiajs/react';
 import { ChevronDown, ChevronUp, FilterX, ListFilter, Minus, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -73,6 +74,7 @@ interface Props {
 // --- Componente Principal da Página da Loja (Refatorado) ---
 export default function ShopPage({ products, categories, brands, filters }: Props) {
     const [isFiltersOpenMobile, setIsFiltersOpenMobile] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [openFilterSections, setOpenFilterSections] = useState({
         categories: true,
         brands: true,
@@ -122,6 +124,15 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
         return () => clearTimeout(delayDebounceFn);
     }, [filterData.search]);
+
+    // Loading state for router navigation
+    useEffect(() => {
+        const handleStart = () => setIsLoading(true);
+        const handleFinish = () => setIsLoading(false);
+
+        router.on('start', handleStart);
+        router.on('finish', handleFinish);
+    }, []);
 
     // Handler específico para checkboxes (categorias e marcas)
     const handleCheckboxChange = (filterType: 'categories' | 'brands', id: number) => {
@@ -594,7 +605,13 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                         </div>
 
                         {/* Grid de Produtos */}
-                        {products.data && products.data.length > 0 ? (
+                        {isLoading ? (
+                            <div className="products-grid grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {Array.from({ length: 8 }).map((_, index) => (
+                                    <ProductCardSkeleton key={index} />
+                                ))}
+                            </div>
+                        ) : products.data && products.data.length > 0 ? (
                             <>
                                 <div className="products-grid grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                     {products.data.map((product) => (
