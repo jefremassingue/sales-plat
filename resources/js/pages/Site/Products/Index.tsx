@@ -125,15 +125,6 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
         return () => clearTimeout(delayDebounceFn);
     }, [filterData.search]);
 
-    // Loading state for router navigation
-    useEffect(() => {
-        const handleStart = () => setIsLoading(true);
-        const handleFinish = () => setIsLoading(false);
-
-        router.on('start', handleStart);
-        router.on('finish', handleFinish);
-    }, []);
-
     // Handler específico para checkboxes (categorias e marcas)
     const handleCheckboxChange = (filterType: 'categories' | 'brands', id: number) => {
         const currentValues: number[] = (filterData as any)[filterType] || [];
@@ -159,6 +150,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
         // Aplicar filtros com o estado ATUALIZADO, não o anterior
         setTimeout(() => {
+            setIsLoading(true);
             // Remover valores vazios para não poluir a URL
             const params = Object.fromEntries(
                 Object.entries(updatedFilterData).filter(([_, value]) => {
@@ -171,6 +163,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                 preserveState: true,
                 preserveScroll: false,
                 replace: true,
+                onFinish: () => setIsLoading(false),
             });
         }, 0);
     };
@@ -182,6 +175,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
     };
 
     const applyFilters = useCallback(() => {
+        setIsLoading(true);
         // Remover valores vazios para não poluir a URL
         const params = Object.fromEntries(
             Object.entries(filterData).filter(([_, value]) => {
@@ -194,6 +188,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             preserveState: true,
             preserveScroll: false,
             replace: true,
+            onFinish: () => setIsLoading(false),
         });
 
         setIsFiltersOpenMobile(false);
@@ -212,6 +207,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
             page: 1,
         });
 
+        setIsLoading(true);
         router.get(
             '/products',
             {},
@@ -219,6 +215,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                 preserveState: true,
                 preserveScroll: false,
                 replace: true,
+                onFinish: () => setIsLoading(false),
             },
         );
 
@@ -287,6 +284,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
         // Aplicar filtros com o estado ATUALIZADO, não o anterior
         setTimeout(() => {
+            setIsLoading(true);
             // Remover valores vazios para não poluir a URL
             const params = Object.fromEntries(
                 Object.entries(updatedFilterData).filter(([_, value]) => {
@@ -299,6 +297,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                 preserveState: true,
                 preserveScroll: false,
                 replace: true,
+                onFinish: () => setIsLoading(false),
             });
         }, 0);
     };
@@ -309,6 +308,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
 
         // Aplicar filtros com a nova página
         setTimeout(() => {
+            setIsLoading(true);
             // Remover valores vazios para não poluir a URL
             const params = Object.fromEntries(
                 Object.entries({
@@ -324,6 +324,7 @@ export default function ShopPage({ products, categories, brands, filters }: Prop
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
+                onFinish: () => setIsLoading(false),
             });
 
             // Scroll para o topo da lista de produtos
