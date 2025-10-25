@@ -3,6 +3,8 @@
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\BlogController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\QuotationController;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +25,13 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // Rotas públicas
 Route::post('/cart/validate', [CartController::class, 'validate']);
+
+// Public API routes
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
+Route::post('/quotations', [QuotationController::class, 'store']);
 
 // Product creation endpoints
 Route::post('/products/file', [ProductController::class, 'storeWithFile']);

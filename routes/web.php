@@ -32,7 +32,7 @@ $redirects = [
     '/instagram' => 'https://www.instagram.com/matony_servicos/',
     '/youtube' => 'https://www.youtube.com/@matony_servicos',
     '/facebook' => 'https://www.facebook.com/profile.php?id=61575857846470',
-    '/whatsapp' => 'https://chat.whatsapp.com/COhLCyWbZFI7talh8kSQt0'
+    '/whatsapp' => 'https://wa.me/258871154336'
 ];
 
 foreach ($redirects as $path => $url) {

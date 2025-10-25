@@ -255,7 +255,7 @@ class Product extends Model
 
     /**
      * Busca full-text usando MySQL MATCH AGAINST com suporte a sinônimos
-     * 
+     *
      * @param string $search
      * @param string $mode - IN BOOLEAN MODE, IN NATURAL LANGUAGE MODE, WITH QUERY EXPANSION
      * @param bool $useSynonyms - Se deve usar sinônimos na busca
@@ -298,20 +298,21 @@ class Product extends Model
             $query->whereRaw(
                 "MATCH(name, description, technical_details, features, sku) AGAINST(? {$mode})",
                 [$booleanSearch]
-            )
-                ->orWhereHas('variants', function ($variantQuery) use ($search) {
-                    $searchTerms = explode(' ', $search);
+            );
+
+            // Ou busca em variantes
+            $query->orWhereHas('variants', function ($variantQuery) use ($search) {
+                $searchTerms = explode(' ', $search);
+                $variantQuery->where(function ($q) use ($searchTerms) {
                     foreach ($searchTerms as $term) {
                         $searchTerms2 = explode('-', $term);
-                        $variantQuery->orWhere(function ($q) use ($searchTerms2) {
-                            foreach ($searchTerms2 as $term2) {
-                                $q->where('sku', 'like', "%{$term2}%")
-                                    ->orWhere('barcode', 'like', "%{$term2}%");
-                            }
-                        });
+                        foreach ($searchTerms2 as $term2) {
+                            $q->orWhere('sku', 'like', "%{$term2}%")
+                                ->orWhere('barcode', 'like', "%{$term2}%");
+                        }
                     }
-                })
-            ;
+                });
+            });
         })->orderByRaw(
             "MATCH(name, description, technical_details, features, sku) AGAINST(? {$mode}) DESC",
             [$booleanSearch]
@@ -320,7 +321,7 @@ class Product extends Model
 
     /**
      * Busca full-text com relevância para produtos ativos
-     * 
+     *
      * @param string $search
      * @return \Illuminate\Database\Eloquent\Builder
      */
@@ -332,18 +333,28 @@ class Product extends Model
 
     /**
      * Busca combinada: full-text + LIKE como fallback com suporte a sinônimos
-     * 
+     *
      * @param string $search
      * @param bool $ecommerceOnly - Se deve filtrar apenas produtos para e-commerce
      * @param bool $useSynonyms - Se deve usar sinônimos na busca
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function smartSearch($search, $ecommerceOnly = false, $useSynonyms = false)
+    public static function smartSearch($search = null, $ecommerceOnly = false, $useSynonyms = false)
     {
+        $query = static::query();
+
+        // Se não há termo de busca, retornar apenas com filtros de e-commerce
+        if (is_null($search)) {
+            if ($ecommerceOnly) {
+                $query->where('active', true)->whereHas('ecommerce_inventory');
+            }
+            return $query;
+        }
+
         $search = trim($search);
 
-        if (empty($search)) {
-            $query = static::query();
+        // Se o search está vazio após trim, retornar todos os produtos (com filtros de e-commerce)
+        if (empty($search) || strlen($search) < 1) {
             if ($ecommerceOnly) {
                 $query->where('active', true)->whereHas('ecommerce_inventory');
             }
@@ -365,29 +376,32 @@ class Product extends Model
             $query = static::fullTextSearch($search, 'IN BOOLEAN MODE', $useSynonyms);
         } else {
             // Para termos curtos, usar LIKE tradicional incluindo variantes e sinônimos
-            $query = static::where(function ($q) use ($search, $expandedTerms, $useSynonyms) {
+            $query->where(function ($q) use ($search, $expandedTerms) {
+                // Busca nos campos principais
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('sku', 'like', "%{$search}%");
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%");
 
-                // Adicionar busca por sinônimos com LIKE
-                if ($useSynonyms && !empty($expandedTerms)) {
+                // Adicionar busca por sinônimos com LIKE (apenas se forem diferentes)
+                if (!empty($expandedTerms)) {
                     foreach ($expandedTerms as $term) {
-                        if ($term !== $search) { // Evitar duplicação
+                        if ($term !== $search) {
                             $q->orWhere('name', 'like', "%{$term}%")
                                 ->orWhere('description', 'like', "%{$term}%")
-                                ->orWhere('sku', 'like', "%{$term}%");
+                                ->orWhere('sku', 'like', "%{$term}%")
+                                ->orWhere('barcode', 'like', "%{$term}%");
                         }
                     }
                 }
 
                 // Busca em variantes
-                $q->orWhereHas('variants', function ($variantQuery) use ($search, $expandedTerms, $useSynonyms) {
+                $q->orWhereHas('variants', function ($variantQuery) use ($search, $expandedTerms) {
                     $variantQuery->where('sku', 'like', "%{$search}%")
                         ->orWhere('barcode', 'like', "%{$search}%");
 
                     // Buscar sinônimos nas variantes também
-                    if ($useSynonyms && !empty($expandedTerms)) {
+                    if (!empty($expandedTerms)) {
                         foreach ($expandedTerms as $term) {
                             if ($term !== $search) {
                                 $variantQuery->orWhere('sku', 'like', "%{$term}%")

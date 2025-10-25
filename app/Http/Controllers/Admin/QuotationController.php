@@ -255,10 +255,13 @@ class QuotationController extends Controller implements HasMiddleware
 
             DB::beginTransaction();
             try {
-                $quotationNumber = $this->generateUniqueQuotationNumber();
+                $quotationNumber = $request->input('quotation_number', $this->generateUniqueQuotationNumber());
                 $quotationData = $request->except('items');
                 $quotationData['user_id'] = Auth::id();
                 $quotationData['quotation_number'] = $quotationNumber;
+                $quotationData['issue_date'] = now();
+                $quotationData['expiry_date'] = now()->addDays(7)->toDateString();
+
 
                 $quotation = Quotation::create($quotationData);
 
@@ -339,7 +342,7 @@ class QuotationController extends Controller implements HasMiddleware
 
         try {
             $prefix = 'QT-' . date('Ym') . '-';
-            $lastQuotation = Quotation::where('quotation_number', 'LIKE', $prefix . '%')
+            $lastQuotation = Quotation::withTrashed()->where('quotation_number', 'LIKE', $prefix . '%')
                 ->orderByRaw('CAST(SUBSTRING(quotation_number, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
                 ->first();
 
@@ -352,7 +355,7 @@ class QuotationController extends Controller implements HasMiddleware
 
             $quotationNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-            while (Quotation::where('quotation_number', $quotationNumber)->exists()) {
+            while (Quotation::withTrashed()->where('quotation_number', $quotationNumber)->exists()) {
                 $nextNumber++;
                 $quotationNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             }

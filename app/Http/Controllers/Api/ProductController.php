@@ -22,6 +22,137 @@ use GuzzleHttp\Client;
 
 class ProductController extends Controller
 {
+    /**
+     * Display a listing of products.
+     */
+    public function index(Request $request)
+    {
+        $query = Product::where('active', true)
+            ->with(['category', 'brand', 'mainImage.versions', 'variants']);
+
+        // Optional search parameter
+        if ($request->has('search')) {
+            $query->smartSearch($request->input('search'));
+        }
+
+        // Optional category filter
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->has('paginate')) {
+            $perPage = (int) $request->input('paginate', 20);
+            $perPage = $perPage > 0 ? $perPage : 20;
+            $products = $query->orderBy('created_at', 'desc')->paginate($perPage)
+                ->getCollection()->transform(function ($product) {
+                    $imageUrl = null;
+
+                    if (!empty($product->mainImage)) {
+
+                        $versions = $product->mainImage->versions ?? [];
+
+                        foreach (['sm', 'md', 'lg'] as $size) {
+                            foreach ($versions as $img) {
+                                if (($img->version ?? null) === $size) {
+                                    $imageUrl = $img->url ?? null;
+                                    break 2; // sai dos dois loops
+                                }
+                            }
+                        }
+
+                        if (!$imageUrl && !empty($product->mainImage->url)) {
+                            $imageUrl = $product->mainImage->url;
+                        }
+                    }
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'description' => $product->description,
+                        'slug' => $product->slug,
+                        'sku' => $product->sku,
+                        'certification' => $product->certification,
+                        'image' => $imageUrl,
+                        'brand' => $product->brand ? [
+                            'id' => $product->brand->id,
+                            'name' => $product->brand->name,
+                        ] : null,
+                        'category' => $product->category ? [
+                            'id' => $product->category->id,
+                            'name' => $product->category->name,
+                        ] : null,
+                        'colors' => $product->colors->map(function ($color) {
+                            return [
+                                'id' => $color->id,
+                                'name' => $color->name,
+                            ];
+                        }),
+                    ];
+                });
+            // $products->appends($request->all());
+            unset($products->links);
+            return response()->json($products);
+        }
+
+        $products = $query->orderBy('created_at', 'desc')->get()->transform(function ($product) {
+                    $imageUrl = null;
+
+                    if (!empty($product->mainImage)) {
+
+                        $versions = $product->mainImage->versions ?? [];
+
+                        foreach (['sm', 'md', 'lg'] as $size) {
+                            foreach ($versions as $img) {
+                                if (($img->version ?? null) === $size) {
+                                    $imageUrl = $img->url ?? null;
+                                    break 2; // sai dos dois loops
+                                }
+                            }
+                        }
+
+                        if (!$imageUrl && !empty($product->mainImage->url)) {
+                            $imageUrl = $product->mainImage->url;
+                        }
+                    }
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'description' => $product->description,
+                        'slug' => $product->slug,
+                        'sku' => $product->sku,
+                        'certification' => $product->certification,
+                        'image' => $imageUrl,
+                        'brand' => $product->brand ? [
+                            'id' => $product->brand->id,
+                            'name' => $product->brand->name,
+                        ] : null,
+                        'category' => $product->category ? [
+                            'id' => $product->category->id,
+                            'name' => $product->category->name,
+                        ] : null,
+                        'colors' => $product->colors->map(function ($color) {
+                            return [
+                                'id' => $color->id,
+                                'name' => $color->name,
+                            ];
+                        }),
+                    ];
+                });
+
+        return response()->json($products);
+    }
+
+    /**
+     * Display the specified product.
+     */
+    public function show($id)
+    {
+        $product = Product::where('active', true)
+            ->with(['category', 'brand', 'images', 'colors', 'sizes', 'attributes', 'variants'])
+            ->findOrFail($id);
+
+        return response()->json($product);
+    }
+
     public function storeWithFile(Request $request)
     {
         // Note: Handling complex nested data like variants from multipart/form-data is tricky.
@@ -60,7 +191,6 @@ class ProductController extends Controller
             DB::commit();
 
             return response()->json($product->load(['images.colors', 'colors', 'sizes', 'attributes', 'variants']), 201);
-
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error creating product via API: ' . $e->getMessage(), [
@@ -71,7 +201,7 @@ class ProductController extends Controller
         }
     }
 
-    
+
 
     private function getValidationRules($imageInputType)
     {
@@ -84,17 +214,17 @@ class ProductController extends Controller
             'ref'               => 'nullable|string|max:100|unique:products,sku',
             'brand_id'          => 'nullable|exists:brands,id',
             'certification'     => 'nullable|string|max:255',
-            
+
             'colors'            => 'nullable|array',
             'colors.*.name'     => 'required|string|max:100',
-            
+
             'sizes'             => 'nullable|array',
             'sizes.*.name'      => 'required|string|max:255',
-            
+
             'attributes'        => 'nullable|array',
             'attributes.*.name' => 'required|string|max:255',
-            'attributes.*.value'=> 'required|string',
-            
+            'attributes.*.value' => 'required|string',
+
             'variants'          => 'nullable|array',
             'variants.*.ref'    => 'nullable|string|max:100',
         ];
@@ -114,8 +244,16 @@ class ProductController extends Controller
     private function createProductModel(Request $request): Product
     {
         $data = $request->only([
-            'name', 'description', 'technical_details', 'features', 'price', 
-            'cost', 'sku', 'category_id', 'brand_id', 'certification'
+            'name',
+            'description',
+            'technical_details',
+            'features',
+            'price',
+            'cost',
+            'sku',
+            'category_id',
+            'brand_id',
+            'certification'
         ]);
         $data['category_id'] = Category::first()->id;
         $data['brand_id'] = $request->has('brand_name') ? (Brand::where('name', 'like', '%' . $request->input('brand_name') . '%')->first()?->id ?? Brand::create(['name' => $request->input('brand_name')])->id) : null;
@@ -209,7 +347,7 @@ class ProductController extends Controller
             foreach ($request->file('images') as $index => $imageFile) {
                 $path = $imageFile->store('products', 'public');
                 $image = $this->createImageRecord($product, $path, $imageFile->getClientOriginalName(), $imageFile->getSize(), $imageFile->extension(), $index === 0);
-                
+
                 $metadata = $imageMetadata[$index] ?? null;
                 if ($metadata && !empty($metadata['color_temp_id'])) {
                     $this->associateImageWithColor($image, $metadata['color_temp_id'], $colorIdMap);
@@ -224,9 +362,9 @@ class ProductController extends Controller
                     $imageName = basename(parse_url($imageUrl, PHP_URL_PATH));
                     $path = 'products/' . $product->id . '-' . Str::random(8) . '-' . $imageName;
                     Storage::disk('public')->put($path, $imageContent);
-                    
+
                     $image = $this->createImageRecord($product, $path, $imageName, strlen($imageContent), pathinfo($imageName, PATHINFO_EXTENSION), $index === 0);
-                    
+
                     if (!empty($imageInfo['color_temp_id'])) {
                         $this->associateImageWithColor($image, $imageInfo['color_temp_id'], $colorIdMap);
                     }
@@ -240,9 +378,14 @@ class ProductController extends Controller
     private function createImageRecord(Product $product, $path, $originalName, $size, $extension, $isMain): Image
     {
         $image = new Image([
-            'version' => 'original', 'storage' => 'public', 'path' => $path,
-            'name' => basename($path), 'original_name' => $originalName,
-            'size' => $size, 'extension' => $extension, 'is_main' => $isMain
+            'version' => 'original',
+            'storage' => 'public',
+            'path' => $path,
+            'name' => basename($path),
+            'original_name' => $originalName,
+            'size' => $size,
+            'extension' => $extension,
+            'is_main' => $isMain
         ]);
         $product->images()->save($image);
         return $image;
