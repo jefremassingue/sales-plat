@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { PackageSearch } from 'lucide-react';
 import { useState } from 'react';
-import { Product } from './types';
+import { Product } from '@/types';
 
 interface ProductSelectorProps {
     open: boolean;

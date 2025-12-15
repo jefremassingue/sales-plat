@@ -1,6 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+Route::get('/get-csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
+
+Route::get('/', function () {
+    return inertia('Showcase');
+});
+
 use Inertia\Inertia;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Pos\PosSaleController;
@@ -32,7 +41,7 @@ $redirects = [
     '/instagram' => 'https://www.instagram.com/matony_servicos/',
     '/youtube' => 'https://www.youtube.com/@matony_servicos',
     '/facebook' => 'https://www.facebook.com/profile.php?id=61575857846470',
-    '/whatsapp' => 'https://chat.whatsapp.com/COhLCyWbZFI7talh8kSQt0'
+    '/whatsapp' => 'https://wa.me/258871154336'
 ];
 
 foreach ($redirects as $path => $url) {

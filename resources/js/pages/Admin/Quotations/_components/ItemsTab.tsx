@@ -4,12 +4,10 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash, Copy } from 'lucide-react';
 import { UseFieldArrayReturn, UseFormReturn } from 'react-hook-form';
-import { Currency, Product, TaxRate, Warehouse } from './types';
+import { Currency, Product, TaxRate, Warehouse } from '@/types';
 import { ItemFormValues } from './ItemForm';
 import { z } from 'zod';
-import { formSchema } from '../Create'; // Import formSchema from Create.tsx
-
-type FormValues = z.infer<typeof formSchema>;
+import { formSchema, FormValues } from './schema';
 
 interface ItemsTabProps {
   fieldArray: UseFieldArrayReturn<FormValues, "items", "id">;

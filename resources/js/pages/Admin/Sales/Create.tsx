@@ -3,11 +3,11 @@ import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type Warehouse, type Customer, type SaleStatus, type User, type BreadcrumbItem } from '@/types/index';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
-import { ArrowLeft, Plus, User, Package, CreditCard, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, Package, CreditCard, Check, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useFieldArray, FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
@@ -35,23 +35,19 @@ const formSchema = z.object({
   include_tax: z.boolean().default(true),
   notes: z.string().optional(),
   terms: z.string().optional(),
-  shipping_amount: z.string().optional()
-    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
   shipping_address: z.string().optional(),
   billing_address: z.string().optional(),
   payment_method: z.string().optional(),
   amount_paid: z.string().optional()
     .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
     .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
-  reference: z.string().optional(),
   items: z.array(
     z.object({
       id: z.string().optional(),
       product_id: z.string().optional(),
       product_variant_id: z.string().optional(),
-    product_color_id: z.string().optional(),
-    product_size_id: z.string().optional(),
+      product_color_id: z.string().optional(),
+      product_size_id: z.string().optional(),
       warehouse_id: z.string().optional(),
       name: z.string().min(1, { message: "Nome é obrigatório" }),
       description: z.string().optional(),
@@ -71,6 +67,16 @@ const formSchema = z.object({
         .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
     })
   ).min(1, { message: "Adicione pelo menos 1 item à venda" }),
+  shipping_amount: z.string().optional()
+    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+  commission_rate: z.string().optional()
+    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" })
+    .refine(val => val === '' || parseFloat(val) <= 100, { message: "Deve ser no máximo 100%" }),
+  discount_amount: z.string().optional()
+    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -113,6 +119,7 @@ interface Props {
   statuses: string[];
   paymentMethods: PaymentMethod[];
   quotation?: Quotation;
+  users: User[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -132,7 +139,8 @@ export default function Create({
   statuses,
   units,
   paymentMethods,
-  quotation
+  quotation,
+  users,
 }: Props) {
   const { toast } = useToast();
 
@@ -160,6 +168,7 @@ export default function Create({
   const initialDefaultValues: FormValues = {
     sale_number: salePlaceholder,
     customer_id: quotation?.customer_id?.toString() || '',
+    user_id: '',
     issue_date: today,
     due_date: dueDate,
     status: 'pending',
@@ -171,6 +180,8 @@ export default function Create({
     payment_method: paymentMethods.length > 0 ? paymentMethods[0].value : '',
     notes: quotation?.notes || '',
     terms: quotation?.terms || '',
+    commission_rate: '0',
+    discount_amount: '0',
     items: quotation?.items?.map((item) => ({
       product_id: item.product_id ? item.product_id.toString() : undefined,
       product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
@@ -219,6 +230,7 @@ export default function Create({
   const watchCurrency = form.watch('currency_code');
   const watchPaymentAmount = form.watch('amount_paid');
   const watchPaymentMethod = form.watch('payment_method');
+  const watchUserId = form.watch('user_id');
 
   useEffect(() => {
     const selectedCurrency = currencies.find(c => c.code === watchCurrency);
@@ -226,6 +238,19 @@ export default function Create({
       form.setValue('exchange_rate', selectedCurrency.exchange_rate.toString());
     }
   }, [watchCurrency, currencies, form]);
+
+  useEffect(() => {
+    if (watchUserId) {
+      const selectedUser = users.find(u => u.id === watchUserId);
+      if (selectedUser?.employee?.commission_rate !== undefined) {
+        form.setValue('commission_rate', selectedUser.employee.commission_rate.toString());
+      } else {
+        form.setValue('commission_rate', '0');
+      }
+    } else {
+      form.setValue('commission_rate', '0');
+    }
+  }, [watchUserId, users, form]);
 
   useEffect(() => {
     if (errors) {
@@ -367,12 +392,13 @@ export default function Create({
       discountAmount += parseFloat(values.discount_amount);
     });
     const shippingAmount = parseFloat(form.watch('shipping_amount') || '0');
-    let total = subtotal - discountAmount;
+    const globalDiscountAmount = parseFloat(form.watch('discount_amount') || '0');
+    let total = subtotal - discountAmount - globalDiscountAmount;
     if (form.watch('include_tax')) {
       total += taxAmount;
     }
     total += shippingAmount;
-    return { subtotal, taxAmount, discountAmount, shippingAmount, total };
+    return { subtotal, taxAmount, discountAmount, shippingAmount, total, globalDiscountAmount };
   };
 
   const formatCurrency = (value: number | null | undefined, withSymbol = true) => {
@@ -391,12 +417,39 @@ export default function Create({
     return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
   };
 
+  const [paymentPercentage, setPaymentPercentage] = useState<string>('');
+
   const handlePaymentMethodChange = (method: string) => form.setValue('payment_method', method);
+
+  const handlePaymentPercentageChange = (percentage: string) => {
+      setPaymentPercentage(percentage);
+      const percentValue = parseFloat(percentage);
+      const total = calculateTotals().total;
+
+      if (!isNaN(percentValue) && total > 0) {
+          const amount = (total * (percentValue / 100)).toFixed(2);
+          form.setValue('amount_paid', amount);
+          
+          const amountValue = parseFloat(amount);
+          if (amountValue >= total) form.setValue('status', 'paid');
+          else if (amountValue > 0) form.setValue('status', 'partial');
+          else form.setValue('status', 'pending');
+      } else if (percentage === '') {
+          form.setValue('amount_paid', '');
+           form.setValue('status', 'pending');
+      }
+  };
 
   const handlePaymentAmountChange = (amount: string) => {
     form.setValue('amount_paid', amount);
     const amountValue = parseFloat(amount) || 0;
     const total = calculateTotals().total;
+    
+    if (total > 0) {
+        const percent = ((amountValue / total) * 100).toFixed(2);
+        setPaymentPercentage(percent === '0.00' && amount === '' ? '' : percent);
+    }
+
     if (total > 0 && amountValue >= total) form.setValue('status', 'paid');
     else if (amountValue > 0) form.setValue('status', 'partial');
     else form.setValue('status', 'pending');
@@ -407,11 +460,14 @@ export default function Create({
     const data = {
       ...values,
       customer_id: values.customer_id ? values.customer_id : null,
+      user_id: values.user_id || null,
       exchange_rate: parseFloat(values.exchange_rate),
       issue_date: format(values.issue_date, 'yyyy-MM-dd'),
       due_date: values.due_date ? format(values.due_date, 'yyyy-MM-dd') : null,
       shipping_amount: values.shipping_amount ? parseFloat(values.shipping_amount) : 0,
       amount_paid: values.amount_paid ? parseFloat(values.amount_paid) : 0,
+      commission_rate: values.commission_rate ? parseFloat(values.commission_rate) : 0,
+      discount_amount: values.discount_amount ? parseFloat(values.discount_amount) : 0,
       quotation_id: quotation?.id || null,
         items: values.items.map(item => ({
           ...item,
@@ -486,7 +542,13 @@ export default function Create({
 
                   {/* Tab de Dados Gerais */}
                   <TabsContent value="details" className="mt-6">
-                    <SaleDetails control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
+                    <SaleDetails
+                      control={form.control}
+                      customers={customers}
+                      currencies={currencies}
+                      statuses={statuses}
+                      users={users}
+                    />
                   </TabsContent>
 
                   {/* Tab de Produtos */}
@@ -530,6 +592,8 @@ export default function Create({
                   onPaymentAmountChange={handlePaymentAmountChange}
                   paymentMethod={watchPaymentMethod || ''}
                   paymentAmount={watchPaymentAmount || ''}
+                  paymentPercentage={paymentPercentage}
+                  onPaymentPercentageChange={handlePaymentPercentageChange}
                   onReset={() => {
                     form.reset(initialDefaultValues);
                     setSavedFormData(initialDefaultValues);

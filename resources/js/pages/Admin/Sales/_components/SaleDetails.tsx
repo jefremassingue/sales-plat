@@ -12,28 +12,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { type Currency, type Customer, type SaleStatus, type Warehouse, type User } from '@/types/index'; // Added import for User
 
-// Interface do Cliente com todos os campos de endereço
-interface Customer {
-  id: number;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: string; // Endereço geral
-  billing_address?: string; // Endereço de cobrança
-  shipping_address?: string; // Endereço de entrega
-}
-
-interface Currency {
-  code: string;
-  name: string;
-  symbol: string;
-}
-
-interface SaleStatus {
-  value: string;
-  label: string;
-}
+// Local interfaces removed in favor of imported types
 
 // Props do componente permanecem inalteradas
 interface SaleDetailsProps {
@@ -41,18 +22,20 @@ interface SaleDetailsProps {
   customers: Customer[];
   currencies: Currency[];
   statuses: SaleStatus[];
+  users?: User[]; // Changed to use imported User type
 }
 
 export default function SaleDetails({
   control,
   customers,
   currencies,
-  statuses
+  statuses,
+  users = []
 }: SaleDetailsProps) {
   const today = new Date();
   
   // Acessa as funções do formulário diretamente do contexto, sem precisar de props
-  const { setValue, getValues } = useFormContext();
+  const { setValue, getValues, watch } = useFormContext();
 
   /**
    * Lida com a seleção de um novo cliente, preenchendo os
@@ -130,6 +113,45 @@ export default function SaleDetails({
                       {customers?.map(customer => (
                         <SelectItem key={customer.id} value={customer.id.toString()}>
                           {customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+             <FormField
+              control={control}
+              name="user_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vendedor / Responsável</FormLabel>
+                  <Select
+                    onValueChange={(val) => {
+                         field.onChange(val);
+                         // Lógica de update de comissão será tratada no componente pai via watch
+                         // ou aqui se quisermos. Mas melhor deixar o form hook lidar se possível
+                         // mas aqui podemos disparar algo se necessario.
+                         // Porem como temos o useFormContext, podemos fazer aqui tambem.
+                         const selectedUser = users.find(u => u.id.toString() === val);
+                         if (selectedUser && selectedUser.employee) {
+                             setValue('commission_rate', selectedUser.employee.commission_rate);
+                         }
+                    }}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o responsável" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {users.map(user => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.employee?.name || user.name}
+                          {user.employee && <span className="text-muted-foreground ml-1 text-xs">(Funcionário)</span>}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -282,6 +304,27 @@ export default function SaleDetails({
                   <FormLabel>Valor de Envio</FormLabel>
                   <FormControl>
                     <Input type="number" min="0" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="commission_rate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Comissão (%)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      max="100" 
+                      step="0.01" 
+                      {...field} 
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

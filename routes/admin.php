@@ -22,10 +22,11 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\DeliveryGuideController;
+use App\Http\Controllers\Admin\MockupController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     // Rotas para marcas
     Route::resource('brands', \App\Http\Controllers\Admin\BrandController::class);
     Route::get('categories/tree', [CategoryController::class, 'tree'])->name('categories.tree');
@@ -57,13 +58,18 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     Route::delete('inventories/{inventory}/adjustments/{adjustment}', [InventoryAdjustmentController::class, 'destroy'])->name('inventories.adjustments.destroy');
 
     // Rotas para cotações
+    Route::get('quotations/create-alternative', [QuotationController::class, 'createAlternative'])->name('quotations.create-alternative');
     Route::resource('quotations', QuotationController::class);
     Route::post('quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.status');
     Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'generatePdf'])->name('quotations.pdf');
+    Route::get('api/products/search', [QuotationController::class, 'searchProducts'])->name('api.products.search');
+    Route::get('api/customers/search', [QuotationController::class, 'searchCustomers'])->name('api.customers.search');
     Route::get('api/product-inventory', [QuotationController::class, 'getProductInventory'])->name('api.product.inventory');
     Route::post('quotations/{quotation}/send-email', [QuotationController::class, 'sendEmail'])->name('quotations.send-email');
     Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
     Route::post('quotations/{quotation}/convert-to-sale', [QuotationController::class, 'convertToSale'])->name('quotations.convert-to-sale');
+    Route::post('quotations/{quotation}/extend-expiry', [QuotationController::class, 'extendExpiry'])->name('quotations.extend-expiry');
+    Route::post('quotations/{quotation}/update-user', [QuotationController::class, 'updateUser'])->name('quotations.update-user');
 
     // Rotas para vendas
     Route::resource('sales', SaleController::class);
@@ -72,6 +78,7 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     Route::get('sales/{sale}/pdf', [SaleController::class, 'generatePdf'])->name('sales.pdf');
     Route::post('sales/{sale}/send-email', [SaleController::class, 'sendEmail'])->name('sales.send-email');
     Route::post('sales/{sale}/duplicate', [SaleController::class, 'duplicate'])->name('sales.duplicate');
+    Route::post('sales/{sale}/update-user', [SaleController::class, 'updateUser'])->name('sales.update-user');
 
     // Rotas para gestão de custos e despesas
     Route::post('sales/{sale}/items/{item}/update-cost', [SaleController::class, 'updateItemCost'])->name('sales.items.update-cost');
@@ -151,4 +158,17 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
 
     // Utilizadores com funções
     Route::resource('users', UserController::class);
+
+    // Funcionários
+    Route::resource('employees', \App\Http\Controllers\Admin\EmployeeController::class);
+
+    // Rota para o gerador de mockups
+    Route::get('/mockups', function () {
+        return inertia('Admin/Mockups/Index', [
+            'mockup' => session('mockup'),
+        ]);
+    })->name('mockups.index');
+    Route::post('/mockups/generate', [MockupController::class, 'generate'])
+        ->middleware(['role:Admin'])
+        ->name('mockups.generate');
 });

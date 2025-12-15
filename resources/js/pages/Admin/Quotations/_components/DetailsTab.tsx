@@ -11,16 +11,20 @@ import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 import { Control } from 'react-hook-form';
-import { Currency, Customer, QuotationStatus } from './types';
+import { type Currency, type Customer, type QuotationStatusOption, type Warehouse, type User } from '@/types/index';
+
+// Interface atualizada para incluir usuários
+
 
 interface DetailsTabProps {
   control: Control<any>;
   customers: Customer[];
   currencies: Currency[];
   statuses: QuotationStatus[];
+  users?: User[]; // Novo prop opcional
 }
 
-export default function DetailsTab({ control, customers, currencies, statuses }: DetailsTabProps) {
+export default function DetailsTab({ control, customers, currencies, statuses, users = [] }: DetailsTabProps) {
   const today = new Date();
 
   return (
@@ -75,6 +79,38 @@ export default function DetailsTab({ control, customers, currencies, statuses }:
                 </Select>
                 <FormDescription>
                   Cliente para quem esta cotação é direcionada
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="user_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Vendedor / Responsável</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o responsável" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id.toString()}>
+                        {user.employee?.name || user.name}
+                        {user.employee && <span className="text-muted-foreground ml-1 text-xs">(Funcionário)</span>}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Funcionário responsável por esta cotação
                 </FormDescription>
                 <FormMessage />
               </FormItem>

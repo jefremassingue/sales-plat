@@ -1,0 +1,5 @@
+- [x] Add public GET routes for products, categories, and quotations in routes/api.php
+- [x] Add index and show methods to existing ProductController for public API
+- [x] Create CategoryController in Api namespace with index and show methods
+- [x] Create QuotationController in Api namespace with store method for creating quotations
+- [x] Test the endpoints

@@ -13,18 +13,25 @@ import { AlertCircle, ArrowLeft, Calendar, Copy, CreditCard, Download, Edit, Pri
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
-import { Quotation, QuotationStatus } from './_components/types';
+import { Quotation, QuotationStatusOption } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusChangeDialog from './_components/StatusChangeDialog';
+import ExtendExpiryDialog from './_components/ExtendExpiryDialog';
+import ConvertToSaleDialog from './_components/ConvertToSaleDialog';
+import UpdateUserDialog from './_components/UpdateUserDialog';
+import { type User as UserType } from '@/types';
 
 interface Props {
   quotation: Quotation;
-  statuses: QuotationStatus[];
+  statuses: QuotationStatusOption[];
+  users: UserType[];
 }
 
-export default function Show({ quotation, statuses }: Props) {
+export default function Show({ quotation, statuses, users }: Props) {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [extendExpiryDialogOpen, setExtendExpiryDialogOpen] = useState(false);
+  const [updateUserDialogOpen, setUpdateUserDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(quotation.status);
   const { toast } = useToast();
   const { flash } = usePage().props as any;
@@ -106,7 +113,7 @@ export default function Show({ quotation, statuses }: Props) {
 
   // Verificar se a cotação é editável
   const isEditable = () => {
-    return quotation.status === 'draft';
+    return quotation.status === 'draft' || quotation.status === 'expired';
   };
 
   // Função para alterar o status da cotação
@@ -138,6 +145,66 @@ export default function Show({ quotation, statuses }: Props) {
         toast({
           title: 'Erro',
           description: errors.message || 'Ocorreu um erro ao converter a cotação em venda',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
+  // State for ConvertToSaleDialog
+  const [convertToSaleOpen, setConvertToSaleOpen] = useState(false);
+
+  // Função para enviar email
+  const handleSendEmail = () => {
+    if (!quotation.customer?.email) {
+      toast({
+        title: 'Info',
+        description: 'O cliente não tem email cadastrado.',
+        variant: 'default',
+      });
+      return;
+    }
+
+    if (!confirm(`Enviar email para ${quotation.customer.email}?`)) {
+        return;
+    }
+
+    router.post(`/admin/quotations/${quotation.id}/send-email`, {}, {
+      onSuccess: () => {
+        toast({
+          title: 'Email enviado',
+          description: 'O email foi enviado com sucesso.',
+          variant: 'success',
+        });
+      },
+      onError: () => {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível enviar o email.',
+          variant: 'destructive',
+        });
+      }
+    });
+  };
+
+  // Função para duplicar cotação
+  const handleDuplicate = () => {
+      if (!confirm('Tem certeza que deseja duplicar esta cotação?')) {
+          return;
+      }
+      
+      router.post(`/admin/quotations/${quotation.id}/duplicate`, {}, {
+      onSuccess: () => {
+        toast({
+          title: 'Cotação duplicada',
+          description: 'A cotação foi duplicada com sucesso.',
+          variant: 'success',
+        });
+      },
+      onError: () => {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível duplicar a cotação.',
           variant: 'destructive',
         });
       }
@@ -453,15 +520,27 @@ export default function Show({ quotation, statuses }: Props) {
                 <Separator />
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Utilizador</h3>
-                  <div className="flex items-center mt-1">
-                    <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span>{quotation.user?.name || "Sistema"}</span>
+                  <h3 className="text-sm font-medium text-muted-foreground">Responsável</h3>
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <div>
+                        <span>{quotation.user?.employee?.name || quotation.user?.name || "Sistema"}</span>
+                        {quotation.user?.employee && (
+                          <span className="ml-1 text-xs text-muted-foreground">(Funcionário)</span>
+                        )}
+                      </div>
+                    </div>
+                    {can('admin-quotation.edit') && (
+                      <Button variant="ghost" size="sm" onClick={() => setUpdateUserDialogOpen(true)}>
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Datas</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground">Dates</h3>
                   <div className="space-y-1 mt-1">
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -513,7 +592,7 @@ export default function Show({ quotation, statuses }: Props) {
                     variant="outline"
                     className="w-full justify-start"
                     disabled={!quotation.customer || !quotation.customer.email}
-                    onClick={() => router.post(`/admin/quotations/${quotation.id}/send-email`)}
+                    onClick={handleSendEmail}
                   >
                     <Send className="mr-2 h-4 w-4" />
                     Enviar por Email
@@ -527,18 +606,29 @@ export default function Show({ quotation, statuses }: Props) {
                   <Button
                     variant="outline"
                     className="w-full justify-start"
-                    onClick={() => router.post(`/admin/quotations/${quotation.id}/duplicate`)}
+                    onClick={handleDuplicate}
                   >
                     <Copy className="mr-2 h-4 w-4" />
                     Duplicar Cotação
                   </Button>
                 )}
 
-                {can('admin-quotation.index') && (quotation.status === 'approved' || quotation.status === 'draft') && (
+                {can('admin-quotation.edit') && (
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => setExtendExpiryDialogOpen(true)}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Estender Validade
+                  </Button>
+                )}
+
+                {can('admin-quotation.index') && (quotation.status === 'approved' || quotation.status === 'draft' || quotation.status === 'sent' || quotation.status === 'expired') && (
                   <Button
                     variant="default"
                     className="w-full justify-start"
-                    onClick={handleConvertToSale}
+                    onClick={() => setConvertToSaleOpen(true)} // Open the dialog
                   >
                     <ArrowRightIcon className="mr-2 h-4 w-4" />
                     Converter em Venda
@@ -573,6 +663,29 @@ export default function Show({ quotation, statuses }: Props) {
         currentStatus={quotation.status}
         newStatus={selectedStatus}
         statusLabel={statuses.find(s => s.value === selectedStatus)?.label || selectedStatus}
+      />
+
+      <ExtendExpiryDialog
+        open={extendExpiryDialogOpen}
+        onOpenChange={setExtendExpiryDialogOpen}
+        quotationId={quotation.id}
+        currentExpiryDate={quotation.expiry_date}
+      />
+
+      <ConvertToSaleDialog
+        open={convertToSaleOpen}
+        onOpenChange={setConvertToSaleOpen}
+        quotationId={quotation.id}
+        quotationNumber={quotation.quotation_number}
+      />
+
+      <UpdateUserDialog
+        open={updateUserDialogOpen}
+        onOpenChange={setUpdateUserDialogOpen}
+        entityId={quotation.id}
+        entityType="quotation"
+        currentUserId={quotation.user_id?.toString()}
+        users={users}
       />
 
       {/* Alerta de confirmação de exclusão */}

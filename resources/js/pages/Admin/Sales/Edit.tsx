@@ -3,11 +3,11 @@ import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { type Sale, type BreadcrumbItem } from '@/types';
+import { type Sale, type Warehouse, type Customer, type SaleStatus, type User, type BreadcrumbItem, type Product, type Currency, type TaxRate, type SaleItem, type PaymentMethod } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format, parseISO } from 'date-fns';
-import { ArrowLeft, Plus, User, Package, CreditCard, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, User as UserIcon, Package, CreditCard, Check, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm, useFieldArray, FieldErrors } from 'react-hook-form';
 import { z } from 'zod';
@@ -24,79 +24,60 @@ import ItemsTab from '../Quotations/_components/ItemsTab';
 const formSchema = z.object({
   sale_number: z.string().optional().nullable(),
   customer_id: z.string().optional(),
+  user_id: z.string().optional().nullable(),
   issue_date: z.date({ required_error: "Data de emissão é obrigatória" }),
   due_date: z.date().optional().nullable(),
-  status: z.enum(['draft', 'pending', 'paid', 'partial', 'cancelled']),
+  status: z.enum(['draft', 'pending', 'paid', 'partial', 'cancelled', 'cancel', 'overdue', 'sent', 'approved', 'rejected']),
   currency_code: z.string().min(1, { message: "Moeda é obrigatória" }),
   exchange_rate: z.string().min(1, { message: "Taxa de câmbio é obrigatória" })
     .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
     .refine(val => parseFloat(val) > 0, { message: "Deve ser maior que zero" }),
   include_tax: z.boolean().default(true),
-  notes: z.string().optional(),
-  terms: z.string().optional(),
-  shipping_amount: z.string().optional()
-    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
-  shipping_address: z.string().optional(),
-  billing_address: z.string().optional(),
+  notes: z.string().optional().nullable(),
+  terms: z.string().optional().nullable(),
+  shipping_address: z.string().optional().nullable(),
+  billing_address: z.string().optional().nullable(),
   payment_method: z.string().optional(),
   amount_paid: z.string().optional()
     .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
     .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
-  reference: z.string().optional(),
   items: z.array(
     z.object({
-      id: z.string().optional(),
-      product_id: z.string().optional(),
+      id: z.string().optional(), // ID do item para edição  
+      product_id: z.string().min(1, 'Selecione um produto'),
       product_variant_id: z.string().optional(),
-            product_color_id: z.string().optional(),
-            product_size_id: z.string().optional(),
+      product_color_id: z.string().optional(),
+      product_size_id: z.string().optional(),
       warehouse_id: z.string().optional(),
       name: z.string().min(1, { message: "Nome é obrigatório" }),
-      description: z.string().optional(),
+      description: z.string().optional().nullable(),
       quantity: z.string().min(1, { message: "Quantidade é obrigatória" })
                 .refine(val => val !== undefined && !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
                 .refine(val => val !== undefined && parseFloat(val) > 0, { message: "Deve ser maior que zero" }),
-      unit: z.string().optional(),
+      unit: z.string().optional().nullable(),
       unit_price: z.string().min(1, { message: "Preço é obrigatório" })
-                .refine(val => val !== undefined && !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
-                .refine(val => val !== undefined && parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
-      discount_percentage: z.string().optional()
-                .refine(val => val === '' || (val !== undefined && !isNaN(parseFloat(val))), { message: "Deve ser um número válido" })
-                .refine(val => val === '' || (val !== undefined && parseFloat(val) >= 0), { message: "Não pode ser negativo" })
-                .refine(val => val === '' || (val !== undefined && parseFloat(val) <= 100), { message: "Deve ser no máximo 100%" }),
-      tax_percentage: z.string().optional()
-                .refine(val => val === '' || (val !== undefined && !isNaN(parseFloat(val))), { message: "Deve ser um número válido" })
-                .refine(val => val === '' || (val !== undefined && parseFloat(val) >= 0), { message: "Não pode ser negativo" }),
+                .refine(val => !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+                .refine(val => parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+      discount_percentage: z.string().optional().nullable()
+                .refine(val => !val || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+                .refine(val => !val || parseFloat(val) >= 0, { message: "Não pode ser negativo" })
+                .refine(val => !val || parseFloat(val) <= 100, { message: "Deve ser no máximo 100%" }),
+      tax_percentage: z.string().optional().nullable()
+                .refine(val => !val || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+                .refine(val => !val || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
     })
   ).min(1, { message: "Adicione pelo menos 1 item à venda" }),
+  shipping_amount: z.string().optional()
+    .refine(val => val === '' || !isNaN(parseFloat(val)), { message: "Deve ser um número válido" })
+    .refine(val => val === '' || parseFloat(val) >= 0, { message: "Não pode ser negativo" }),
+  commission_rate: z.number().optional(),
+  discount_amount: z.number().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 
-interface SaleItem {
-    id?: string;
-    product_id?: string;
-    product_variant_id?: string;
-    product_color_id?: string;
-    product_size_id?: string;
-    warehouse_id?: string;
-    name: string;
-    description?: string;
-    quantity: string;
-    unit?: string;
-    unit_price: string;
-    discount_percentage?: string;
-    tax_percentage?: string;
-}
 
-interface Customer { id: string; name: string; }
-interface Product { id: string; name: string; price: number; unit?: string; description?: string; category?: { id: string; name: string }; }
-interface Warehouse { id: string; name: string; }
-interface Currency { code: string; exchange_rate: number; decimal_separator: string; thousand_separator: string; decimal_places: number; symbol: string; }
-interface TaxRate { value: number; is_default?: boolean; }
-interface PaymentMethod { value: string; label: string; }
 
 interface Props {
     sale: Sale;
@@ -109,6 +90,7 @@ interface Props {
     units: { value: string; label: string }[];
     statuses: string[];
     paymentMethods: PaymentMethod[];
+    users: User[];
 }
 
 export default function Edit({
@@ -122,6 +104,7 @@ export default function Edit({
     statuses,
     units,
     paymentMethods,
+    users,
 }: Props) {
     const { toast } = useToast();
 
@@ -144,35 +127,41 @@ export default function Edit({
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            ...sale,
+            sale_number: sale.sale_number,
             customer_id: sale.customer_id?.toString() || '',
+            user_id: sale.user_id?.toString() || '',
             issue_date: sale.issue_date ? parseISO(sale.issue_date) : new Date(),
             due_date: sale.due_date ? parseISO(sale.due_date) : null,
+            status: sale.status as 'draft' | 'pending' | 'paid' | 'cancel' | 'partial', // Ensure type matches schema
+            currency_code: sale.currency_code,
             exchange_rate: sale.exchange_rate?.toString() || '1',
-            shipping_amount: sale.shipping_amount?.toString() || '0',
-            amount_paid: sale.amount_paid?.toString() || '0',
-            shipping_address: sale.shipping_address || '',
-            billing_address: sale.billing_address || '',
+            include_tax: sale.include_tax ?? true,
             notes: sale.notes || '',
             terms: sale.terms || '',
+            shipping_amount: sale.shipping_amount?.toString() || '0',
+            shipping_address: sale.shipping_address || '',
+            billing_address: sale.billing_address || '',
+            payment_method: sale.payment_method || '',
+            amount_paid: sale.amount_paid?.toString() || '0',
             reference: sale.reference || '',
-            include_tax: sale.include_tax ?? true,
-                items:
-                    sale.items?.map((item) => ({
-                        ...item,
-                        id: item.id?.toString(), // Manter o ID do item existente
-                        product_id: item.product_id ? item.product_id.toString() : undefined,
-                        product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
-                        product_color_id: item.product_color_id ? item.product_color_id.toString() : undefined,
-                        product_size_id: item.product_size_id ? item.product_size_id.toString() : undefined,
-                        warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : undefined,
-                        quantity: item.quantity.toString(),
-                        unit_price: item.unit_price.toString(),
-                        discount_percentage: item.discount_percentage?.toString() || '0',
-                        tax_percentage: item.tax_percentage?.toString() || '0',
-                        description: item.description || '',
-                        unit: item.unit || 'unit',
-                    })) || [],
+            commission_rate: sale.commission_rate || 0,
+            discount_amount: sale.discount_amount || 0,
+            items:
+                sale.items?.map((item) => ({
+                    ...item,
+                    id: item.id?.toString(), // Manter o ID do item existente
+                    product_id: item.product_id ? item.product_id.toString() : '', // Required by new schema
+                    product_variant_id: item.product_variant_id ? item.product_variant_id.toString() : undefined,
+                    product_color_id: item.product_color_id ? item.product_color_id.toString() : undefined,
+                    product_size_id: item.product_size_id ? item.product_size_id.toString() : undefined,
+                    warehouse_id: item.warehouse_id ? item.warehouse_id.toString() : undefined,
+                    quantity: item.quantity.toString(),
+                    unit_price: item.unit_price.toString(),
+                    discount_percentage: item.discount_percentage?.toString() || '0',
+                    tax_percentage: item.tax_percentage?.toString() || '0',
+                    description: item.description || '',
+                    unit: item.unit || 'unit',
+                })) || [],
         },
     });
 
@@ -264,14 +253,19 @@ export default function Edit({
 
     // Adicionar um novo item
     const handleAddItem = (item: ItemFormValues) => {
+        // Sanitize item to convert nulls to undefined for useFieldArray compatibility
+        const cleanItem = Object.fromEntries(
+            Object.entries(item).map(([key, value]) => [key, value === null ? undefined : value])
+        ) as ItemFormValues;
+
         if (editingItemIndex !== null) {
             // Atualizar item existente
-            update(editingItemIndex, { ...item, id: fields[editingItemIndex].id });
+            update(editingItemIndex, { ...cleanItem, id: fields[editingItemIndex].id });
             setEditingItemIndex(null);
             toast({ title: 'Item atualizado com sucesso', variant: 'success' });
         } else {
             // Adicionar novo item
-            append(item);
+            append(cleanItem);
             toast({ title: 'Item adicionado com sucesso', variant: 'success' });
         }
         setItemFormOpen(false);
@@ -362,12 +356,49 @@ export default function Edit({
         return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
     };
 
+    const [paymentPercentage, setPaymentPercentage] = useState<string>('');
+    
+    // Iniciar percentage se já houver valor pago
+    useEffect(() => {
+        const amount = parseFloat(form.getValues('amount_paid')) || 0;
+        const total = calculateTotals().total;
+        if (total > 0 && amount > 0) {
+             const percent = ((amount / total) * 100).toFixed(2);
+             setPaymentPercentage(percent);
+        }
+    }, []);
+
     const handlePaymentMethodChange = (method: string) => form.setValue('payment_method', method);
+
+    const handlePaymentPercentageChange = (percentage: string) => {
+        setPaymentPercentage(percentage);
+        const percentValue = parseFloat(percentage);
+        const total = calculateTotals().total;
+
+        if (!isNaN(percentValue) && total > 0) {
+            const amount = (total * (percentValue / 100)).toFixed(2);
+            form.setValue('amount_paid', amount);
+            
+            const amountValue = parseFloat(amount);
+            if (amountValue >= total) form.setValue('status', 'paid');
+            else if (amountValue > 0) form.setValue('status', 'partial');
+            else form.setValue('status', 'pending');
+        } else if (percentage === '') {
+            form.setValue('amount_paid', '');
+             form.setValue('status', 'pending');
+        }
+    };
 
     const handlePaymentAmountChange = (amount: string) => {
         form.setValue('amount_paid', amount);
         const amountValue = parseFloat(amount) || 0;
         const total = calculateTotals().total;
+        
+        if (total > 0) {
+            const percent = ((amountValue / total) * 100).toFixed(2);
+            setPaymentPercentage(percent === '0.00' && amount === '' ? '' : percent);
+        }
+
         if (total > 0 && amountValue >= total) form.setValue('status', 'paid');
         else if (amountValue > 0) form.setValue('status', 'partial');
         else form.setValue('status', 'pending');
@@ -379,24 +410,25 @@ export default function Edit({
             ...values,
             _method: 'PUT',
             customer_id: values.customer_id || null,
+            user_id: values.user_id || null,
             exchange_rate: parseFloat(values.exchange_rate),
             issue_date: format(values.issue_date, 'yyyy-MM-dd'),
             due_date: values.due_date ? format(values.due_date, 'yyyy-MM-dd') : null,
             shipping_amount: values.shipping_amount ? parseFloat(values.shipping_amount) : 0,
             amount_paid: values.amount_paid ? parseFloat(values.amount_paid) : 0,
-                items: values.items.map((item) => ({
-                    ...item,
-                    id: item.id || null,
-                    product_id: item.product_id || null,
-                    product_variant_id: item.product_variant_id || null,
-                    product_color_id: item.product_color_id || null,
-                    product_size_id: item.product_size_id || null,
-                    warehouse_id: item.warehouse_id || null,
-                    quantity: parseFloat(item.quantity),
-                    unit_price: parseFloat(item.unit_price),
-                    discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
-                    tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
-                })),
+            items: values.items.map((item) => ({
+                ...item,
+                id: item.id || null,
+                product_id: item.product_id || null,
+                product_variant_id: item.product_variant_id || null,
+                product_color_id: item.product_color_id || null,
+                product_size_id: item.product_size_id || null,
+                warehouse_id: item.warehouse_id || null,
+                quantity: parseFloat(item.quantity),
+                unit_price: parseFloat(item.unit_price),
+                discount_percentage: item.discount_percentage ? parseFloat(item.discount_percentage) : 0,
+                tax_percentage: item.tax_percentage ? parseFloat(item.tax_percentage) : 0,
+            })),
         };
 
         router.post(`/admin/sales/${sale.id}`, data, {
@@ -452,7 +484,13 @@ export default function Edit({
 
                                     {/* Tab de Dados Gerais */}
                                     <TabsContent value="details" className="mt-6">
-                                        <SaleDetails control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
+                                        <SaleDetails
+                                            control={form.control}
+                                            customers={customers}
+                                            currencies={currencies}
+                                            statuses={statuses}
+                                            users={users}
+                                        />
                                     </TabsContent>
 
                                     {/* Tab de Produtos */}
@@ -495,6 +533,8 @@ export default function Edit({
                                     onPaymentAmountChange={handlePaymentAmountChange}
                                     paymentMethod={watchPaymentMethod || ''}
                                     paymentAmount={watchPaymentAmount || ''}
+                                    paymentPercentage={paymentPercentage}
+                                    onPaymentPercentageChange={handlePaymentPercentageChange}
                                 />
                             </div>
                         </div>

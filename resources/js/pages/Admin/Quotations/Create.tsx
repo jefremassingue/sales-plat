@@ -4,11 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import AppLayout from '@/layouts/app-layout';
-import { BreadcrumbItem } from '@/types'; // Changed import to named import
+import { type BreadcrumbItem } from '@/types/index';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { ArrowLeft, Check, CreditCard, Loader2, Package, User } from 'lucide-react';
+import { ArrowLeft, Check, CreditCard, Loader2, Package, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -17,7 +17,8 @@ import ItemForm, { ItemFormValues } from './_components/ItemForm';
 import ItemsTab from './_components/ItemsTab';
 import NotesTab from './_components/NotesTab';
 import ProductSelector from './_components/ProductSelector';
-import { Currency, Customer, DiscountType, Product, QuotationStatus, TaxRate, Warehouse } from './_components/types';
+import { type Currency, type Customer, type DiscountType, type Product, type QuotationStatusOption, type TaxRate, type Warehouse, type Role, type User } from '@/types/index';
+
 
 interface Props {
     quotationNumber: string;
@@ -28,64 +29,12 @@ interface Props {
     defaultCurrency: Currency;
     taxRates: TaxRate[];
     units: { value: string; label: string }[];
-    statuses: QuotationStatus[];
+    statuses: QuotationStatusOption[];
     discountTypes: DiscountType[];
+    users: User[];
 }
 
-// Schema de validação do formulário
-export const formSchema = z.object({
-    quotation_number: z.string().optional().nullable(),
-    customer_id: z.string().optional(),
-    issue_date: z.date({ required_error: 'Data de emissão é obrigatória' }),
-    expiry_date: z.date().optional().nullable(),
-    status: z.enum(['draft', 'sent', 'approved', 'rejected']),
-    currency_code: z.string().min(1, { message: 'Moeda é obrigatória' }),
-    exchange_rate: z
-        .string()
-        .min(1, { message: 'Taxa de câmbio é obrigatória' })
-        .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-        .refine((val) => parseFloat(val) > 0, { message: 'Deve ser maior que zero' }),
-    include_tax: z.boolean().default(true),
-    notes: z.string().optional(),
-    terms: z.string().optional(),
-    items: z
-        .array(
-            z.object({
-                product_id: z.string().optional(),
-                product_variant_id: z.string().optional(),
-                product_color_id: z.string().optional(),
-                product_size_id: z.string().optional(),
-                warehouse_id: z.string().optional(),
-                name: z.string().min(1, { message: 'Nome é obrigatório' }),
-                description: z.string().optional(),
-                quantity: z
-                    .string()
-                    .min(1, { message: 'Quantidade é obrigatória' })
-                    .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => parseFloat(val) > 0, { message: 'Deve ser maior que zero' }),
-                unit: z.string().optional(),
-                unit_price: z
-                    .string()
-                    .min(1, { message: 'Preço é obrigatório' })
-                    .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-                discount_percentage: z
-                    .string()
-                    .optional()
-                    .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
-                    .refine((val) => val === '' || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
-                tax_percentage: z
-                    .string()
-                    .optional()
-                    .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-            }),
-        )
-        .min(1, { message: 'Adicione pelo menos 1 item à cotação' }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { formSchema, FormValues } from './_components/schema';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -115,6 +64,7 @@ export default function Create({
     statuses,
     units,
     discountTypes,
+    users,
 }: Props) {
     const { defaultWarehouse } = usePage().props as any;
     const { toast } = useToast();
@@ -135,6 +85,7 @@ export default function Create({
     const initialDefaultValues: FormValues = {
         quotation_number: quotationNumber,
         customer_id: '',
+        user_id: '',
         issue_date: today,
         expiry_date: expiryDate,
         status: 'draft',
@@ -263,13 +214,18 @@ export default function Create({
 
     // Adicionar um novo item
     const handleAddItem = (item: ItemFormValues) => {
+        // Sanitize item to convert nulls to undefined for useFieldArray compatibility
+        const cleanItem = Object.fromEntries(
+            Object.entries(item).map(([key, value]) => [key, value === null ? undefined : value])
+        ) as ItemFormValues;
+
         if (editingItemIndex !== null) {
             // Atualizar item existente
-            update(editingItemIndex, item);
+            update(editingItemIndex, cleanItem);
             setEditingItemIndex(null);
         } else {
             // Adicionar novo item
-            append(item);
+            append(cleanItem);
         }
         setItemFormOpen(false);
     };
@@ -369,6 +325,7 @@ export default function Create({
         const data = {
             ...values,
             customer_id: values.customer_id,
+            user_id: values.user_id || null,
             exchange_rate: parseFloat(values.exchange_rate),
             issue_date: format(values.issue_date, 'yyyy-MM-dd'),
             expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
@@ -429,7 +386,7 @@ export default function Create({
                         <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab}>
                             <TabsList>
                                 <TabsTrigger value="details">
-                                    <User className="mr-2 h-4 w-4" />
+                                    <UserIcon className="mr-2 h-4 w-4" />
                                     Dados Gerais
                                 </TabsTrigger>
                                 <TabsTrigger value="items">
@@ -444,7 +401,7 @@ export default function Create({
 
                             {/* Tab de Dados Gerais */}
                             <TabsContent value="details" className="mt-6">
-                                <DetailsTab control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
+                                <DetailsTab control={form.control} customers={customers} currencies={currencies} statuses={statuses} users={users} />
                             </TabsContent>
 
                             {/* Tab de Itens */}

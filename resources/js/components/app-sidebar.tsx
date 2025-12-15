@@ -147,6 +147,13 @@ const mainNavItems = [
                 activeRoutes: ['admin.hero-sliders.index', 'admin.hero-sliders.create', 'admin.hero-sliders.edit'],
                 permission: 'admin-heroslider.index',
             },
+            // {
+            //     title: 'Gerador de Mockups',
+            //     href: '/admin/mockups',
+            //     icon: Image,
+            //     activeRoutes: ['admin.mockups.index'],
+            //     permission: 'admin-mockup.generate',
+            // },
         ],
     },
 
@@ -161,6 +168,7 @@ const mainNavItems = [
             'admin-sale.index',
             'admin-sale.index',
             'admin-customer.index',
+            'admin-employee.index',
         ],
         group: 'Entidades',
         items: [
@@ -185,19 +193,19 @@ const mainNavItems = [
                 activeRoutes: ['admin.permissions.index', 'admin.permissions.create', 'admin.permissions.edit', 'admin.permissions.show'],
                 permission: 'admin-permission.index',
             },
-      
-            // {
-            //     title: 'Funcionários',
-            //     href: '/admin/employees',
-            //     icon: UserCircle,
-            //     activeRoutes: [
-            //         'admin.employees.index',
-            //         'admin.employees.create',
-            //         'admin.employees.edit',
-            //         'admin.employees.show'
-            //     ]
-            // permission: 'admin-sale.index',
-            // },
+
+            {
+                title: 'Funcionários',
+                href: '/admin/employees',
+                icon: UserCog,
+                activeRoutes: [
+                    'admin.employees.index',
+                    'admin.employees.create',
+                    'admin.employees.edit',
+                    'admin.employees.show'
+                ],
+                permission: 'admin-employee.index',
+            },
 
             {
                 title: 'Armazéns',

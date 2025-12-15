@@ -24,6 +24,8 @@ interface SummaryProps {
   onPaymentAmountChange: (amount: string) => void;
   paymentMethod: string;
   paymentAmount: string;
+  paymentPercentage: string;
+  onPaymentPercentageChange: (percentage: string) => void;
   onReset?: () => void; // Opcional para o botão reset
 }
 
@@ -38,6 +40,8 @@ export default function SaleSummary({
   onPaymentAmountChange,
   paymentMethod,
   paymentAmount,
+  paymentPercentage,
+  onPaymentPercentageChange,
   onReset
 }: SummaryProps) {
   const [changeAmount, setChangeAmount] = useState<number>(0);
@@ -112,16 +116,30 @@ export default function SaleSummary({
             </Select>
           </div>
 
-          <div className="grid gap-2">
-            <label className="text-sm font-medium">Valor Pago</label>
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={paymentAmount}
-              onChange={(e) => onPaymentAmountChange(e.target.value)}
-              className={parseFloat(paymentAmount) >= totals.total ? "border-green-500" : ""}
-            />
+          <div className="grid grid-cols-2 gap-2">
+             <div className="grid gap-2">
+                <label className="text-sm font-medium">Percentual (%)</label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.01"
+                  value={paymentPercentage}
+                  onChange={(e) => onPaymentPercentageChange(e.target.value)}
+                  placeholder="%"
+                />
+             </div>
+             <div className="grid gap-2">
+                <label className="text-sm font-medium">Valor Pago</label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={paymentAmount}
+                  onChange={(e) => onPaymentAmountChange(e.target.value)}
+                  className={parseFloat(paymentAmount) >= totals.total ? "border-green-500" : ""}
+                />
+             </div>
           </div>
 
           {parseFloat(paymentAmount) > 0 && (

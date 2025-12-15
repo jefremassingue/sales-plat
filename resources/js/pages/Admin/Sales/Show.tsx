@@ -17,6 +17,8 @@ import { RevenueTab } from './_components/RevenueTab';
 import { SaleDetailsCard } from './_components/SaleDetailsCard';
 import { SaleHeader } from './_components/SaleHeader';
 import { StatusChangeDialog } from './_components/StatusChangeDialog';
+import UpdateUserDialog from '../Quotations/_components/UpdateUserDialog';
+import { type User } from '@/types';
 
 interface PaymentMethod {
     value: string;
@@ -27,11 +29,13 @@ interface Props {
     sale: Sale;
     statuses: { value: string; label: string; color: string }[];
     paymentMethods: PaymentMethod[];
+    users: User[];
 }
 
-export default function Show({ sale, statuses, paymentMethods }: Props) {
+export default function Show({ sale, statuses, paymentMethods, users }: Props) {
     const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
     const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+    const [updateUserDialogOpen, setUpdateUserDialogOpen] = useState(false);
 
     const [statusDialogOpen, setStatusDialogOpen] = useState(false);
     const [selectedStatus, setSelectedStatus] = useState<typeof sale.status>(sale.status);
@@ -233,6 +237,7 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                         statuses={statuses}
                         setPaymentDialogOpen={setPaymentDialogOpen}
                         setDeleteAlertOpen={setDeleteAlertOpen}
+                        setUpdateUserDialogOpen={setUpdateUserDialogOpen}
                     />
                 </div>
             </div>
@@ -254,6 +259,15 @@ export default function Show({ sale, statuses, paymentMethods }: Props) {
                     currency: sale.currency
                 }} 
                 paymentMethods={paymentMethods} 
+            />
+
+            <UpdateUserDialog
+                open={updateUserDialogOpen}
+                onOpenChange={setUpdateUserDialogOpen}
+                entityId={sale.id}
+                entityType="sale"
+                currentUserId={sale.user_id?.toString()}
+                users={users}
             />
 
             <DeleteAlert

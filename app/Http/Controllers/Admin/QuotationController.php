@@ -14,6 +14,7 @@ use App\Models\QuotationItem;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Warehouse;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -176,13 +177,59 @@ class QuotationController extends Controller implements HasMiddleware
     }
 
     /**
+     * Search products for autocomplete (API endpoint).
+     */
+    public function searchProducts(Request $request)
+    {
+        $search = $request->input('search', '');
+        $limit = min($request->input('limit', 20), 50);
+
+        $query = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->orderBy('name')->limit($limit)->get();
+
+        return response()->json($products);
+    }
+
+    /**
+     * Search customers for autocomplete (API endpoint).
+     */
+    public function searchCustomers(Request $request)
+    {
+        $search = $request->input('search', '');
+        $limit = min($request->input('limit', 20), 50);
+
+        $query = Customer::select('id', 'name', 'email', 'phone', 'address');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->orderBy('name')->limit($limit)->get();
+
+        return response()->json($customers);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
         try {
             $placeholderNumber = 'AUTO-' . date('Ym');
-            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
+            // Load only top 20 customers and products for initial display; use API search for more
+            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->limit(20)->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
                     'mainImage.versions',
@@ -191,11 +238,19 @@ class QuotationController extends Controller implements HasMiddleware
                     'variants',
                     'variants.color',
                     'variants.size',
-                ])->orderByDesc('created_at')->get();
+                ])->orderBy('name')->limit(20)->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
             $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);
             $units = UnitEnum::toArray();
+            $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee' => $user->employee
+                ];
+            });
 
             return Inertia::render('Admin/Quotations/Create', [
                 'quotationPlaceholder' => $placeholderNumber,
@@ -208,6 +263,7 @@ class QuotationController extends Controller implements HasMiddleware
                 'statuses' => $this->getQuotationStatuses(),
                 'discountTypes' => $this->getDiscountTypes(),
                 'units' => $units,
+                'users' => $users,
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao carregar formulário de cotação: ' . $e->getMessage(), [
@@ -219,6 +275,51 @@ class QuotationController extends Controller implements HasMiddleware
     }
 
     /**
+     * Show the alternative form for creating a new resource.
+     */
+    public function createAlternative()
+    {
+        // try {
+            $placeholderNumber = 'AUTO-' . date('Ym');
+            // Load only top 20 customers and products for initial display; use API search for more
+            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->limit(20)->get();
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')->orderBy('name')->limit(20)->get();
+            $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
+            $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
+            $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);
+            $units = UnitEnum::toArray();
+            $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee' => $user->employee
+                ];
+            });
+
+            return Inertia::render('Admin/Quotations/CreateAlternative', [
+                'quotationPlaceholder' => $placeholderNumber,
+                'customers' => $customers,
+                'products' => $products,
+                'warehouses' => $warehouses,
+                'currencies' => $currencies,
+                'defaultCurrency' => $defaultCurrency,
+                'taxRates' => $this->getTaxRates(),
+                'statuses' => $this->getQuotationStatuses(),
+                'discountTypes' => $this->getDiscountTypes(),
+                'units' => $units,
+                'users' => $users,
+            ]);
+        // } catch (\Exception $e) {
+        //     Log::error('Erro ao carregar formulário alternativo de cotação: ' . $e->getMessage(), [
+        //         'trace' => $e->getTraceAsString()
+        //     ]);
+
+        //     return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
+        // }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -226,6 +327,7 @@ class QuotationController extends Controller implements HasMiddleware
         try {
             $validator = Validator::make($request->all(), [
                 'customer_id' => 'nullable|exists:customers,id',
+                'user_id' => 'nullable|exists:users,id',
                 'issue_date' => 'required|date',
                 'expiry_date' => 'nullable|date|after_or_equal:issue_date',
                 'status' => 'required|string|in:draft,sent,approved,rejected',
@@ -255,10 +357,16 @@ class QuotationController extends Controller implements HasMiddleware
 
             DB::beginTransaction();
             try {
-                $quotationNumber = $this->generateUniqueQuotationNumber();
+                $quotationNumber = $request->input('quotation_number');
+                if (empty($quotationNumber) || str_starts_with($quotationNumber, 'AUTO-')) {
+                    $quotationNumber = $this->generateUniqueQuotationNumber();
+                }
                 $quotationData = $request->except('items');
-                $quotationData['user_id'] = Auth::id();
+                $quotationData['user_id'] = $request->user_id ?? Auth::id();
                 $quotationData['quotation_number'] = $quotationNumber;
+                $quotationData['issue_date'] = now();
+                $quotationData['expiry_date'] = now()->addDays(7)->toDateString();
+
 
                 $quotation = Quotation::create($quotationData);
 
@@ -339,20 +447,20 @@ class QuotationController extends Controller implements HasMiddleware
 
         try {
             $prefix = 'QT-' . date('Ym') . '-';
-            $lastQuotation = Quotation::where('quotation_number', 'LIKE', $prefix . '%')
+            $lastQuotation = Quotation::withTrashed()->where('quotation_number', 'LIKE', $prefix . '%')
                 ->orderByRaw('CAST(SUBSTRING(quotation_number, ' . (strlen($prefix) + 1) . ') AS UNSIGNED) DESC')
                 ->first();
 
             if ($lastQuotation) {
                 $lastNumber = substr($lastQuotation->quotation_number, strlen($prefix));
-                $nextNumber = intval($lastNumber) + 1;
+                $nextNumber = max(intval($lastNumber) + 1, 500);
             } else {
-                $nextNumber = 1;
+                $nextNumber = 500;
             }
 
             $quotationNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-            while (Quotation::where('quotation_number', $quotationNumber)->exists()) {
+            while (Quotation::withTrashed()->where('quotation_number', $quotationNumber)->exists()) {
                 $nextNumber++;
                 $quotationNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
             }
@@ -379,10 +487,21 @@ class QuotationController extends Controller implements HasMiddleware
             return $item;
         });
 
+        // Carregar utilizadores com funcionários para o diálogo de alteração de responsável
+        $users = User::with('employee')->get()->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employee' => $user->employee
+            ];
+        });
+
         return Inertia::render('Admin/Quotations/Show', [
             'quotation' => $quotation,
             'statuses' => $this->getQuotationStatuses(),
             'currency' => Currency::where('code', $quotation->currency)->first() ?: null,
+            'users' => $users,
         ]);
     }
 
@@ -413,6 +532,14 @@ class QuotationController extends Controller implements HasMiddleware
         $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
         $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
         $units = UnitEnum::toArray();
+        $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employee' => $user->employee
+            ];
+        });
 
         return Inertia::render('Admin/Quotations/Edit', [
             'quotation' => $quotation,
@@ -424,6 +551,7 @@ class QuotationController extends Controller implements HasMiddleware
             'statuses' => $this->getQuotationStatuses(),
             'discountTypes' => $this->getDiscountTypes(),
             'units' => $units,
+            'users' => $users,
         ]);
     }
 
@@ -441,6 +569,7 @@ class QuotationController extends Controller implements HasMiddleware
             $validator = Validator::make($request->all(), [
                 'quotation_number' => 'required|string|unique:quotations,quotation_number,' . $quotation->id,
                 'customer_id' => 'nullable|exists:customers,id',
+                'user_id' => 'nullable|exists:users,id',
                 'issue_date' => 'required|date',
                 'expiry_date' => 'nullable|date|after_or_equal:issue_date',
                 'status' => 'required|string|in:draft,sent,approved,rejected',
@@ -609,6 +738,43 @@ class QuotationController extends Controller implements HasMiddleware
 
             return redirect()->back()
                 ->with('error', 'Ocorreu um erro ao atualizar o status da cotação: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Alterar o utilizador responsável pela cotação
+     */
+    public function updateUser(Request $request, Quotation $quotation)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'user_id' => 'nullable|exists:users,id',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            DB::beginTransaction();
+
+            $quotation->user_id = $request->user_id;
+            $quotation->save();
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Responsável da cotação atualizado com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao atualizar responsável da cotação: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao atualizar o responsável da cotação: ' . $e->getMessage());
         }
     }
 
@@ -799,14 +965,53 @@ class QuotationController extends Controller implements HasMiddleware
     }
 
     /**
+     * Estender o prazo de validade da cotação
+     */
+    public function extendExpiry(Request $request, Quotation $quotation)
+    {
+        $validator = Validator::make($request->all(), [
+            'expiry_date' => 'required|date|after:today',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $quotation->expiry_date = $request->expiry_date;
+
+            // Se o status estava expirado, restaura para enviado
+            if ($quotation->status === 'expired') {
+                $quotation->status = 'sent';
+            }
+
+            $quotation->save();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Prazo de validade estendido com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao estender validade da cotação: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'quotation_id' => $quotation->id,
+            ]);
+            return redirect()->back()->with('error', 'Ocorreu um erro ao estender a validade: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
      * Converte uma cotação em uma venda.
      */
     public function convertToSale(Quotation $quotation)
     {
         try {
             // Verificar se a cotação pode ser convertida
-            if (!in_array($quotation->status, ['sent', 'draft', 'approved'])) {
-                return redirect()->back()->with('error', 'Apenas cotações enviadas ou aprovadas podem ser convertidas em venda.');
+            if (!in_array($quotation->status, ['sent', 'draft', 'approved', 'expired'])) {
+                return redirect()->back()->with('error', 'Apenas cotações enviadas, aprovadas, rascunhos ou expiradas podem ser convertidas em venda.');
             }
 
             if ($quotation->converted_to_sale_id) {
@@ -825,13 +1030,13 @@ class QuotationController extends Controller implements HasMiddleware
                 'status' => 'pending', // Inicia como pendente
                 'currency_code' => $quotation->currency_code,
                 'exchange_rate' => $quotation->exchange_rate,
-                'subtotal' => $quotation->subtotal,
-                'discount_amount' => $quotation->discount_amount,
-                'tax_amount' => $quotation->tax_amount,
-                'shipping_amount' => $quotation->shipping_amount,
-                'total' => $quotation->total,
+                'subtotal' => $quotation->subtotal ?? 0,
+                'discount_amount' => $quotation->discount_amount ?? 0,
+                'tax_amount' => $quotation->tax_amount ?? 0,
+                'shipping_amount' => $quotation->shipping_amount ?? 0,
+                'total' => $quotation->total ?? 0,
                 'amount_paid' => 0,
-                'shipping_amount' => 0,
+
                 'amount_due' => $quotation->total,
                 'notes' => $quotation->notes,
                 'terms' => $quotation->terms,
@@ -910,9 +1115,9 @@ class QuotationController extends Controller implements HasMiddleware
 
         if ($lastSale) {
             $lastNumber = substr($lastSale->sale_number, strlen($prefix));
-            $nextNumber = intval($lastNumber) + 1;
+            $nextNumber = max(intval($lastNumber) + 1, 500);
         } else {
-            $nextNumber = 1;
+            $nextNumber = 500;
         }
 
         $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);

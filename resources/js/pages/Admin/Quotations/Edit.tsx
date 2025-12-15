@@ -3,11 +3,11 @@ import { Form } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type Customer, type SaleStatus as QuotationStatus, type User, type Warehouse } from '@/types/index';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { ArrowLeft, Check, CreditCard, Loader2, Package, User } from 'lucide-react';
+import { ArrowLeft, Check, CreditCard, Loader2, Package, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -16,13 +16,14 @@ import ItemForm, { ItemFormValues } from './_components/ItemForm';
 import ItemsTab from './_components/ItemsTab';
 import NotesTab from './_components/NotesTab';
 import ProductSelector from './_components/ProductSelector';
-import { Currency, Customer, DiscountType, Product, QuotationStatus, TaxRate, Warehouse } from './_components/types';
+import { Currency, DiscountType, Product, TaxRate, QuotationStatusOption } from '@/types';
 
 interface Props {
     quotation: {
         id: string;
         quotation_number: string;
         customer_id: string | null;
+        user_id: string | null;
         issue_date: string;
         expiry_date: string | null;
         status: string;
@@ -54,66 +55,13 @@ interface Props {
     defaultCurrency: Currency;
     taxRates: TaxRate[];
     units: { value: string; label: string }[];
-    statuses: QuotationStatus[];
+    statuses: QuotationStatusOption[];
     discountTypes: DiscountType[];
+    users: User[];
 }
 
 // Schema de validação do formulário
-const formSchema = z.object({
-    quotation_number: z.string().optional().nullable(),
-    customer_id: z.string().optional(),
-    issue_date: z.date({ required_error: 'Data de emissão é obrigatória' }),
-    expiry_date: z.date().optional().nullable(),
-    status: z.enum(['draft', 'sent', 'approved', 'rejected']),
-    currency_code: z.string().min(1, { message: 'Moeda é obrigatória' }),
-    exchange_rate: z
-        .string()
-        .min(1, { message: 'Taxa de câmbio é obrigatória' })
-        .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-        .refine((val) => parseFloat(val) > 0, { message: 'Deve ser maior que zero' }),
-    include_tax: z.boolean().default(true),
-    notes: z.string().optional().nullable(),
-    terms: z.string().optional().nullable(),
-    items: z
-        .array(
-            z.object({
-                id: z.string().optional(),
-                product_id: z.string().optional(),
-                product_variant_id: z.string().optional(),
-
-                product_color_id: z.string().optional(),
-                product_size_id: z.string().optional(),
-                warehouse_id: z.string().optional(),
-                name: z.string().min(1, { message: 'Nome é obrigatório' }),
-                description: z.string().optional().nullable(),
-                quantity: z
-                    .string()
-                    .min(1, { message: 'Quantidade é obrigatória' })
-                    .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => parseFloat(val) > 0, { message: 'Deve ser maior que zero' }),
-                unit: z.string().optional().nullable(),
-                unit_price: z
-                    .string()
-                    .min(1, { message: 'Preço é obrigatório' })
-                    .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-                discount_percentage: z
-                    .string()
-                    .optional()
-                    .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
-                    .refine((val) => val === '' || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
-                tax_percentage: z
-                    .string()
-                    .optional()
-                    .refine((val) => val === '' || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
-                    .refine((val) => val === '' || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
-            }),
-        )
-        .min(1, { message: 'Adicione pelo menos 1 item à cotação' }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { formSchema, FormValues } from './_components/schema';
 
 export default function Edit({
     quotation,
@@ -126,6 +74,7 @@ export default function Edit({
     statuses,
     units,
     discountTypes,
+    users,
 }: Props) {
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -164,6 +113,7 @@ export default function Edit({
         defaultValues: {
             quotation_number: quotation.quotation_number,
             customer_id: quotation.customer_id ? quotation.customer_id : '',
+            user_id: quotation.user_id ? quotation.user_id : '',
             issue_date: issueDate,
             expiry_date: expiryDate,
             status: initialStatus as any,
@@ -257,7 +207,7 @@ export default function Edit({
                 unit_price: selectedProduct.price.toString(),
                 unit: selectedProduct.unit || 'unit', // Usar a unidade do produto
                 discount_percentage: '0',
-                tax_percentage: taxRates.find((tax) => tax.is_default == true)?.value || '16', // Taxa padrão de IVA em Moçambique
+                tax_percentage: String(taxRates.find((tax) => tax.is_default == true)?.value || 16), // Taxa padrão de IVA em Moçambique
             };
 
             // Adicionar diretamente no form
@@ -274,13 +224,18 @@ export default function Edit({
 
     // Adicionar um novo item
     const handleAddItem = (item: ItemFormValues) => {
+        // Sanitize item to convert nulls to undefined for useFieldArray compatibility
+        const cleanItem = Object.fromEntries(
+            Object.entries(item).map(([key, value]) => [key, value === null ? undefined : value])
+        ) as ItemFormValues;
+
         if (editingItemIndex !== null) {
             // Atualizar item existente
-            update(editingItemIndex, item);
+            update(editingItemIndex, cleanItem);
             setEditingItemIndex(null);
         } else {
             // Adicionar novo item
-            append(item);
+            append(cleanItem);
         }
         setItemFormOpen(false);
     };
@@ -367,6 +322,7 @@ export default function Edit({
             const data = {
                 ...values,
                 customer_id: values.customer_id ? values.customer_id : null,
+                user_id: values.user_id ? values.user_id : null,
                 exchange_rate: parseFloat(values.exchange_rate),
                 issue_date: format(values.issue_date, 'yyyy-MM-dd'),
                 expiry_date: values.expiry_date ? format(values.expiry_date, 'yyyy-MM-dd') : null,
@@ -462,7 +418,7 @@ export default function Edit({
                         <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab}>
                             <TabsList>
                                 <TabsTrigger value="details">
-                                    <User className="mr-2 h-4 w-4" />
+                                    <UserIcon className="mr-2 h-4 w-4" />
                                     Dados Gerais
                                 </TabsTrigger>
                                 <TabsTrigger value="items">
@@ -477,7 +433,7 @@ export default function Edit({
 
                             {/* Tab de Dados Gerais */}
                             <TabsContent value="details" className="mt-6">
-                                <DetailsTab control={form.control} customers={customers} currencies={currencies} statuses={statuses} />
+                                <DetailsTab control={form.control} customers={customers} currencies={currencies} statuses={statuses} users={users} />
                             </TabsContent>
 
                             {/* Tab de Itens */}
@@ -537,6 +493,12 @@ export default function Edit({
                     onOpenChange={setProductSelectorOpen}
                     products={products}
                     onSelect={handleProductSelect}
+                    onAddItemManual={() => {
+                        setProductSelectorOpen(false);
+                        setEditingItemIndex(null);
+                        setItemFormOpen(true);
+                    }}
+                    setOnSearch={() => {}} // Placeholder as we might not need search state here or use a local state
                 />
 
                 {/* Formulário de Item */}
@@ -548,9 +510,10 @@ export default function Edit({
                     warehouses={warehouses}
                     taxRates={taxRates}
                     units={units}
-                    initialValues={editingItemIndex !== null ? fields[editingItemIndex] : undefined}
+                    initialValues={editingItemIndex !== null ? (fields[editingItemIndex] as any) : undefined}
                     title={editingItemIndex !== null ? 'Editar Item' : 'Adicionar Item'}
                     isManualItemMode={editingItemIndex === null && !productSelectorOpen}
+                    setOnSearch={() => {}} 
                 />
             </div>
         </AppLayout>

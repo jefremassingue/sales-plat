@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
+import { can, cn } from '@/lib/utils';
 import { Sale } from '@/types';
 import { router } from '@inertiajs/react';
-import { AlertCircle, Banknote, Calendar, CreditCard, User } from 'lucide-react';
+import { AlertCircle, Banknote, Calendar, CreditCard, Edit, User } from 'lucide-react';
 import { DocumentDropdown } from './DocumentDropdown';
 
 
@@ -18,6 +18,7 @@ interface FinancialSummaryProps {
     statuses: { value: string; label: string; color: string }[];
     setPaymentDialogOpen: (open: boolean) => void;
     setDeleteAlertOpen: (open: boolean) => void;
+    setUpdateUserDialogOpen: (open: boolean) => void;
 }
 
 export function FinancialSummary({
@@ -30,6 +31,7 @@ export function FinancialSummary({
     statuses,
     setPaymentDialogOpen,
     setDeleteAlertOpen,
+    setUpdateUserDialogOpen,
 }: FinancialSummaryProps) {
     return (
         <div className="space-y-6">
@@ -102,10 +104,22 @@ export function FinancialSummary({
                     <Separator />
 
                     <div>
-                        <h3 className="text-muted-foreground text-sm font-medium">Utilizador</h3>
-                        <div className="mt-1 flex items-center">
-                            <User className="text-muted-foreground mr-2 h-4 w-4" />
-                            <span>{sale.user?.name || 'Sistema'}</span>
+                        <h3 className="text-muted-foreground text-sm font-medium">Responsável</h3>
+                        <div className="mt-1 flex items-center justify-between">
+                            <div className="flex items-center">
+                                <User className="text-muted-foreground mr-2 h-4 w-4" />
+                                <div>
+                                    <span>{sale.user?.employee?.name || sale.user?.name || 'Sistema'}</span>
+                                    {sale.user?.employee && (
+                                        <span className="ml-1 text-xs text-muted-foreground">(Funcionário)</span>
+                                    )}
+                                </div>
+                            </div>
+                            {can('admin-sale.edit') && (
+                                <Button variant="ghost" size="sm" onClick={() => setUpdateUserDialogOpen(true)}>
+                                    <Edit className="h-3 w-3" />
+                                </Button>
+                            )}
                         </div>
                     </div>
 

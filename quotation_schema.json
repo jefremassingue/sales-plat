@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Quotation Creation Request",
+  "description": "Schema for creating a new quotation via API",
+  "type": "object",
+  "properties": {
+    "customer_name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 100,
+      "description": "Customer's full name"
+    },
+    "company_name": {
+      "type": "string",
+      "maxLength": 150,
+      "description": "Company name (optional)"
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 30,
+      "description": "Customer's phone number"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "maxLength": 150,
+      "description": "Customer's email address"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Additional notes from customer"
+    },
+    "payment_method": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Preferred payment method"
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "oneOf": [
+          {
+            "properties": {
+              "product_id": {
+                "type": "integer",
+                "description": "ID of existing product"
+              },
+              "quantity": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Quantity of the product"
+              },
+              "product_color_id": {
+                "type": "integer",
+                "description": "ID of product color (optional)"
+              },
+              "product_size_id": {
+                "type": "integer",
+                "description": "ID of product size (optional)"
+              }
+            },
+            "required": ["product_id", "quantity"],
+            "additionalProperties": false
+          },
+          {
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 255,
+                "description": "Name of the custom item"
+              },
+              "unit_price": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Unit price of the custom item"
+              },
+              "quantity": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Quantity of the custom item"
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the custom item"
+              },
+              "unit": {
+                "type": "string",
+                "maxLength": 50,
+                "description": "Unit of measurement"
+              },
+              "product_color_id": {
+                "type": "integer",
+                "description": "ID of product color (optional)"
+              },
+              "product_size_id": {
+                "type": "integer",
+                "description": "ID of product size (optional)"
+              }
+            },
+            "required": ["name", "unit_price", "quantity"],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  },
+  "required": ["customer_name", "phone", "email", "items"],
+  "additionalProperties": false
+}

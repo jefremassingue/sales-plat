@@ -20,7 +20,13 @@ class ProductController extends Controller
         // cache()->clear();
 
         // Preparar a consulta base usando busca inteligente
-        $search = $request->input('search');
+        $search = $request->filled('search') ? trim($request->input('search')) : null;
+
+        // Se há termo de busca com menos de 1 caractere, tratar como vazio
+        if ($search && strlen($search) < 1) {
+            $search = null;
+        }
+
         $productsQuery = Product::smartSearch($search, true) // true = apenas produtos para e-commerce
             ->with(['category', 'images', 'mainImage.versions', 'brand', 'colors' => fn($q) => $q->whereHas('images')->with('images.versions'), 'colors.images.versions']);
 
@@ -294,7 +300,7 @@ class ProductController extends Controller
             }
         }
 
-        // dd($imageUrl);  
+        // dd($imageUrl);
         $description = str(strip_tags($product->description ?? ''))->limit(150);
         return Inertia::render('Site/Products/Details', [
             'product' => $product,
