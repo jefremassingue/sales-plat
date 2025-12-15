@@ -176,10 +176,11 @@ export default function ItemForm({
                 setSelectedProduct(null);
             }
             // allow effects to resume after hydration
-            // use a microtask to ensure dependent effects see updated state
-            Promise.resolve().then(() => {
+            // allow effects to resume after hydration
+            // use setTimeout to ensure dependent effects see updated state and skip overwriting
+            setTimeout(() => {
                 isHydratingRef.current = false;
-            });
+            }, 100);
         } else if (isManualItemMode) {
             form.reset({
                 product_id: '',
@@ -205,12 +206,15 @@ export default function ItemForm({
             const p = products.find((pp) => pp.id.toString() === watchProductId);
             if (p) {
                 setSelectedProduct(p);
-                form.setValue('name', p.name);
-                form.setValue('unit_price', p.price.toString());
-                if (p.unit && p.unit.trim() !== '') {
-                    form.setValue('unit', p.unit);
-                } else {
-                    form.setValue('unit', 'unit');
+                // Only set defaults if we are NOT hydrating
+                if (!isHydratingRef.current) {
+                    form.setValue('name', p.name);
+                    form.setValue('unit_price', p.price.toString());
+                    if (p.unit && p.unit.trim() !== '') {
+                        form.setValue('unit', p.unit);
+                    } else {
+                        form.setValue('unit', 'unit');
+                    }
                 }
                 // Only set defaults if we do not already have a selection (e.g., editing)
                 if (!isHydratingRef.current && !selectedColorId && !selectedSizeId) {

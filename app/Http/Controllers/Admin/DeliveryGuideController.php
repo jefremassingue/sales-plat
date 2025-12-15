@@ -88,7 +88,7 @@ class DeliveryGuideController extends Controller
         $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
         // Verificar se o número gerado já existe
-        while (Sale::where('code', $saleNumber)->exists()) {
+        while (DeliveryGuide::where('code', $saleNumber)->exists()) {
             $nextNumber++;
             $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
         }

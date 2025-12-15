@@ -657,13 +657,30 @@ class SaleController extends Controller implements HasMiddleware
                 }
             }
 
-            // --- 2. ATUALIZAR A VENDA PRINCIPAL ---
-            $sale->fill($request->except(['items', 'sale_number'])); // Evita atualizar o número da venda
+            // --- 2. REGISTRAR PAGAMENTO E ATUALIZAR STATUS ---
+            $currentAmountPaid = $sale->amount_paid;
+            $newAmountPaid = $request->amount_paid ?? 0;
+            
+            if ($newAmountPaid > $currentAmountPaid) {
+                $difference = $newAmountPaid - $currentAmountPaid;
+                
+                SalePayment::create([
+                    'sale_id' => $sale->id,
+                    'amount' => $difference,
+                    'payment_method' => $request->payment_method ?? 'cash',
+                    'payment_date' => now(),
+                    'notes' => 'Pagamento adicional na atualização de venda',
+                    'status' => 'completed',
+                    'user_id' => Auth::id()
+                ]);
+            }
 
+            // Atualizar os campos da venda (exceto items e sale_number)
+            $sale->fill($request->except(['items', 'sale_number']));
+            
             // --- 3. RECALCULAR TOTAIS E STATUS ---
-            // É crucial que seu método `calculateTotals` no modelo Sale faça todos os cálculos necessários
-            $sale->calculateTotals(); // Este método deve recalcular subtotal, impostos, descontos, total e valor devido.
-            // E também deve chamar o $this->save() no final.
+            $sale->calculateTotals(); 
+            $sale->updateStatus(); // Atualizar status explicitamente
 
             DB::commit();
 
@@ -889,9 +906,9 @@ class SaleController extends Controller implements HasMiddleware
 
         if ($lastSale) {
             $lastNumber = substr($lastSale->sale_number, strlen($prefix));
-            $nextNumber = intval($lastNumber) + 1;
+            $nextNumber = max(intval($lastNumber) + 1, 500);
         } else {
-            $nextNumber = 1;
+            $nextNumber = 500;
         }
 
         $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);

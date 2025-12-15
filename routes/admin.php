@@ -22,10 +22,11 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\WarehouseController;
 use App\Http\Controllers\Admin\DeliveryGuideController;
+use App\Http\Controllers\Admin\MockupController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     // Rotas para marcas
     Route::resource('brands', \App\Http\Controllers\Admin\BrandController::class);
     Route::get('categories/tree', [CategoryController::class, 'tree'])->name('categories.tree');
@@ -64,6 +65,7 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
     Route::post('quotations/{quotation}/send-email', [QuotationController::class, 'sendEmail'])->name('quotations.send-email');
     Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
     Route::post('quotations/{quotation}/convert-to-sale', [QuotationController::class, 'convertToSale'])->name('quotations.convert-to-sale');
+    Route::post('quotations/{quotation}/extend-expiry', [QuotationController::class, 'extendExpiry'])->name('quotations.extend-expiry');
 
     // Rotas para vendas
     Route::resource('sales', SaleController::class);
@@ -151,4 +153,14 @@ Route::middleware(['auth', 'permission:admin-dashboard.__invoke'])->prefix('admi
 
     // Utilizadores com funções
     Route::resource('users', UserController::class);
+
+    // Rota para o gerador de mockups
+    Route::get('/mockups', function () {
+        return inertia('Admin/Mockups/Index', [
+            'mockup' => session('mockup'),
+        ]);
+    })->name('mockups.index');
+    Route::post('/mockups/generate', [MockupController::class, 'generate'])
+        ->middleware(['role:Admin'])
+        ->name('mockups.generate');
 });

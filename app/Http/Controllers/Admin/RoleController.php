@@ -17,11 +17,11 @@ class RoleController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('permission:admin-role.index', only: ['index']),
-            new Middleware('permission:admin-role.create', only: ['create', 'store']),
-            new Middleware('permission:admin-role.edit', only: ['edit', 'update']),
-            new Middleware('permission:admin-role.show', only: ['show']),
-            new Middleware('permission:admin-role.destroy', only: ['destroy']),
+            // new Middleware('permission:admin-role.index', only: ['index']),
+            // new Middleware('permission:admin-role.create', only: ['create', 'store']),
+            // new Middleware('permission:admin-role.edit', only: ['edit', 'update']),
+            // new Middleware('permission:admin-role.show', only: ['show']),
+            // new Middleware('permission:admin-role.destroy', only: ['destroy']),
         ];
     }
 

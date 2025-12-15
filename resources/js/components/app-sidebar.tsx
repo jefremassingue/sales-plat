@@ -147,6 +147,13 @@ const mainNavItems = [
                 activeRoutes: ['admin.hero-sliders.index', 'admin.hero-sliders.create', 'admin.hero-sliders.edit'],
                 permission: 'admin-heroslider.index',
             },
+            {
+                title: 'Gerador de Mockups',
+                href: '/admin/mockups',
+                icon: Image,
+                activeRoutes: ['admin.mockups.index'],
+                permission: 'admin-mockup.generate',
+            },
         ],
     },
 
@@ -185,7 +192,7 @@ const mainNavItems = [
                 activeRoutes: ['admin.permissions.index', 'admin.permissions.create', 'admin.permissions.edit', 'admin.permissions.show'],
                 permission: 'admin-permission.index',
             },
-      
+
             // {
             //     title: 'Funcionários',
             //     href: '/admin/employees',

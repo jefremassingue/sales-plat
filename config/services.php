@@ -40,4 +40,12 @@ return [
         'organization' => env('OPENAI_ORGANIZATION'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'url' => env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1beta/models'),
+        'model' => env('GEMINI_IMAGE_MODEL', 'gemini-1.5-flash'),
+        'timeout' => (int) env('GEMINI_TIMEOUT', 60),
+        'connect_timeout' => (int) env('GEMINI_CONNECT_TIMEOUT', 15),
+    ],
+
 ];

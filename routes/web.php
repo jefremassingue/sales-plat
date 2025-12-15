@@ -1,6 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+Route::get('/get-csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+});
+
+Route::get('/', function () {
+    return inertia('Showcase');
+});
+
 use Inertia\Inertia;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Pos\PosSaleController;

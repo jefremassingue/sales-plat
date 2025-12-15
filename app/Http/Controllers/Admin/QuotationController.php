@@ -348,9 +348,9 @@ class QuotationController extends Controller implements HasMiddleware
 
             if ($lastQuotation) {
                 $lastNumber = substr($lastQuotation->quotation_number, strlen($prefix));
-                $nextNumber = intval($lastNumber) + 1;
+                $nextNumber = max(intval($lastNumber) + 1, 500);
             } else {
-                $nextNumber = 1;
+                $nextNumber = 500;
             }
 
             $quotationNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
@@ -802,14 +802,53 @@ class QuotationController extends Controller implements HasMiddleware
     }
 
     /**
+     * Estender o prazo de validade da cotação
+     */
+    public function extendExpiry(Request $request, Quotation $quotation)
+    {
+        $validator = Validator::make($request->all(), [
+            'expiry_date' => 'required|date|after:today',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $quotation->expiry_date = $request->expiry_date;
+
+            // Se o status estava expirado, restaura para enviado
+            if ($quotation->status === 'expired') {
+                $quotation->status = 'sent';
+            }
+
+            $quotation->save();
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Prazo de validade estendido com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erro ao estender validade da cotação: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'quotation_id' => $quotation->id,
+            ]);
+            return redirect()->back()->with('error', 'Ocorreu um erro ao estender a validade: ' . $e->getMessage());
+        }
+    }
+
+
+    /**
      * Converte uma cotação em uma venda.
      */
     public function convertToSale(Quotation $quotation)
     {
         try {
             // Verificar se a cotação pode ser convertida
-            if (!in_array($quotation->status, ['sent', 'draft', 'approved'])) {
-                return redirect()->back()->with('error', 'Apenas cotações enviadas ou aprovadas podem ser convertidas em venda.');
+            if (!in_array($quotation->status, ['sent', 'draft', 'approved', 'expired'])) {
+                return redirect()->back()->with('error', 'Apenas cotações enviadas, aprovadas, rascunhos ou expiradas podem ser convertidas em venda.');
             }
 
             if ($quotation->converted_to_sale_id) {
@@ -828,13 +867,13 @@ class QuotationController extends Controller implements HasMiddleware
                 'status' => 'pending', // Inicia como pendente
                 'currency_code' => $quotation->currency_code,
                 'exchange_rate' => $quotation->exchange_rate,
-                'subtotal' => $quotation->subtotal,
-                'discount_amount' => $quotation->discount_amount,
-                'tax_amount' => $quotation->tax_amount,
-                'shipping_amount' => $quotation->shipping_amount,
-                'total' => $quotation->total,
+                'subtotal' => $quotation->subtotal ?? 0,
+                'discount_amount' => $quotation->discount_amount ?? 0,
+                'tax_amount' => $quotation->tax_amount ?? 0,
+                'shipping_amount' => $quotation->shipping_amount ?? 0,
+                'total' => $quotation->total ?? 0,
                 'amount_paid' => 0,
-                'shipping_amount' => 0,
+
                 'amount_due' => $quotation->total,
                 'notes' => $quotation->notes,
                 'terms' => $quotation->terms,
@@ -913,9 +952,9 @@ class QuotationController extends Controller implements HasMiddleware
 
         if ($lastSale) {
             $lastNumber = substr($lastSale->sale_number, strlen($prefix));
-            $nextNumber = intval($lastNumber) + 1;
+            $nextNumber = max(intval($lastNumber) + 1, 500);
         } else {
-            $nextNumber = 1;
+            $nextNumber = 500;
         }
 
         $saleNumber = $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);

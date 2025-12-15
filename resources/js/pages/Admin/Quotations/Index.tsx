@@ -16,6 +16,8 @@ import { useEffect, useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Customer, Quotation, QuotationStatus } from './_components/types';
 import { format } from 'date-fns';
+import ExtendExpiryDialog from './_components/ExtendExpiryDialog';
+import ConvertToSaleDialog from './_components/ConvertToSaleDialog';
 
 interface Props {
   quotations: {
@@ -86,6 +88,14 @@ export default function Index({ quotations, customers, statuses, currency, filte
   const [sortOrder, setSortOrder] = useState(filters.sort_order || 'desc');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [statusUpdating, setStatusUpdating] = useState<boolean>(false);
+  
+  // Dialog States
+  const [extendExpiryDialogOpen, setExtendExpiryDialogOpen] = useState(false);
+  const [selectedQuotationId, setSelectedQuotationId] = useState<number | null>(null);
+  const [selectedExpiryDate, setSelectedExpiryDate] = useState<string | null>(null);
+  
+  const [convertToSaleDialogOpen, setConvertToSaleDialogOpen] = useState(false);
+  const [selectedQuotationForConversion, setSelectedQuotationForConversion] = useState<{id: number, number: string} | null>(null);
 
   const { toast } = useToast();
   const { flash } = usePage().props as { flash?: { success?: string; error?: string } };
@@ -293,25 +303,17 @@ export default function Index({ quotations, customers, statuses, currency, filte
     });
   };
 
-  // Função para converter cotação em venda
-  const handleConvertToSale = (quotationId: number) => {
-    router.post(`/admin/quotations/${quotationId}/convert-to-sale`, {}, {
-      onBefore: () => confirm('Tem certeza que deseja converter esta cotação em venda?'),
-      onSuccess: () => {
-        toast({
-          title: 'Cotação convertida',
-          description: 'A cotação foi convertida em venda com sucesso!',
-          variant: 'success',
-        });
-      },
-      onError: (errors: Record<string, string>) => {
-        toast({
-          title: 'Erro',
-          description: errors.message || 'Ocorreu um erro ao converter a cotação em venda',
-          variant: 'destructive',
-        });
-      }
-    });
+  // Abrir diálogo de converter cotação
+  const openConvertToSaleDialog = (id: number, number: string) => {
+    setSelectedQuotationForConversion({ id, number });
+    setConvertToSaleDialogOpen(true);
+  };
+
+  // Abrir diálogo de extensão de validade
+  const handleExtendExpiry = (id: number, expiryDate: string | null) => {
+    setSelectedQuotationId(id);
+    setSelectedExpiryDate(expiryDate);
+    setExtendExpiryDialogOpen(true);
   };
 
   return (
@@ -601,7 +603,7 @@ export default function Index({ quotations, customers, statuses, currency, filte
                                   </Link>
                                 </DropdownMenuItem>
                               )}
-                              {can('admin-quotation.edit') && quotation.status === 'draft' && (
+                              {can('admin-quotation.edit') && (quotation.status === 'draft' || quotation.status === 'expired') && (
                                 <DropdownMenuItem asChild>
                                   <Link href={`/admin/quotations/${quotation.id}/edit`}>
                                     <Pencil className="mr-2 h-4 w-4" />
@@ -628,7 +630,7 @@ export default function Index({ quotations, customers, statuses, currency, filte
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 onClick={() => handleSendEmail(
-                                  quotation.id,
+                                  Number(quotation.id),
                                   Boolean(quotation.customer?.email)
                                 )}
                                 disabled={!quotation.customer?.email}
@@ -639,19 +641,25 @@ export default function Index({ quotations, customers, statuses, currency, filte
                                   <span className="ml-1 text-xs text-destructive">(Sem email)</span>
                                 )}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleDuplicate(quotation.id)}>
+                              <DropdownMenuItem onClick={() => handleDuplicate(Number(quotation.id))}>
                                 <Copy className="mr-2 h-4 w-4" />
                                 <span>Duplicar Cotação</span>
                               </DropdownMenuItem>
-                              {(quotation.status === 'approved' || quotation.status === 'draft') && (
-                                <DropdownMenuItem onClick={() => handleConvertToSale(quotation.id)}>
+                              {(quotation.status === 'approved' || quotation.status === 'draft' || quotation.status === 'sent' || quotation.status === 'expired') && (
+                                <DropdownMenuItem onClick={() => openConvertToSaleDialog(Number(quotation.id), quotation.quotation_number)}>
                                   <ArrowUpRight className="mr-2 h-4 w-4" />
                                   <span>Converter em Venda</span>
                                 </DropdownMenuItem>
                               )}
+                              {can('admin-quotation.edit') && (
+                                <DropdownMenuItem onClick={() => handleExtendExpiry(Number(quotation.id), quotation.expiry_date || null)}>
+                                  <Calendar className="mr-2 h-4 w-4" />
+                                  <span>Estender Validade</span>
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuSeparator />
                               {can('admin-quotation.destroy') && (
-                                <DropdownMenuItem onClick={() => handleDeleteClick(quotation.id)}>
+                                <DropdownMenuItem onClick={() => handleDeleteClick(Number(quotation.id))}>
                                   <Trash className="mr-2 h-4 w-4" />
                                   <span>Eliminar</span>
                                 </DropdownMenuItem>
@@ -731,6 +739,24 @@ export default function Index({ quotations, customers, statuses, currency, filte
         description="Tem certeza que deseja eliminar esta cotação? Esta acção não pode ser desfeita."
         deleteUrl={`/admin/quotations/${quotationToDelete}`}
       />
+
+      {selectedQuotationForConversion && (
+        <ConvertToSaleDialog
+            open={convertToSaleDialogOpen}
+            onOpenChange={setConvertToSaleDialogOpen}
+            quotationId={selectedQuotationForConversion.id}
+            quotationNumber={selectedQuotationForConversion.number}
+        />
+      )}
+
+      {selectedQuotationId && (
+        <ExtendExpiryDialog
+          open={extendExpiryDialogOpen}
+          onOpenChange={setExtendExpiryDialogOpen}
+          quotationId={selectedQuotationId.toString()}
+          currentExpiryDate={selectedExpiryDate}
+        />
+      )}
     </AppLayout>
   );
 }

@@ -362,12 +362,49 @@ export default function Edit({
         return withSymbol ? `${symbol} ${formattedValue}` : formattedValue;
     };
 
+    const [paymentPercentage, setPaymentPercentage] = useState<string>('');
+    
+    // Iniciar percentage se já houver valor pago
+    useEffect(() => {
+        const amount = parseFloat(form.getValues('amount_paid')) || 0;
+        const total = calculateTotals().total;
+        if (total > 0 && amount > 0) {
+             const percent = ((amount / total) * 100).toFixed(2);
+             setPaymentPercentage(percent);
+        }
+    }, []);
+
     const handlePaymentMethodChange = (method: string) => form.setValue('payment_method', method);
+
+    const handlePaymentPercentageChange = (percentage: string) => {
+        setPaymentPercentage(percentage);
+        const percentValue = parseFloat(percentage);
+        const total = calculateTotals().total;
+
+        if (!isNaN(percentValue) && total > 0) {
+            const amount = (total * (percentValue / 100)).toFixed(2);
+            form.setValue('amount_paid', amount);
+            
+            const amountValue = parseFloat(amount);
+            if (amountValue >= total) form.setValue('status', 'paid');
+            else if (amountValue > 0) form.setValue('status', 'partial');
+            else form.setValue('status', 'pending');
+        } else if (percentage === '') {
+            form.setValue('amount_paid', '');
+             form.setValue('status', 'pending');
+        }
+    };
 
     const handlePaymentAmountChange = (amount: string) => {
         form.setValue('amount_paid', amount);
         const amountValue = parseFloat(amount) || 0;
         const total = calculateTotals().total;
+        
+        if (total > 0) {
+            const percent = ((amountValue / total) * 100).toFixed(2);
+            setPaymentPercentage(percent === '0.00' && amount === '' ? '' : percent);
+        }
+
         if (total > 0 && amountValue >= total) form.setValue('status', 'paid');
         else if (amountValue > 0) form.setValue('status', 'partial');
         else form.setValue('status', 'pending');
@@ -495,6 +532,8 @@ export default function Edit({
                                     onPaymentAmountChange={handlePaymentAmountChange}
                                     paymentMethod={watchPaymentMethod || ''}
                                     paymentAmount={watchPaymentAmount || ''}
+                                    paymentPercentage={paymentPercentage}
+                                    onPaymentPercentageChange={handlePaymentPercentageChange}
                                 />
                             </div>
                         </div>

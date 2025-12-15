@@ -102,7 +102,7 @@ class Quotation extends Model
      */
     public function isEditable(): bool
     {
-        return in_array($this->status, ['draft']);
+        return in_array($this->status, ['draft', 'expired']);
     }
 
     /**
