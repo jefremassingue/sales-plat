@@ -177,13 +177,59 @@ class QuotationController extends Controller implements HasMiddleware
     }
 
     /**
+     * Search products for autocomplete (API endpoint).
+     */
+    public function searchProducts(Request $request)
+    {
+        $search = $request->input('search', '');
+        $limit = min($request->input('limit', 20), 50);
+
+        $query = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%");
+            });
+        }
+
+        $products = $query->orderBy('name')->limit($limit)->get();
+
+        return response()->json($products);
+    }
+
+    /**
+     * Search customers for autocomplete (API endpoint).
+     */
+    public function searchCustomers(Request $request)
+    {
+        $search = $request->input('search', '');
+        $limit = min($request->input('limit', 20), 50);
+
+        $query = Customer::select('id', 'name', 'email', 'phone', 'address');
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->orderBy('name')->limit($limit)->get();
+
+        return response()->json($customers);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
         try {
             $placeholderNumber = 'AUTO-' . date('Ym');
-            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
+            // Load only top 20 customers and products for initial display; use API search for more
+            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->limit(20)->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
                     'mainImage.versions',
@@ -192,7 +238,7 @@ class QuotationController extends Controller implements HasMiddleware
                     'variants',
                     'variants.color',
                     'variants.size',
-                ])->orderByDesc('created_at')->get();
+                ])->orderBy('name')->limit(20)->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
             $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);
@@ -226,6 +272,51 @@ class QuotationController extends Controller implements HasMiddleware
 
             return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Show the alternative form for creating a new resource.
+     */
+    public function createAlternative()
+    {
+        // try {
+            $placeholderNumber = 'AUTO-' . date('Ym');
+            // Load only top 20 customers and products for initial display; use API search for more
+            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->limit(20)->get();
+            $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')->orderBy('name')->limit(20)->get();
+            $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
+            $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
+            $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);
+            $units = UnitEnum::toArray();
+            $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee' => $user->employee
+                ];
+            });
+
+            return Inertia::render('Admin/Quotations/CreateAlternative', [
+                'quotationPlaceholder' => $placeholderNumber,
+                'customers' => $customers,
+                'products' => $products,
+                'warehouses' => $warehouses,
+                'currencies' => $currencies,
+                'defaultCurrency' => $defaultCurrency,
+                'taxRates' => $this->getTaxRates(),
+                'statuses' => $this->getQuotationStatuses(),
+                'discountTypes' => $this->getDiscountTypes(),
+                'units' => $units,
+                'users' => $users,
+            ]);
+        // } catch (\Exception $e) {
+        //     Log::error('Erro ao carregar formulário alternativo de cotação: ' . $e->getMessage(), [
+        //         'trace' => $e->getTraceAsString()
+        //     ]);
+
+        //     return redirect()->back()->with('error', 'Ocorreu um erro ao carregar o formulário: ' . $e->getMessage());
+        // }
     }
 
     /**

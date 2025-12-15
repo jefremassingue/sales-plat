@@ -58,9 +58,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::delete('inventories/{inventory}/adjustments/{adjustment}', [InventoryAdjustmentController::class, 'destroy'])->name('inventories.adjustments.destroy');
 
     // Rotas para cotações
+    Route::get('quotations/create-alternative', [QuotationController::class, 'createAlternative'])->name('quotations.create-alternative');
     Route::resource('quotations', QuotationController::class);
     Route::post('quotations/{quotation}/status', [QuotationController::class, 'updateStatus'])->name('quotations.status');
     Route::get('quotations/{quotation}/pdf', [QuotationController::class, 'generatePdf'])->name('quotations.pdf');
+    Route::get('api/products/search', [QuotationController::class, 'searchProducts'])->name('api.products.search');
+    Route::get('api/customers/search', [QuotationController::class, 'searchCustomers'])->name('api.customers.search');
     Route::get('api/product-inventory', [QuotationController::class, 'getProductInventory'])->name('api.product.inventory');
     Route::post('quotations/{quotation}/send-email', [QuotationController::class, 'sendEmail'])->name('quotations.send-email');
     Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');

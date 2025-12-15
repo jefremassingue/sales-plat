@@ -324,12 +324,20 @@ export default function Index({ quotations, customers, statuses, currency, filte
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Gestão de Cotações</h1>
           {can('admin-quotation.create') && (
-            <Button asChild>
-              <Link href="/admin/quotations/create">
-                <Plus className="mr-2 h-4 w-4" />
-                <span>Nova Cotação</span>
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href="/admin/quotations/create-alternative">
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>Nova (Lista)</span>
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/admin/quotations/create">
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>Nova Cotação</span>
+                </Link>
+              </Button>
+            </div>
           )}
         </div>
 

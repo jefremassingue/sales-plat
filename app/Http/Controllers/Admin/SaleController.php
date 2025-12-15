@@ -219,7 +219,8 @@ class SaleController extends Controller implements HasMiddleware
             }
 
             $placeholderNumber = 'AUTO-' . date('Ym');
-            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
+            // Load only top 20 customers and products for initial display; use API search for more
+            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->limit(20)->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
                     'category',
@@ -230,7 +231,8 @@ class SaleController extends Controller implements HasMiddleware
                     'variants.color',
                     'variants.size',
                 ])
-                ->orderByDesc('created_at')
+                ->orderBy('name')
+                ->limit(20)
                 ->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
@@ -540,7 +542,8 @@ class SaleController extends Controller implements HasMiddleware
 
             // Carrega os dados necessários para os componentes do formulário (dropdowns, catálogos, etc.)
             // Esta parte é idêntica à do método `create`
-            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->get();
+            // Load only top 20 customers and products for initial display; use API search for more
+            $customers = Customer::select('id', 'name', 'email', 'phone', 'address')->orderBy('name')->limit(20)->get();
             $products = Product::select('id', 'name', 'price', 'sku', 'cost', 'unit')
                 ->with([
                     'category',
@@ -552,7 +555,8 @@ class SaleController extends Controller implements HasMiddleware
                     'variants.color',
                     'variants.size',
                 ])
-                ->orderByDesc('created_at')
+                ->orderBy('name')
+                ->limit(20)
                 ->get();
             $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
