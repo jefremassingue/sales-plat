@@ -19,6 +19,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -243,7 +244,16 @@ class SaleController extends Controller implements HasMiddleware
             ]);
 
             $units = UnitEnum::toArray();
+            $units = UnitEnum::toArray();
             $paymentMethods = $this->getPaymentMethods();
+            $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee' => $user->employee
+                ];
+            });
 
             return Inertia::render('Admin/Sales/Create', [
                 'salePlaceholder' => $placeholderNumber,
@@ -257,7 +267,8 @@ class SaleController extends Controller implements HasMiddleware
                 'discountTypes' => $this->getDiscountTypes(),
                 'units' => $units,
                 'paymentMethods' => $paymentMethods,
-                'quotation' => $quotation
+                'quotation' => $quotation,
+                'users' => $users,
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao carregar formulário de venda: ' . $e->getMessage(), [
@@ -276,6 +287,7 @@ class SaleController extends Controller implements HasMiddleware
         try {
             $validator = Validator::make($request->all(), [
                 'customer_id' => 'nullable|exists:customers,id',
+                'user_id' => 'nullable|exists:users,id',
                 'issue_date' => 'required|date',
                 'due_date' => 'nullable|date|after_or_equal:issue_date',
                 'status' => 'required|string|in:draft,pending,paid,partial',
@@ -314,12 +326,22 @@ class SaleController extends Controller implements HasMiddleware
 
                 // Preparar os dados da venda
                 $saleData = $request->except('items');
-                $saleData['user_id'] = Auth::id();
+                $saleData['user_id'] = $request->user_id ?? Auth::id();
                 $saleData['sale_number'] = $saleNumber;
 
                 // Verificar pagamento e status
                 $amountPaid = $request->amount_paid ?? 0;
                 $shippingAmount = $request->shipping_amount ?? 0;
+
+                // Definir taxa de comissão do funcionário se disponível
+                if ($request->user_id) {
+                    $user = User::with('employee')->find($request->user_id);
+                    if ($user && $user->employee && $user->employee->commission_rate > 0) {
+                        $saleData['commission_rate'] = $user->employee->commission_rate;
+                    }
+                } elseif (Auth::user()->employee && Auth::user()->employee->commission_rate > 0) {
+                     $saleData['commission_rate'] = Auth::user()->employee->commission_rate;
+                }
 
                 // Calcular totais antes de salvar
                 $subtotal = 0;
@@ -487,10 +509,21 @@ class SaleController extends Controller implements HasMiddleware
         // return $sale;
         $sale->calculateTotals();
 
+        // Carregar utilizadores com funcionários para o diálogo de alteração de responsável
+        $users = User::with('employee')->get()->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employee' => $user->employee
+            ];
+        });
+
         return Inertia::render('Admin/Sales/Show', [
             'sale' => $sale,
             'statuses' => $this->getSaleStatuses(),
             'paymentMethods' => $this->getPaymentMethods(),
+            'users' => $users,
         ]);
     }
 
@@ -526,6 +559,14 @@ class SaleController extends Controller implements HasMiddleware
             $defaultCurrency = Currency::where('is_default', true)->first();
             $units = UnitEnum::toArray();
             $paymentMethods = $this->getPaymentMethods();
+            $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee' => $user->employee
+                ];
+            });
             // Renderiza a página de edição, passando a venda e os outros dados
             return Inertia::render('Admin/Sales/Edit', [
                 'sale' => $sale, // A venda a ser editada
@@ -539,6 +580,7 @@ class SaleController extends Controller implements HasMiddleware
                 'discountTypes' => $this->getDiscountTypes(),
                 'units' => $units,
                 'paymentMethods' => $paymentMethods,
+                'users' => $users,
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao carregar formulário de edição de venda: ' . $e->getMessage(), [
@@ -556,6 +598,7 @@ class SaleController extends Controller implements HasMiddleware
     {
         $validator = Validator::make($request->all(), [
             'customer_id' => 'nullable|exists:customers,id',
+            'user_id' => 'nullable|exists:users,id',
             'issue_date' => 'required|date',
             'due_date' => 'nullable|date|after_or_equal:issue_date',
             'status' => 'required|string|in:draft,pending,paid,partial,cancelled',
@@ -1140,6 +1183,43 @@ class SaleController extends Controller implements HasMiddleware
 
             return redirect()->back()
                 ->with('error', 'Ocorreu um erro ao atualizar o status da venda: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Alterar o utilizador responsável pela venda
+     */
+    public function updateUser(Request $request, Sale $sale)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'user_id' => 'nullable|exists:users,id',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            DB::beginTransaction();
+
+            $sale->user_id = $request->user_id;
+            $sale->save();
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Responsável da venda atualizado com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao atualizar responsável da venda: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao atualizar o responsável da venda: ' . $e->getMessage());
         }
     }
 

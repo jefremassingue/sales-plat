@@ -14,7 +14,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Calendar, Eye, FileText, Filter, MoreHorizontal, Pencil, Plus, Trash, Send, Copy, Download, ArrowUpRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Customer, Quotation, QuotationStatus } from './_components/types';
+import { Customer, Quotation, QuotationStatusOption, QuotationStatus } from '@/types';
 import { format } from 'date-fns';
 import ExtendExpiryDialog from './_components/ExtendExpiryDialog';
 import ConvertToSaleDialog from './_components/ConvertToSaleDialog';
@@ -38,7 +38,7 @@ interface Props {
     thousand_separator: string;
   };
   customers: Customer[];
-  statuses: QuotationStatus[];
+  statuses: QuotationStatusOption[];
   filters?: {
     search?: string | null;
     customer_id?: string | null;

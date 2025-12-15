@@ -9,7 +9,8 @@ import { ChevronDown, ChevronUp, PackageSearch, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Product, TaxRate, Warehouse } from './types';
+import { Product, TaxRate, Warehouse } from '@/types';
+import { formSchema } from './schema';
 
 const itemFormSchema = z.object({
     product_id: z.string().optional(),
@@ -18,13 +19,13 @@ const itemFormSchema = z.object({
     product_size_id: z.string().optional(),
     warehouse_id: z.string().optional(),
     name: z.string().min(1, { message: 'Nome é obrigatório' }),
-    description: z.string().optional(),
+    description: z.string().optional().nullable(),
     quantity: z
         .string()
         .min(1, { message: 'Quantidade é obrigatória' })
         .refine((val) => !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
         .refine((val) => parseFloat(val) > 0, { message: 'Deve ser maior que zero' }),
-    unit: z.string().optional(),
+    unit: z.string().optional().nullable(),
     unit_price: z
         .string()
         .min(1, { message: 'Preço unitário é obrigatório' })
@@ -33,12 +34,14 @@ const itemFormSchema = z.object({
     discount_percentage: z
         .string()
         .optional()
+        .nullable()
         .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
         .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' })
         .refine((val) => !val || parseFloat(val) <= 100, { message: 'Deve ser no máximo 100%' }),
     tax_percentage: z
         .string()
         .optional()
+        .nullable()
         .refine((val) => !val || !isNaN(parseFloat(val)), { message: 'Deve ser um número válido' })
         .refine((val) => !val || parseFloat(val) >= 0, { message: 'Não pode ser negativo' }),
 });
@@ -553,9 +556,9 @@ export default function ItemForm({
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Descrição</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} placeholder="Descrição detalhada do item" />
-                                            </FormControl>
+                                    <FormControl>
+                                        <Textarea {...field} value={field.value ?? ''} placeholder="Descrição detalhada do item" />
+                                    </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}

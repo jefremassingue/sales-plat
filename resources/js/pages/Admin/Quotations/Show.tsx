@@ -13,21 +13,25 @@ import { AlertCircle, ArrowLeft, Calendar, Copy, CreditCard, Download, Edit, Pri
 import { format } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
-import { Quotation, QuotationStatus } from './_components/types';
+import { Quotation, QuotationStatusOption } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import StatusChangeDialog from './_components/StatusChangeDialog';
 import ExtendExpiryDialog from './_components/ExtendExpiryDialog';
 import ConvertToSaleDialog from './_components/ConvertToSaleDialog';
+import UpdateUserDialog from './_components/UpdateUserDialog';
+import { type User as UserType } from '@/types';
 
 interface Props {
   quotation: Quotation;
-  statuses: QuotationStatus[];
+  statuses: QuotationStatusOption[];
+  users: UserType[];
 }
 
-export default function Show({ quotation, statuses }: Props) {
+export default function Show({ quotation, statuses, users }: Props) {
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [extendExpiryDialogOpen, setExtendExpiryDialogOpen] = useState(false);
+  const [updateUserDialogOpen, setUpdateUserDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(quotation.status);
   const { toast } = useToast();
   const { flash } = usePage().props as any;
@@ -516,10 +520,22 @@ export default function Show({ quotation, statuses }: Props) {
                 <Separator />
 
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">Utilizador</h3>
-                  <div className="flex items-center mt-1">
-                    <User className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span>{quotation.user?.name || "Sistema"}</span>
+                  <h3 className="text-sm font-medium text-muted-foreground">Responsável</h3>
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="flex items-center">
+                      <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <div>
+                        <span>{quotation.user?.employee?.name || quotation.user?.name || "Sistema"}</span>
+                        {quotation.user?.employee && (
+                          <span className="ml-1 text-xs text-muted-foreground">(Funcionário)</span>
+                        )}
+                      </div>
+                    </div>
+                    {can('admin-quotation.edit') && (
+                      <Button variant="ghost" size="sm" onClick={() => setUpdateUserDialogOpen(true)}>
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -661,6 +677,15 @@ export default function Show({ quotation, statuses }: Props) {
         onOpenChange={setConvertToSaleOpen}
         quotationId={quotation.id}
         quotationNumber={quotation.quotation_number}
+      />
+
+      <UpdateUserDialog
+        open={updateUserDialogOpen}
+        onOpenChange={setUpdateUserDialogOpen}
+        entityId={quotation.id}
+        entityType="quotation"
+        currentUserId={quotation.user_id?.toString()}
+        users={users}
       />
 
       {/* Alerta de confirmação de exclusão */}

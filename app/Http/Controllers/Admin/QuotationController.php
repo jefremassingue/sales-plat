@@ -14,6 +14,7 @@ use App\Models\QuotationItem;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Warehouse;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -196,6 +197,14 @@ class QuotationController extends Controller implements HasMiddleware
             $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
             $defaultCurrency = Currency::where('is_default', true)->first() ?: new Currency(['code' => 'MZN', 'name' => 'Metical Moçambicano', 'symbol' => 'MT']);
             $units = UnitEnum::toArray();
+            $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'employee' => $user->employee
+                ];
+            });
 
             return Inertia::render('Admin/Quotations/Create', [
                 'quotationPlaceholder' => $placeholderNumber,
@@ -208,6 +217,7 @@ class QuotationController extends Controller implements HasMiddleware
                 'statuses' => $this->getQuotationStatuses(),
                 'discountTypes' => $this->getDiscountTypes(),
                 'units' => $units,
+                'users' => $users,
             ]);
         } catch (\Exception $e) {
             Log::error('Erro ao carregar formulário de cotação: ' . $e->getMessage(), [
@@ -226,6 +236,7 @@ class QuotationController extends Controller implements HasMiddleware
         try {
             $validator = Validator::make($request->all(), [
                 'customer_id' => 'nullable|exists:customers,id',
+                'user_id' => 'nullable|exists:users,id',
                 'issue_date' => 'required|date',
                 'expiry_date' => 'nullable|date|after_or_equal:issue_date',
                 'status' => 'required|string|in:draft,sent,approved,rejected',
@@ -257,7 +268,7 @@ class QuotationController extends Controller implements HasMiddleware
             try {
                 $quotationNumber = $request->input('quotation_number', $this->generateUniqueQuotationNumber());
                 $quotationData = $request->except('items');
-                $quotationData['user_id'] = Auth::id();
+                $quotationData['user_id'] = $request->user_id ?? Auth::id();
                 $quotationData['quotation_number'] = $quotationNumber;
                 $quotationData['issue_date'] = now();
                 $quotationData['expiry_date'] = now()->addDays(7)->toDateString();
@@ -382,10 +393,21 @@ class QuotationController extends Controller implements HasMiddleware
             return $item;
         });
 
+        // Carregar utilizadores com funcionários para o diálogo de alteração de responsável
+        $users = User::with('employee')->get()->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employee' => $user->employee
+            ];
+        });
+
         return Inertia::render('Admin/Quotations/Show', [
             'quotation' => $quotation,
             'statuses' => $this->getQuotationStatuses(),
             'currency' => Currency::where('code', $quotation->currency)->first() ?: null,
+            'users' => $users,
         ]);
     }
 
@@ -416,6 +438,14 @@ class QuotationController extends Controller implements HasMiddleware
         $warehouses = Warehouse::select('id', 'name', 'is_main')->where('active', true)->orderBy('name')->get();
         $currencies = Currency::where('is_active', true)->orderBy('is_default', 'desc')->get();
         $units = UnitEnum::toArray();
+        $users = User::whereHas('employee')->with('employee')->get()->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'employee' => $user->employee
+            ];
+        });
 
         return Inertia::render('Admin/Quotations/Edit', [
             'quotation' => $quotation,
@@ -427,6 +457,7 @@ class QuotationController extends Controller implements HasMiddleware
             'statuses' => $this->getQuotationStatuses(),
             'discountTypes' => $this->getDiscountTypes(),
             'units' => $units,
+            'users' => $users,
         ]);
     }
 
@@ -444,6 +475,7 @@ class QuotationController extends Controller implements HasMiddleware
             $validator = Validator::make($request->all(), [
                 'quotation_number' => 'required|string|unique:quotations,quotation_number,' . $quotation->id,
                 'customer_id' => 'nullable|exists:customers,id',
+                'user_id' => 'nullable|exists:users,id',
                 'issue_date' => 'required|date',
                 'expiry_date' => 'nullable|date|after_or_equal:issue_date',
                 'status' => 'required|string|in:draft,sent,approved,rejected',
@@ -612,6 +644,43 @@ class QuotationController extends Controller implements HasMiddleware
 
             return redirect()->back()
                 ->with('error', 'Ocorreu um erro ao atualizar o status da cotação: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Alterar o utilizador responsável pela cotação
+     */
+    public function updateUser(Request $request, Quotation $quotation)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'user_id' => 'nullable|exists:users,id',
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+            DB::beginTransaction();
+
+            $quotation->user_id = $request->user_id;
+            $quotation->save();
+
+            DB::commit();
+
+            return redirect()->back()
+                ->with('success', 'Responsável da cotação atualizado com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Erro ao atualizar responsável da cotação: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao atualizar o responsável da cotação: ' . $e->getMessage());
         }
     }
 

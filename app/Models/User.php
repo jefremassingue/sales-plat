@@ -63,4 +63,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Supplier::class);
     }
+
+    /**
+     * Relação com funcionário
+     */
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
 }

@@ -168,6 +168,7 @@ const mainNavItems = [
             'admin-sale.index',
             'admin-sale.index',
             'admin-customer.index',
+            'admin-employee.index',
         ],
         group: 'Entidades',
         items: [
@@ -193,18 +194,18 @@ const mainNavItems = [
                 permission: 'admin-permission.index',
             },
 
-            // {
-            //     title: 'Funcionários',
-            //     href: '/admin/employees',
-            //     icon: UserCircle,
-            //     activeRoutes: [
-            //         'admin.employees.index',
-            //         'admin.employees.create',
-            //         'admin.employees.edit',
-            //         'admin.employees.show'
-            //     ]
-            // permission: 'admin-sale.index',
-            // },
+            {
+                title: 'Funcionários',
+                href: '/admin/employees',
+                icon: UserCog,
+                activeRoutes: [
+                    'admin.employees.index',
+                    'admin.employees.create',
+                    'admin.employees.edit',
+                    'admin.employees.show'
+                ],
+                permission: 'admin-employee.index',
+            },
 
             {
                 title: 'Armazéns',

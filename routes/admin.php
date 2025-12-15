@@ -66,6 +66,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('quotations/{quotation}/duplicate', [QuotationController::class, 'duplicate'])->name('quotations.duplicate');
     Route::post('quotations/{quotation}/convert-to-sale', [QuotationController::class, 'convertToSale'])->name('quotations.convert-to-sale');
     Route::post('quotations/{quotation}/extend-expiry', [QuotationController::class, 'extendExpiry'])->name('quotations.extend-expiry');
+    Route::post('quotations/{quotation}/update-user', [QuotationController::class, 'updateUser'])->name('quotations.update-user');
 
     // Rotas para vendas
     Route::resource('sales', SaleController::class);
@@ -74,6 +75,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('sales/{sale}/pdf', [SaleController::class, 'generatePdf'])->name('sales.pdf');
     Route::post('sales/{sale}/send-email', [SaleController::class, 'sendEmail'])->name('sales.send-email');
     Route::post('sales/{sale}/duplicate', [SaleController::class, 'duplicate'])->name('sales.duplicate');
+    Route::post('sales/{sale}/update-user', [SaleController::class, 'updateUser'])->name('sales.update-user');
 
     // Rotas para gestão de custos e despesas
     Route::post('sales/{sale}/items/{item}/update-cost', [SaleController::class, 'updateItemCost'])->name('sales.items.update-cost');
@@ -153,6 +155,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Utilizadores com funções
     Route::resource('users', UserController::class);
+
+    // Funcionários
+    Route::resource('employees', \App\Http\Controllers\Admin\EmployeeController::class);
 
     // Rota para o gerador de mockups
     Route::get('/mockups', function () {
