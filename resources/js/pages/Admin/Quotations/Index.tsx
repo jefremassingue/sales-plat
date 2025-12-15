@@ -324,7 +324,7 @@ export default function Index({ quotations, customers, statuses, currency, filte
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Gestão de Cotações</h1>
           {can('admin-quotation.create') && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap justify-end">
               <Button variant="outline" asChild>
                 <Link href="/admin/quotations/create-alternative">
                   <Plus className="mr-2 h-4 w-4" />

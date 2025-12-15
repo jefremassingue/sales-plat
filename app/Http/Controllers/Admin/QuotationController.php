@@ -357,7 +357,10 @@ class QuotationController extends Controller implements HasMiddleware
 
             DB::beginTransaction();
             try {
-                $quotationNumber = $request->input('quotation_number', $this->generateUniqueQuotationNumber());
+                $quotationNumber = $request->input('quotation_number');
+                if (empty($quotationNumber) || str_starts_with($quotationNumber, 'AUTO-')) {
+                    $quotationNumber = $this->generateUniqueQuotationNumber();
+                }
                 $quotationData = $request->except('items');
                 $quotationData['user_id'] = $request->user_id ?? Auth::id();
                 $quotationData['quotation_number'] = $quotationNumber;

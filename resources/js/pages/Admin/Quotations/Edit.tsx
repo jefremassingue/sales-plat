@@ -7,7 +7,7 @@ import { type BreadcrumbItem, type Customer, type SaleStatus as QuotationStatus,
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { ArrowLeft, Check, CreditCard, Loader2, Package } from 'lucide-react';
+import { ArrowLeft, Check, CreditCard, Loader2, Package, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -418,7 +418,7 @@ export default function Edit({
                         <Tabs defaultValue="items" value={activeTab} onValueChange={setActiveTab}>
                             <TabsList>
                                 <TabsTrigger value="details">
-                                    <User className="mr-2 h-4 w-4" />
+                                    <UserIcon className="mr-2 h-4 w-4" />
                                     Dados Gerais
                                 </TabsTrigger>
                                 <TabsTrigger value="items">

@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 
 interface Props {
-    quotationNumber: string;
+    quotationPlaceholder: string;
     customers: Customer[];
     products: Product[];
     warehouses: Warehouse[];
@@ -50,7 +50,7 @@ const breadcrumbs = [
 ];
 
 export default function CreateAlternative({
-    quotationNumber,
+    quotationPlaceholder,
     customers,
     products,
     warehouses,
@@ -118,7 +118,7 @@ export default function CreateAlternative({
         resolver: zodResolver(formSchema),
         mode: 'onChange',
         defaultValues: {
-            quotation_number: quotationNumber,
+            quotation_number: quotationPlaceholder,
             customer_id: '',
             user_id: auth.user.id.toString(),
             issue_date: today,
@@ -132,7 +132,7 @@ export default function CreateAlternative({
             items: [
                 {
                     product_id: '',
-                    name: 'Novo Item',
+                    name: '',
                     quantity: '1',
                     unit_price: '0',
                     discount_percentage: '0',
@@ -237,7 +237,7 @@ export default function CreateAlternative({
     };
 
     const handleProductSelect = (index: number, productId: string) => {
-        const selectedProduct = products.find((p) => p.id.toString() === productId);
+        const selectedProduct = productList.find((p) => p.id.toString() === productId);
         if (!selectedProduct) return;
 
         const currentItem = form.getValues(`items.${index}`);
@@ -326,11 +326,11 @@ export default function CreateAlternative({
                                 <h1 className="text-xl font-bold">Nova Cotação</h1>
                                 <div className="ml-auto flex items-center gap-2">
                                      <span className="text-sm text-muted-foreground hidden sm:inline-block">Cotação #:</span>
-                                     <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{quotationNumber || 'AUTO'}</span>
+                                     <span className="font-mono bg-muted px-2 py-1 rounded text-sm">{quotationPlaceholder || 'AUTO'}</span>
                                 </div>
                             </div>
 
-                            <div className="grid gap-4 md:grid-cols-4">
+                            <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
                                 <FormField
                                     control={form.control}
                                     name="customer_id"
@@ -510,45 +510,97 @@ export default function CreateAlternative({
                                                         </PopoverContent>
                                                     </Popover>
                                                     {/* Textarea for details/name override */}
-                                                    <Input
-                                                        {...form.register(`items.${index}.name`)}
-                                                        placeholder="Nome/Descrição do item"
-                                                        className="h-7 border-0 bg-transparent focus-visible:ring-0 focus-visible:bg-muted/50 px-2"
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`items.${index}.name`}
+                                                        render={({ field }) => (
+                                                            <FormItem className="w-full">
+                                                                <FormControl>
+                                                                    <Input
+                                                                        {...field}
+                                                                        placeholder="Nome/Descrição do item"
+                                                                        className="h-7 border-0 bg-transparent focus-visible:ring-0 focus-visible:bg-muted/50 px-2"
+                                                                    />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
                                                     />
                                                  </div>
                                                  <div className="col-span-1">
-                                                     <Input
-                                                        type="number"
-                                                        {...form.register(`items.${index}.quantity`)}
-                                                        className="h-8 text-center"
-                                                        min="0"
-                                                        step="0.01"
+                                                     <FormField
+                                                        control={form.control}
+                                                        name={`items.${index}.quantity`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                     <Input
+                                                                        type="number"
+                                                                        {...field}
+                                                                        className="h-8 text-center"
+                                                                        min="0"
+                                                                        step="0.01"
+                                                                     />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
                                                      />
                                                  </div>
                                                  <div className="col-span-2">
-                                                     <Input
-                                                        type="number"
-                                                        {...form.register(`items.${index}.unit_price`)}
-                                                        className="h-8 text-right"
-                                                        min="0"
-                                                        step="0.01"
+                                                     <FormField
+                                                        control={form.control}
+                                                        name={`items.${index}.unit_price`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                     <Input
+                                                                        type="number"
+                                                                        {...field}
+                                                                        className="h-8 text-right"
+                                                                        min="0"
+                                                                        step="0.01"
+                                                                     />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                     />
+                                                 </div>
+                                                     <div className="col-span-1">
+                                                     <FormField
+                                                        control={form.control}
+                                                        name={`items.${index}.discount_percentage`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                     <Input
+                                                                        type="number"
+                                                                        {...field}
+                                                                        value={field.value ?? ''}
+                                                                        className="h-8 text-center"
+                                                                        min="0"
+                                                                        max="100"
+                                                                     />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
                                                      />
                                                  </div>
                                                   <div className="col-span-1">
-                                                     <Input
-                                                        type="number"
-                                                        {...form.register(`items.${index}.discount_percentage`)}
-                                                        className="h-8 text-center"
-                                                        min="0"
-                                                        max="100"
-                                                     />
-                                                 </div>
-                                                 <div className="col-span-1">
-                                                     <Input
-                                                        type="number"
-                                                        {...form.register(`items.${index}.tax_percentage`)}
-                                                        className="h-8 text-center"
-                                                        min="0"
+                                                     <FormField
+                                                        control={form.control}
+                                                        name={`items.${index}.tax_percentage`}
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormControl>
+                                                                     <Input
+                                                                        type="number"
+                                                                        {...field}
+                                                                        value={field.value ?? ''}
+                                                                        className="h-8 text-center"
+                                                                        min="0"
+                                                                     />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
                                                      />
                                                  </div>
                                                  <div className="col-span-2 text-right font-medium px-2">
@@ -615,8 +667,18 @@ export default function CreateAlternative({
                                                                 </Command>
                                                             </PopoverContent>
                                                         </Popover>
-                                                        <Input {...form.register(`items.${index}.name`)} placeholder="Nome do item" className="h-8" />
-                                                    </div>
+                                                         <FormField
+                                                            control={form.control}
+                                                            name={`items.${index}.name`}
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                         <Input {...field} placeholder="Nome do item" className="h-8" />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                         />
+                                                     </div>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive -mt-1 -mr-1" onClick={() => remove(index)} type="button">
                                                          <X className="h-4 w-4" />
                                                      </Button>
@@ -625,26 +687,66 @@ export default function CreateAlternative({
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div>
                                                         <Label className="text-xs text-muted-foreground">Qtd</Label>
-                                                        <Input type="number" {...form.register(`items.${index}.quantity`)} className="h-9" step="0.01" />
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`items.${index}.quantity`}
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                        <Input type="number" {...field} className="h-9" step="0.01" />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
                                                     </div>
                                                     <div>
                                                         <Label className="text-xs text-muted-foreground">Preço Un.</Label>
-                                                        <Input type="number" {...form.register(`items.${index}.unit_price`)} className="h-9" step="0.01" />
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`items.${index}.unit_price`}
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                        <Input type="number" {...field} className="h-9" step="0.01" />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
                                                     </div>
                                                 </div>
 
-                                                 <div className="grid grid-cols-3 gap-2">
+                                                 <div className="grid grid-cols-3 gap-2 mt-2">
                                                      <div>
-                                                        <Label className="text-xs text-muted-foreground">Desc %</Label>
-                                                        <Input type="number" {...form.register(`items.${index}.discount_percentage`)} className="h-8 px-1 text-center" />
+                                                        <Label className="text-[10px] uppercase text-muted-foreground">Desc %</Label>
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`items.${index}.discount_percentage`}
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                        <Input type="number" {...field} value={field.value ?? ''} className="h-8 px-1 text-center" />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
                                                     </div>
                                                      <div>
-                                                        <Label className="text-xs text-muted-foreground">IVA %</Label>
-                                                        <Input type="number" {...form.register(`items.${index}.tax_percentage`)} className="h-8 px-1 text-center" />
+                                                        <Label className="text-[10px] uppercase text-muted-foreground">IVA %</Label>
+                                                        <FormField
+                                                            control={form.control}
+                                                            name={`items.${index}.tax_percentage`}
+                                                            render={({ field }) => (
+                                                                <FormItem>
+                                                                    <FormControl>
+                                                                        <Input type="number" {...field} value={field.value ?? ''} className="h-8 px-1 text-center" />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
                                                     </div>
                                                     <div className="flex flex-col justify-end text-right">
-                                                         <span className="text-xs text-muted-foreground">Total</span>
-                                                         <span className="font-bold">{formatCurrency(rawValues.total)}</span>
+                                                         <span className="text-[10px] uppercase text-muted-foreground">Total</span>
+                                                         <span className="font-bold text-sm">{formatCurrency(rawValues.total)}</span>
                                                     </div>
                                                  </div>
                                             </div>
@@ -661,6 +763,16 @@ export default function CreateAlternative({
                             >
                                 <Plus className="mr-2 h-4 w-4" /> Adicionar Item
                             </Button>
+
+                             {/* Mobile Notes Section */}
+                            <div className="md:hidden mt-6 space-y-2">
+                                <Label>Notas/Termos</Label>
+                                <Textarea 
+                                   {...form.register('notes')} 
+                                   placeholder="Notas internas ou visíveis para o cliente..." 
+                                   className="h-24 resize-none"
+                                />
+                            </div>
 
                              {/* Mobile Totals Card */}
                             <div className="md:hidden mt-6 bg-card rounded-lg border p-4">

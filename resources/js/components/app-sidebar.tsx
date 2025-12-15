@@ -147,13 +147,13 @@ const mainNavItems = [
                 activeRoutes: ['admin.hero-sliders.index', 'admin.hero-sliders.create', 'admin.hero-sliders.edit'],
                 permission: 'admin-heroslider.index',
             },
-            {
-                title: 'Gerador de Mockups',
-                href: '/admin/mockups',
-                icon: Image,
-                activeRoutes: ['admin.mockups.index'],
-                permission: 'admin-mockup.generate',
-            },
+            // {
+            //     title: 'Gerador de Mockups',
+            //     href: '/admin/mockups',
+            //     icon: Image,
+            //     activeRoutes: ['admin.mockups.index'],
+            //     permission: 'admin-mockup.generate',
+            // },
         ],
     },
 
